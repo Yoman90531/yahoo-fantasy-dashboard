@@ -133,8 +133,10 @@ def compute_head_to_head(db: Session) -> dict:
     Returns the NxN H2H matrix. For each (manager_a, manager_b) pair,
     how many times has A beaten B (regular season + playoffs combined).
     """
-    managers = db.query(Manager).order_by(Manager.display_name).all()
+    managers = _get_active_managers(db)
+    managers.sort(key=lambda m: m.display_name)
     mgr_by_id = {m.id: m for m in managers}
+    active_mgr_ids = set(mgr_by_id.keys())
 
     # Map team_id → manager_id
     teams = _all_teams(db)
@@ -151,6 +153,8 @@ def compute_head_to_head(db: Session) -> dict:
         a = team_to_mgr.get(m.team1_id)
         b = team_to_mgr.get(m.team2_id)
         if not a or not b or a == b:
+            continue
+        if a not in active_mgr_ids or b not in active_mgr_ids:
             continue
 
         records[a][b]["pf"] += m.team1_points
@@ -275,11 +279,13 @@ def compute_luck_index(db: Session, year: int | None = None) -> list[dict]:
 
     results = []
     for mgr_id in set(mgr_actual) | set(mgr_expected):
+        if mgr_id not in managers:
+            continue
         actual = mgr_actual[mgr_id]
         expected = mgr_expected[mgr_id]
         results.append({
             "manager_id": mgr_id,
-            "manager_name": managers[mgr_id].display_name if mgr_id in managers else str(mgr_id),
+            "manager_name": managers[mgr_id].display_name,
             "year": year,
             "actual_wins": round(actual, 1),
             "expected_wins": round(expected, 2),
@@ -447,14 +453,14 @@ def compute_consistency(db: Session, year: int | None = None) -> list[dict]:
 
     results = []
     for mgr_id, scores in mgr_scores.items():
-        if len(scores) < 2:
+        if len(scores) < 2 or mgr_id not in mgr_map:
             continue
         avg = sum(scores) / len(scores)
         variance = sum((s - avg) ** 2 for s in scores) / (len(scores) - 1)
         std_dev = math.sqrt(variance)
         results.append({
             "manager_id": mgr_id,
-            "manager_name": mgr_map[mgr_id].display_name if mgr_id in mgr_map else str(mgr_id),
+            "manager_name": mgr_map[mgr_id].display_name,
             "year": year,
             "avg_score": round(avg, 2),
             "std_dev": round(std_dev, 2),
@@ -729,6 +735,8 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
     mgr_pf: dict[int, float] = defaultdict(float)
     mgr_games: dict[int, int] = defaultdict(int)
     for t in teams:
+        if t.manager_id not in mgr_map:
+            continue
         mgr_pf[t.manager_id] += t.points_for
         mgr_games[t.manager_id] += t.wins + t.losses + t.ties
     if mgr_pf:
@@ -794,7 +802,7 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
     for m in matchups:
         for tid, pts in [(m.team1_id, m.team1_points), (m.team2_id, m.team2_points)]:
             mid = team_to_mgr.get(tid)
-            if mid:
+            if mid and mid in mgr_map:
                 all_scores.append((pts, mid, m.week, m.season_id))
     if all_scores:
         best = max(all_scores, key=lambda x: x[0])
@@ -813,7 +821,7 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
     for m in matchups:
         for tid, pts in [(m.team1_id, m.team1_points), (m.team2_id, m.team2_points)]:
             mid = team_to_mgr.get(tid)
-            if mid:
+            if mid and mid in mgr_map:
                 week_scores[(m.season_id, m.week)].append((pts, mid))
     weekly_wins: dict[int, int] = defaultdict(int)
     for key, scores in week_scores.items():
@@ -840,9 +848,9 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
             w_mgr = team_to_mgr.get(m.winner_team_id)
             l_tid = m.team2_id if m.winner_team_id == m.team1_id else m.team1_id
             l_mgr = team_to_mgr.get(l_tid)
-            if w_mgr:
+            if w_mgr and w_mgr in mgr_map:
                 close_wins[w_mgr] += 1
-            if l_mgr:
+            if l_mgr and l_mgr in mgr_map:
                 close_losses[l_mgr] += 1
     close_all = set(close_wins) | set(close_losses)
     if close_all:
@@ -869,7 +877,7 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
         margin = abs(m.team1_points - m.team2_points)
         if margin >= 20 and m.winner_team_id:
             w_mgr = team_to_mgr.get(m.winner_team_id)
-            if w_mgr:
+            if w_mgr and w_mgr in mgr_map:
                 blowout_wins[w_mgr] += 1
     if blowout_wins:
         ba_id = max(blowout_wins, key=lambda k: blowout_wins[k])
@@ -898,7 +906,7 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
             best_mid = None
             for t in cur_teams:
                 total = t.wins + t.losses + t.ties
-                if total and t.manager_id in prev_pct:
+                if total and t.manager_id in prev_pct and t.manager_id in mgr_map:
                     cur_pct_val = t.wins / total
                     delta = cur_pct_val - prev_pct[t.manager_id]
                     if delta > best_delta:
@@ -1194,7 +1202,7 @@ def compute_score_distribution(db: Session) -> list[dict]:
 
     results = []
     for mid, scores in mgr_scores.items():
-        if len(scores) < 4:
+        if len(scores) < 4 or mid not in mgr_map:
             continue
         s = sorted(scores)
         n = len(s)
@@ -1283,7 +1291,7 @@ def compute_weekly_finish_distribution(db: Session) -> list[dict]:
     results = []
     for mid, counts in mgr_counts.items():
         total = sum(counts.values())
-        if total == 0:
+        if total == 0 or mid not in mgr_map:
             continue
         results.append({
             "manager_id": mid,
@@ -1344,6 +1352,8 @@ def compute_manager_eras(db: Session) -> list[dict]:
 
         era_rows = []
         for mid, s in mgr_stats.items():
+            if mid not in mgr_map:
+                continue
             games = s["wins"] + s["losses"] + s["ties"]
             era_rows.append({
                 "manager_id": mid,
