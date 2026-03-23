@@ -1,21 +1,69 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 
-const links = [
+interface NavItem {
+  to: string
+  label: string
+  icon: string
+}
+
+interface NavGroup {
+  groupLabel: string
+  groupIcon: string
+  items: NavItem[]
+}
+
+type NavEntry = NavItem | NavGroup
+
+function isGroup(entry: NavEntry): entry is NavGroup {
+  return 'groupLabel' in entry
+}
+
+const navigation: NavEntry[] = [
   { to: '/', label: 'Dashboard', icon: '🏠' },
-  { to: '/seasons', label: 'Seasons', icon: '📅' },
-  { to: '/alltime', label: 'All-Time Stats', icon: '📊' },
-  { to: '/headtohead', label: 'Head-to-Head', icon: '⚔️' },
-  { to: '/weekly-records', label: 'Weekly Records', icon: '🏆' },
-  { to: '/luck-index', label: 'Luck Index', icon: '🎲' },
-  { to: '/power-rankings', label: 'Power Rankings', icon: '👑' },
-  { to: '/throne-tracker', label: 'Throne Tracker', icon: '🏰' },
-  { to: '/awards', label: 'Awards', icon: '🏅' },
-  { to: '/scoring-distribution', label: 'Score Distribution', icon: '📦' },
-  { to: '/weekly-finish', label: 'Weekly Finishes', icon: '📈' },
-  { to: '/manager-eras', label: 'Manager Eras', icon: '🕰️' },
-  { to: '/projections', label: 'Projections', icon: '🎯' },
-  { to: '/sync', label: 'Sync Data', icon: '🔄' },
+  {
+    groupLabel: 'Standings & Seasons',
+    groupIcon: '📊',
+    items: [
+      { to: '/seasons', label: 'Seasons', icon: '📅' },
+      { to: '/alltime', label: 'All-Time Stats', icon: '📊' },
+      { to: '/throne-tracker', label: 'Throne Tracker', icon: '🏰' },
+    ],
+  },
+  {
+    groupLabel: 'Matchups',
+    groupIcon: '⚔️',
+    items: [
+      { to: '/headtohead', label: 'Head-to-Head', icon: '⚔️' },
+      { to: '/weekly-records', label: 'Weekly Records', icon: '🏆' },
+    ],
+  },
+  {
+    groupLabel: 'Analytics',
+    groupIcon: '📈',
+    items: [
+      { to: '/power-rankings', label: 'Power Rankings', icon: '👑' },
+      { to: '/luck-index', label: 'Luck Index', icon: '🎲' },
+      { to: '/scoring-distribution', label: 'Score Distribution', icon: '📦' },
+      { to: '/weekly-finish', label: 'Weekly Finishes', icon: '📈' },
+      { to: '/projections', label: 'Projections', icon: '🎯' },
+    ],
+  },
+  {
+    groupLabel: 'Managers',
+    groupIcon: '👤',
+    items: [
+      { to: '/manager-eras', label: 'Manager Eras', icon: '🕰️' },
+      { to: '/awards', label: 'Awards', icon: '🏅' },
+    ],
+  },
+  {
+    groupLabel: 'Admin',
+    groupIcon: '⚙️',
+    items: [
+      { to: '/sync', label: 'Sync Data', icon: '🔄' },
+    ],
+  },
 ]
 
 export default function Sidebar() {
@@ -24,26 +72,43 @@ export default function Sidebar() {
   // Close drawer on navigation
   const handleNav = () => setOpen(false)
 
+  const renderLink = (link: NavItem, indented = false) => (
+    <NavLink
+      key={link.to}
+      to={link.to}
+      end={link.to === '/'}
+      onClick={handleNav}
+      className={({ isActive }) =>
+        `flex items-center gap-3 ${indented ? 'pl-6 pr-3' : 'px-3'} py-2 rounded-lg text-sm transition-colors ${
+          isActive
+            ? 'bg-brand-700 text-white font-medium'
+            : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
+        }`
+      }
+    >
+      <span>{link.icon}</span>
+      {link.label}
+    </NavLink>
+  )
+
   const nav = (
-    <nav className="flex flex-col gap-1">
-      {links.map(l => (
-        <NavLink
-          key={l.to}
-          to={l.to}
-          end={l.to === '/'}
-          onClick={handleNav}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-              isActive
-                ? 'bg-brand-700 text-white font-medium'
-                : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
-            }`
-          }
-        >
-          <span>{l.icon}</span>
-          {l.label}
-        </NavLink>
-      ))}
+    <nav className="flex flex-col gap-0.5">
+      {navigation.map((entry, i) => {
+        if (isGroup(entry)) {
+          return (
+            <div key={entry.groupLabel} className={i > 0 ? 'mt-4' : ''}>
+              <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <span className="mr-2">{entry.groupIcon}</span>
+                {entry.groupLabel}
+              </div>
+              <div className="flex flex-col gap-0.5">
+                {entry.items.map(item => renderLink(item, true))}
+              </div>
+            </div>
+          )
+        }
+        return renderLink(entry)
+      })}
     </nav>
   )
 
