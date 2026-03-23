@@ -1327,7 +1327,7 @@ def compute_projection_performance(db: Session, year: int | None = None) -> list
     Only includes weeks where projected data is available (non-null, non-zero).
     Regular season only.
     """
-    managers = db.query(Manager).all()
+    managers = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%")).all()
     mgr_map = {m.id: m for m in managers}
 
     # Build team_id -> manager_id map
