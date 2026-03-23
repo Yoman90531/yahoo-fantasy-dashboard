@@ -13,6 +13,8 @@ class Matchup(Base):
     team2_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"), nullable=False)
     team1_points: Mapped[float] = mapped_column(Float, nullable=False)
     team2_points: Mapped[float] = mapped_column(Float, nullable=False)
+    team1_projected: Mapped[float | None] = mapped_column(Float, nullable=True)
+    team2_projected: Mapped[float | None] = mapped_column(Float, nullable=True)
     winner_team_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("teams.id"), nullable=True)
     is_playoff: Mapped[bool] = mapped_column(Boolean, default=False)
     is_championship: Mapped[bool] = mapped_column(Boolean, default=False)

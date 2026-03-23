@@ -30,6 +30,7 @@ export const statsApi = {
   scoreDistribution: () => api.get('/stats/score-distribution').then(r => r.data),
   weeklyFinishDistribution: () => api.get('/stats/weekly-finish-distribution').then(r => r.data),
   managerEras: () => api.get('/stats/manager-eras').then(r => r.data),
+  projectionPerformance: (year?: number) => api.get('/stats/projection-performance', { params: year ? { year } : {} }).then(r => r.data),
   throneTracker: () => api.get('/stats/throne-tracker').then(r => r.data),
   awards: (year?: number) => api.get('/stats/awards', { params: year ? { year } : {} }).then(r => r.data),
   powerRankings: (year?: number) => api.get('/stats/power-rankings', { params: year ? { year } : {} }).then(r => r.data),

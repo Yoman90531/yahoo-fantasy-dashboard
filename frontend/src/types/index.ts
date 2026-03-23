@@ -320,3 +320,15 @@ export interface RivalryDetail {
   biggest_blowout: RivalryMatchup | null
   closest_game: RivalryMatchup | null
 }
+
+export interface ProjectionRow {
+  manager_id: number
+  manager_name: string
+  weeks: number
+  avg_actual: number
+  avg_projected: number
+  avg_diff: number
+  beat_projection_pct: number
+  std_dev_diff: number
+  total_over: number
+}

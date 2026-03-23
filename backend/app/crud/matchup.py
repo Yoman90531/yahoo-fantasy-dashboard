@@ -15,11 +15,14 @@ def upsert_matchup(
     is_playoff: bool = False,
     is_championship: bool = False,
     is_consolation: bool = False,
+    team1_projected: float | None = None,
+    team2_projected: float | None = None,
 ) -> Matchup:
     # Normalize team order so team1_id < team2_id for consistent unique constraint
     if team1_id > team2_id:
         team1_id, team2_id = team2_id, team1_id
         team1_points, team2_points = team2_points, team1_points
+        team1_projected, team2_projected = team2_projected, team1_projected
 
     stmt = (
         insert(Matchup)
@@ -30,6 +33,8 @@ def upsert_matchup(
             team2_id=team2_id,
             team1_points=team1_points,
             team2_points=team2_points,
+            team1_projected=team1_projected,
+            team2_projected=team2_projected,
             winner_team_id=winner_team_id,
             is_playoff=is_playoff,
             is_championship=is_championship,
@@ -40,6 +45,8 @@ def upsert_matchup(
             set_={
                 "team1_points": team1_points,
                 "team2_points": team2_points,
+                "team1_projected": team1_projected,
+                "team2_projected": team2_projected,
                 "winner_team_id": winner_team_id,
                 "is_playoff": is_playoff,
                 "is_championship": is_championship,

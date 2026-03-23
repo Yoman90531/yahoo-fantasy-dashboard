@@ -1316,3 +1316,104 @@ def compute_manager_eras(db: Session) -> list[dict]:
         })
 
     return results
+
+# ---------------------------------------------------------------------------
+# Projection performance
+# ---------------------------------------------------------------------------
+
+def compute_projection_performance(db: Session, year: int | None = None) -> list[dict]:
+    """
+    Per-manager analysis of actual scores vs pre-game projected scores.
+    Only includes weeks where projected data is available (non-null, non-zero).
+    Regular season only.
+    """
+    managers = db.query(Manager).all()
+    mgr_map = {m.id: m for m in managers}
+
+    # Build team_id -> manager_id map
+    team_mgr: dict[int, int] = {}
+    for mgr in managers:
+        teams_q = db.query(Team).filter(Team.manager_id == mgr.id)
+        if year:
+            season = db.query(Season).filter(Season.year == year).first()
+            if season:
+                teams_q = teams_q.filter(Team.season_id == season.id)
+        for t in teams_q.all():
+            team_mgr[t.id] = mgr.id
+
+    # Fetch regular-season matchups with projection data
+    q = (
+        db.query(Matchup)
+        .filter(
+            Matchup.is_consolation == False,
+            Matchup.is_playoff == False,
+            Matchup.team1_projected.isnot(None),
+            Matchup.team2_projected.isnot(None),
+            Matchup.team1_projected > 0,
+            Matchup.team2_projected > 0,
+        )
+    )
+    if year:
+        season = db.query(Season).filter(Season.year == year).first()
+        if season:
+            q = q.filter(Matchup.season_id == season.id)
+
+    matchups = q.all()
+
+    # Accumulate per-manager stats
+    stats: dict[int, dict] = {}
+
+    def _ensure(mgr_id: int):
+        if mgr_id not in stats:
+            stats[mgr_id] = {
+                "weeks": 0,
+                "total_actual": 0.0,
+                "total_projected": 0.0,
+                "total_diff": 0.0,
+                "beats_projection": 0,
+                "diffs": [],
+            }
+
+    for m in matchups:
+        for team_id, actual, projected in [
+            (m.team1_id, m.team1_points, m.team1_projected),
+            (m.team2_id, m.team2_points, m.team2_projected),
+        ]:
+            mgr_id = team_mgr.get(team_id)
+            if mgr_id is None:
+                continue
+            diff = actual - projected
+            _ensure(mgr_id)
+            s = stats[mgr_id]
+            s["weeks"] += 1
+            s["total_actual"] += actual
+            s["total_projected"] += projected
+            s["total_diff"] += diff
+            s["diffs"].append(diff)
+            if diff > 0:
+                s["beats_projection"] += 1
+
+    results = []
+    for mgr_id, s in stats.items():
+        mgr = mgr_map.get(mgr_id)
+        if not mgr or s["weeks"] == 0:
+            continue
+        n = s["weeks"]
+        diffs = s["diffs"]
+        avg_diff = s["total_diff"] / n
+        variance = sum((d - avg_diff) ** 2 for d in diffs) / n
+        std_dev = math.sqrt(variance)
+        results.append({
+            "manager_id": mgr_id,
+            "manager_name": mgr.display_name,
+            "weeks": n,
+            "avg_actual": round(s["total_actual"] / n, 2),
+            "avg_projected": round(s["total_projected"] / n, 2),
+            "avg_diff": round(avg_diff, 2),
+            "beat_projection_pct": round(s["beats_projection"] / n * 100, 1),
+            "std_dev_diff": round(std_dev, 2),
+            "total_over": round(s["total_diff"], 2),
+        })
+
+    results.sort(key=lambda x: -x["avg_diff"])
+    return results

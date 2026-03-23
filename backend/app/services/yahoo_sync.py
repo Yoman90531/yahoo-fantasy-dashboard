@@ -203,6 +203,8 @@ def sync_season(db: Session, year: int, game_id: int, league_id: str, log_id_ref
                 t2_id = _safe_int(getattr(t2, "team_id", None))
                 t1_pts = _safe_float(getattr(t1, "team_points", {}).get("total", 0) if isinstance(getattr(t1, "team_points", None), dict) else getattr(getattr(t1, "team_points", None), "total", 0))
                 t2_pts = _safe_float(getattr(t2, "team_points", {}).get("total", 0) if isinstance(getattr(t2, "team_points", None), dict) else getattr(getattr(t2, "team_points", None), "total", 0))
+                t1_proj = _safe_float(getattr(t1, "projected_points", None)) or None
+                t2_proj = _safe_float(getattr(t2, "projected_points", None)) or None
 
                 db_t1 = db_team_map.get(t1_id)
                 db_t2 = db_team_map.get(t2_id)
@@ -232,6 +234,8 @@ def sync_season(db: Session, year: int, game_id: int, league_id: str, log_id_ref
                     is_playoff=is_playoff,
                     is_championship=is_championship,
                     is_consolation=is_consolation,
+                    team1_projected=t1_proj,
+                    team2_projected=t2_proj,
                 )
 
             db.commit()

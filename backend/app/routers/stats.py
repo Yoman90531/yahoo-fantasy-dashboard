@@ -85,6 +85,11 @@ def power_rankings(year: int | None = Query(None), db: Session = Depends(get_db)
     return stats_engine.compute_power_rankings(db, year=year)
 
 
+@router.get("/projection-performance")
+def projection_performance(year: int | None = Query(None), db: Session = Depends(get_db)):
+    return stats_engine.compute_projection_performance(db, year=year)
+
+
 @router.get("/rivalry")
 def rivalry(
     manager_a: int = Query(...),

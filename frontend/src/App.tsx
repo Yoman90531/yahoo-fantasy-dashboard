@@ -15,6 +15,7 @@ import ScoringDistribution from './pages/ScoringDistribution'
 import WeeklyFinishDistribution from './pages/WeeklyFinishDistribution'
 import ManagerEras from './pages/ManagerEras'
 import SyncStatus from './pages/SyncStatus'
+import ProjectionPerformance from './pages/ProjectionPerformance'
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/scoring-distribution" element={<ScoringDistribution />} />
             <Route path="/weekly-finish" element={<WeeklyFinishDistribution />} />
             <Route path="/manager-eras" element={<ManagerEras />} />
+            <Route path="/projections" element={<ProjectionPerformance />} />
             <Route path="/sync" element={<SyncStatus />} />
           </Routes>
         </main>

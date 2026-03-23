@@ -14,6 +14,7 @@ const links = [
   { to: '/scoring-distribution', label: 'Score Distribution', icon: '📦' },
   { to: '/weekly-finish', label: 'Weekly Finishes', icon: '📈' },
   { to: '/manager-eras', label: 'Manager Eras', icon: '🕰️' },
+  { to: '/projections', label: 'Projections', icon: '🎯' },
   { to: '/sync', label: 'Sync Data', icon: '🔄' },
 ]
 
