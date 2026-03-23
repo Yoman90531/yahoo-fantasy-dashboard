@@ -153,7 +153,7 @@ export default function Sidebar() {
         className={`
           fixed md:static inset-y-0 left-0 z-40
           w-56 bg-gray-900 border-r border-gray-800 flex flex-col py-6 px-3 shrink-0
-          min-h-screen transition-transform duration-200 ease-in-out
+          h-screen overflow-y-auto transition-transform duration-200 ease-in-out
           ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
       >
