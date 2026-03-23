@@ -30,11 +30,18 @@ export const statsApi = {
   scoreDistribution: () => api.get('/stats/score-distribution').then(r => r.data),
   weeklyFinishDistribution: () => api.get('/stats/weekly-finish-distribution').then(r => r.data),
   managerEras: () => api.get('/stats/manager-eras').then(r => r.data),
+  winMargins: (year?: number) => api.get('/stats/win-margins', { params: year ? { year } : {} }).then(r => r.data),
   projectionPerformance: (year?: number) => api.get('/stats/projection-performance', { params: year ? { year } : {} }).then(r => r.data),
   throneTracker: () => api.get('/stats/throne-tracker').then(r => r.data),
   awards: (year?: number) => api.get('/stats/awards', { params: year ? { year } : {} }).then(r => r.data),
   powerRankings: (year?: number) => api.get('/stats/power-rankings', { params: year ? { year } : {} }).then(r => r.data),
   rivalry: (aId: number, bId: number) => api.get('/stats/rivalry', { params: { manager_a: aId, manager_b: bId } }).then(r => r.data),
+  playoffPerformance: (year?: number) => api.get('/stats/playoff-performance', { params: year ? { year } : {} }).then(r => r.data),
+  leagueParity: () => api.get('/stats/league-parity').then(r => r.data),
+  streaks: () => api.get('/stats/streaks').then(r => r.data),
+  consolation: (year?: number) => api.get('/stats/consolation', { params: year ? { year } : {} }).then(r => r.data),
+  managerTiers: () => api.get('/stats/manager-tiers').then(r => r.data),
+  strengthOfSchedule: (year?: number) => api.get('/stats/strength-of-schedule', { params: year ? { year } : {} }).then(r => r.data),
 }
 
 export const syncApi = {

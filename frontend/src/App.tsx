@@ -16,6 +16,13 @@ import WeeklyFinishDistribution from './pages/WeeklyFinishDistribution'
 import ManagerEras from './pages/ManagerEras'
 import SyncStatus from './pages/SyncStatus'
 import ProjectionPerformance from './pages/ProjectionPerformance'
+import WinMargins from './pages/WinMargins'
+import PlayoffPerformance from './pages/PlayoffPerformance'
+import SeasonReplay from './pages/SeasonReplay'
+import LeagueParity from './pages/LeagueParity'
+import StreakTracker from './pages/StreakTracker'
+import ConsolationBracket from './pages/ConsolationBracket'
+import ManagerTiers from './pages/ManagerTiers'
 
 export default function App() {
   return (
@@ -39,6 +46,13 @@ export default function App() {
             <Route path="/weekly-finish" element={<WeeklyFinishDistribution />} />
             <Route path="/manager-eras" element={<ManagerEras />} />
             <Route path="/projections" element={<ProjectionPerformance />} />
+            <Route path="/win-margins" element={<WinMargins />} />
+            <Route path="/playoff-performance" element={<PlayoffPerformance />} />
+            <Route path="/season-replay" element={<SeasonReplay />} />
+            <Route path="/league-parity" element={<LeagueParity />} />
+            <Route path="/streaks" element={<StreakTracker />} />
+            <Route path="/consolation" element={<ConsolationBracket />} />
+            <Route path="/manager-tiers" element={<ManagerTiers />} />
             <Route path="/sync" element={<SyncStatus />} />
           </Routes>
         </main>

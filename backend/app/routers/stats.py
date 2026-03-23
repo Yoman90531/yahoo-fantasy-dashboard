@@ -90,6 +90,21 @@ def projection_performance(year: int | None = Query(None), db: Session = Depends
     return stats_engine.compute_projection_performance(db, year=year)
 
 
+@router.get("/win-margins")
+def win_margins(year: int | None = Query(None), db: Session = Depends(get_db)):
+    return stats_engine.compute_win_margins(db, year=year)
+
+
+@router.get("/playoff-performance")
+def playoff_performance(year: int | None = Query(None), db: Session = Depends(get_db)):
+    return stats_engine.compute_playoff_performance(db, year=year)
+
+
+@router.get("/league-parity")
+def league_parity(db: Session = Depends(get_db)):
+    return stats_engine.compute_league_parity(db)
+
+
 @router.get("/rivalry")
 def rivalry(
     manager_a: int = Query(...),
@@ -101,3 +116,23 @@ def rivalry(
     if result is None:
         raise HTTPException(status_code=404, detail="Manager not found")
     return result
+
+
+@router.get("/streaks")
+def streaks(db: Session = Depends(get_db)):
+    return stats_engine.compute_streaks_all(db)
+
+
+@router.get("/consolation")
+def consolation_bracket(year: int | None = Query(None), db: Session = Depends(get_db)):
+    return stats_engine.compute_consolation_bracket(db, year=year)
+
+
+@router.get("/manager-tiers")
+def manager_tiers(db: Session = Depends(get_db)):
+    return stats_engine.compute_manager_tiers(db)
+
+
+@router.get("/strength-of-schedule")
+def strength_of_schedule(year: int | None = Query(None), db: Session = Depends(get_db)):
+    return stats_engine.compute_strength_of_schedule(db, year=year)

@@ -9,10 +9,12 @@ class MatchupOut(BaseModel):
     team1_manager_name: str
     team1_team_name: str | None
     team1_points: float
+    team1_projected: float | None
     team2_manager_id: int
     team2_manager_name: str
     team2_team_name: str | None
     team2_points: float
+    team2_projected: float | None
     winner_manager_id: int | None
     is_playoff: bool
     is_championship: bool

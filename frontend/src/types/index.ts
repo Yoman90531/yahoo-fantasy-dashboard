@@ -82,10 +82,12 @@ export interface MatchupOut {
   team1_manager_name: string
   team1_team_name: string | null
   team1_points: number
+  team1_projected: number | null
   team2_manager_id: number
   team2_manager_name: string
   team2_team_name: string | null
   team2_points: number
+  team2_projected: number | null
   winner_manager_id: number | null
   is_playoff: boolean
   is_championship: boolean
@@ -321,6 +323,19 @@ export interface RivalryDetail {
   closest_game: RivalryMatchup | null
 }
 
+export interface WinMarginRow {
+  manager_id: number
+  manager_name: string
+  avg_win_margin: number
+  avg_loss_margin: number
+  blowout_wins: number
+  close_wins: number
+  blowout_losses: number
+  close_losses: number
+  biggest_win: number
+  biggest_loss: number
+}
+
 export interface ProjectionRow {
   manager_id: number
   manager_name: string
@@ -331,4 +346,91 @@ export interface ProjectionRow {
   beat_projection_pct: number
   std_dev_diff: number
   total_over: number
+}
+
+// League Parity
+export interface LeagueParityRow {
+  year: number
+  num_teams: number
+  scoring_std_dev: number
+  scoring_range: number
+  record_spread: number
+  avg_points_per_game: number
+  closest_standings_gap: number
+  gini_coefficient: number
+}
+
+// Playoff vs Regular Season Performance
+export interface PlayoffPerformanceRow {
+  manager_id: number
+  manager_name: string
+  reg_wins: number
+  reg_losses: number
+  reg_win_pct: number
+  reg_avg_pts: number
+  reg_games: number
+  playoff_wins: number
+  playoff_losses: number
+  playoff_win_pct: number
+  playoff_avg_pts: number
+  playoff_games: number
+  delta_win_pct: number
+  delta_avg_pts: number
+}
+
+export interface StreakRow {
+  manager_id: number
+  manager_name: string
+  current_streak_type: string
+  current_streak_length: number
+  longest_win_streak: number
+  longest_win_start_year: number | null
+  longest_win_start_week: number | null
+  longest_win_end_year: number | null
+  longest_win_end_week: number | null
+  longest_loss_streak: number
+  longest_loss_start_year: number | null
+  longest_loss_start_week: number | null
+  longest_loss_end_year: number | null
+  longest_loss_end_week: number | null
+}
+
+// Manager Tiers
+export interface ManagerTierRow {
+  manager_id: number
+  manager_name: string
+  tier: string
+  composite_score: number
+  win_pct: number
+  avg_ppg: number
+  championships: number
+  playoff_rate: number
+  consistency_score: number
+  seasons_played: number
+}
+
+// Strength of Schedule
+export interface StrengthOfScheduleRow {
+  manager_id: number
+  manager_name: string
+  year: number | null
+  games: number
+  actual_win_pct: number
+  avg_opp_win_pct: number
+  avg_opp_pf: number
+  sos_rank: number
+  adjusted_win_pct: number
+  wins_above_expected: number
+}
+
+// Consolation Bracket
+export interface ConsolationRow {
+  manager_id: number
+  manager_name: string
+  times_missed_playoffs: number
+  consolation_games: number
+  consolation_wins: number
+  consolation_losses: number
+  consolation_win_pct: number
+  consolation_avg_points: number
 }

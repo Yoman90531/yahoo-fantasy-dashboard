@@ -28,6 +28,7 @@ const navigation: NavEntry[] = [
       { to: '/seasons', label: 'Seasons', icon: '📅' },
       { to: '/alltime', label: 'All-Time Stats', icon: '📊' },
       { to: '/throne-tracker', label: 'Throne Tracker', icon: '🏰' },
+      { to: '/league-parity', label: 'League Parity', icon: '⚖️' },
     ],
   },
   {
@@ -36,6 +37,9 @@ const navigation: NavEntry[] = [
     items: [
       { to: '/headtohead', label: 'Head-to-Head', icon: '⚔️' },
       { to: '/weekly-records', label: 'Weekly Records', icon: '🏆' },
+      { to: '/win-margins', label: 'Win Margins', icon: '📏' },
+      { to: '/season-replay', label: 'Season Replay', icon: '📋' },
+      { to: '/consolation', label: 'Consolation Bracket', icon: '🥈' },
     ],
   },
   {
@@ -47,12 +51,15 @@ const navigation: NavEntry[] = [
       { to: '/scoring-distribution', label: 'Score Distribution', icon: '📦' },
       { to: '/weekly-finish', label: 'Weekly Finishes', icon: '📈' },
       { to: '/projections', label: 'Projections', icon: '🎯' },
+      { to: '/playoff-performance', label: 'Playoff Performance', icon: '🏟️' },
+      { to: '/streaks', label: 'Streak Tracker', icon: '🔥' },
     ],
   },
   {
     groupLabel: 'Managers',
     groupIcon: '👤',
     items: [
+      { to: '/manager-tiers', label: 'Manager Tiers', icon: '🏷️' },
       { to: '/manager-eras', label: 'Manager Eras', icon: '🕰️' },
       { to: '/awards', label: 'Awards', icon: '🏅' },
     ],

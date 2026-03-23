@@ -1417,3 +1417,727 @@ def compute_projection_performance(db: Session, year: int | None = None) -> list
 
     results.sort(key=lambda x: -x["avg_diff"])
     return results
+
+
+# ---------------------------------------------------------------------------
+# Playoff vs Regular Season Performance
+# ---------------------------------------------------------------------------
+
+def compute_playoff_performance(db: Session, year: int | None = None) -> list[dict]:
+    """
+    Compares each manager's regular-season record/scoring against their
+    playoff record/scoring.  Returns a list sorted by delta_win_pct desc.
+    """
+    managers = {m.id: m for m in db.query(Manager).all()}
+
+    # Build matchup query
+    q = (
+        db.query(Matchup)
+        .join(Team, Matchup.team1_id == Team.id)
+        .join(Season, Matchup.season_id == Season.id)
+    )
+    if year:
+        q = q.filter(Season.year == year)
+
+    # Exclude consolation matchups
+    matchups = q.filter(Matchup.is_consolation == False).all()
+
+    # Accumulators per manager: {mgr_id: {reg: {...}, playoff: {...}}}
+    stats: dict[int, dict] = {}
+
+    def ensure(mgr_id: int):
+        if mgr_id not in stats:
+            stats[mgr_id] = {
+                "reg": {"wins": 0, "losses": 0, "points": 0.0, "games": 0},
+                "playoff": {"wins": 0, "losses": 0, "points": 0.0, "games": 0},
+            }
+
+    for m in matchups:
+        t1 = db.get(Team, m.team1_id)
+        t2 = db.get(Team, m.team2_id)
+        if not t1 or not t2:
+            continue
+        mgr1 = t1.manager_id
+        mgr2 = t2.manager_id
+        ensure(mgr1)
+        ensure(mgr2)
+
+        bucket = "playoff" if m.is_playoff else "reg"
+
+        stats[mgr1][bucket]["points"] += m.team1_points
+        stats[mgr1][bucket]["games"] += 1
+        stats[mgr2][bucket]["points"] += m.team2_points
+        stats[mgr2][bucket]["games"] += 1
+
+        if m.winner_team_id == m.team1_id:
+            stats[mgr1][bucket]["wins"] += 1
+            stats[mgr2][bucket]["losses"] += 1
+        elif m.winner_team_id == m.team2_id:
+            stats[mgr2][bucket]["wins"] += 1
+            stats[mgr1][bucket]["losses"] += 1
+
+    results = []
+    for mgr_id, buckets in stats.items():
+        mgr = managers.get(mgr_id)
+        if not mgr:
+            continue
+
+        reg = buckets["reg"]
+        po = buckets["playoff"]
+
+        # Skip managers with zero playoff games
+        if po["games"] == 0:
+            continue
+
+        reg_total = reg["wins"] + reg["losses"]
+        po_total = po["wins"] + po["losses"]
+
+        reg_win_pct = round(reg["wins"] / reg_total * 100, 1) if reg_total else 0.0
+        po_win_pct = round(po["wins"] / po_total * 100, 1) if po_total else 0.0
+        reg_avg_pts = round(reg["points"] / reg["games"], 2) if reg["games"] else 0.0
+        po_avg_pts = round(po["points"] / po["games"], 2) if po["games"] else 0.0
+
+        results.append({
+            "manager_id": mgr_id,
+            "manager_name": mgr.display_name,
+            "reg_wins": reg["wins"],
+            "reg_losses": reg["losses"],
+            "reg_win_pct": reg_win_pct,
+            "reg_avg_pts": reg_avg_pts,
+            "reg_games": reg["games"],
+            "playoff_wins": po["wins"],
+            "playoff_losses": po["losses"],
+            "playoff_win_pct": po_win_pct,
+            "playoff_avg_pts": po_avg_pts,
+            "playoff_games": po["games"],
+            "delta_win_pct": round(po_win_pct - reg_win_pct, 1),
+            "delta_avg_pts": round(po_avg_pts - reg_avg_pts, 2),
+        })
+
+    results.sort(key=lambda x: -x["delta_win_pct"])
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Win Margin Analytics
+# ---------------------------------------------------------------------------
+
+def compute_win_margins(db: Session, year: int | None = None) -> list[dict]:
+    """
+    Per-manager win/loss margin analytics: average margins, blowout/close
+    game counts, and biggest win/loss.
+    """
+    teams = db.query(Team).all()
+    team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
+    managers = {m.id: m for m in db.query(Manager).all()}
+
+    matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
+    if year:
+        season = db.query(Season).filter(Season.year == year).first()
+        if not season:
+            return []
+        matchup_q = matchup_q.filter(Matchup.season_id == season.id)
+
+    matchups = matchup_q.all()
+
+    # Collect win/loss margins per manager
+    win_margins: dict[int, list[float]] = defaultdict(list)
+    loss_margins: dict[int, list[float]] = defaultdict(list)
+
+    for m in matchups:
+        margin = abs(m.team1_points - m.team2_points)
+        if m.winner_team_id is None:
+            continue  # tie — skip
+
+        if m.winner_team_id == m.team1_id:
+            winner_mgr = team_to_mgr.get(m.team1_id)
+            loser_mgr = team_to_mgr.get(m.team2_id)
+        else:
+            winner_mgr = team_to_mgr.get(m.team2_id)
+            loser_mgr = team_to_mgr.get(m.team1_id)
+
+        if winner_mgr is not None:
+            win_margins[winner_mgr].append(margin)
+        if loser_mgr is not None:
+            loss_margins[loser_mgr].append(margin)
+
+    all_mgr_ids = set(win_margins) | set(loss_margins)
+    results = []
+    for mgr_id in all_mgr_ids:
+        mgr = managers.get(mgr_id)
+        if not mgr:
+            continue
+        wins = win_margins.get(mgr_id, [])
+        losses = loss_margins.get(mgr_id, [])
+
+        avg_win = round(sum(wins) / len(wins), 2) if wins else 0.0
+        avg_loss = round(sum(losses) / len(losses), 2) if losses else 0.0
+        blowout_wins = sum(1 for m in wins if m > 30)
+        close_wins = sum(1 for m in wins if m < 5)
+        blowout_losses = sum(1 for m in losses if m > 30)
+        close_losses = sum(1 for m in losses if m < 5)
+        biggest_win = round(max(wins), 2) if wins else 0.0
+        biggest_loss = round(max(losses), 2) if losses else 0.0
+
+        results.append({
+            "manager_id": mgr_id,
+            "manager_name": mgr.display_name,
+            "avg_win_margin": avg_win,
+            "avg_loss_margin": avg_loss,
+            "blowout_wins": blowout_wins,
+            "close_wins": close_wins,
+            "blowout_losses": blowout_losses,
+            "close_losses": close_losses,
+            "biggest_win": biggest_win,
+            "biggest_loss": biggest_loss,
+        })
+
+    results.sort(key=lambda x: -x["avg_win_margin"])
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Streak Tracker (league-wide)
+# ---------------------------------------------------------------------------
+
+def compute_streaks_all(db: Session) -> list[dict]:
+    """Returns current and best win/loss streaks for every manager."""
+    managers = db.query(Manager).all()
+    mgr_map = {m.id: m.display_name for m in managers}
+
+    # Pre-fetch all regular-season matchups in chronological order
+    all_matchups = (
+        db.query(Matchup)
+        .filter(Matchup.is_playoff == False)
+        .join(Season, Matchup.season_id == Season.id)
+        .order_by(Season.year, Matchup.week)
+        .all()
+    )
+
+    # Build season_id -> year lookup
+    season_ids = {m.season_id for m in all_matchups}
+    seasons_list = db.query(Season).filter(Season.id.in_(season_ids)).all()
+    season_year = {s.id: s.year for s in seasons_list}
+
+    # Map team_id -> manager_id
+    team_ids_set: set[int] = set()
+    for m in all_matchups:
+        team_ids_set.add(m.team1_id)
+        team_ids_set.add(m.team2_id)
+    teams_list = db.query(Team).filter(Team.id.in_(team_ids_set)).all()
+    team_to_manager = {t.id: t.manager_id for t in teams_list}
+
+    # Build per-manager ordered results with (year, week, result)
+    manager_results: dict[int, list[tuple[int, int, str]]] = defaultdict(list)
+    for m in all_matchups:
+        year = season_year.get(m.season_id, 0)
+        mgr1 = team_to_manager.get(m.team1_id)
+        mgr2 = team_to_manager.get(m.team2_id)
+        if mgr1 is not None:
+            if m.winner_team_id == m.team1_id:
+                manager_results[mgr1].append((year, m.week, "W"))
+            elif m.winner_team_id is None:
+                manager_results[mgr1].append((year, m.week, "T"))
+            else:
+                manager_results[mgr1].append((year, m.week, "L"))
+        if mgr2 is not None:
+            if m.winner_team_id == m.team2_id:
+                manager_results[mgr2].append((year, m.week, "W"))
+            elif m.winner_team_id is None:
+                manager_results[mgr2].append((year, m.week, "T"))
+            else:
+                manager_results[mgr2].append((year, m.week, "L"))
+
+    def _best_streak(res, char):
+        """Find best streak of char, returning (length, start_year, start_week, end_year, end_week)."""
+        best_len = 0
+        best_start = best_end = 0
+        cur_len = 0
+        cur_start = 0
+        for i, (yr, wk, r) in enumerate(res):
+            if r == char:
+                if cur_len == 0:
+                    cur_start = i
+                cur_len += 1
+                if cur_len > best_len:
+                    best_len = cur_len
+                    best_start = cur_start
+                    best_end = i
+            else:
+                cur_len = 0
+        if best_len == 0:
+            return 0, None, None, None, None
+        sy, sw, _ = res[best_start]
+        ey, ew, _ = res[best_end]
+        return best_len, sy, sw, ey, ew
+
+    def _current_streak(res):
+        if not res:
+            return "W", 0
+        char = res[-1][2]
+        count = 0
+        for yr, wk, r in reversed(res):
+            if r == char:
+                count += 1
+            else:
+                break
+        return char, count
+
+    rows = []
+    for mgr_id, res in manager_results.items():
+        if mgr_id not in mgr_map:
+            continue
+        cur_type, cur_len = _current_streak(res)
+        wl, ws_year, ws_week, we_year, we_week = _best_streak(res, "W")
+        ll, ls_year, ls_week, le_year, le_week = _best_streak(res, "L")
+        rows.append({
+            "manager_id": mgr_id,
+            "manager_name": mgr_map[mgr_id],
+            "current_streak_type": cur_type,
+            "current_streak_length": cur_len,
+            "longest_win_streak": wl,
+            "longest_win_start_year": ws_year,
+            "longest_win_start_week": ws_week,
+            "longest_win_end_year": we_year,
+            "longest_win_end_week": we_week,
+            "longest_loss_streak": ll,
+            "longest_loss_start_year": ls_year,
+            "longest_loss_start_week": ls_week,
+            "longest_loss_end_year": le_year,
+            "longest_loss_end_week": le_week,
+        })
+
+    rows.sort(key=lambda x: -x["current_streak_length"])
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# League Parity
+# ---------------------------------------------------------------------------
+
+def compute_league_parity(db: Session) -> list[dict]:
+    """
+    Per-season parity metrics: how competitive/tight was the league each year.
+    Lower scoring std dev and smaller record spread indicate more parity.
+    """
+    seasons = db.query(Season).order_by(Season.year).all()
+    results = []
+
+    for season in seasons:
+        teams = db.query(Team).filter(Team.season_id == season.id).all()
+        if not teams or len(teams) < 2:
+            continue
+
+        num_teams = len(teams)
+        points_for_list = [t.points_for for t in teams]
+        wins_list = [t.wins for t in teams]
+
+        # Scoring std dev
+        mean_pf = sum(points_for_list) / num_teams
+        variance = sum((pf - mean_pf) ** 2 for pf in points_for_list) / num_teams
+        scoring_std_dev = round(math.sqrt(variance), 2)
+
+        # Scoring range
+        scoring_range = round(max(points_for_list) - min(points_for_list), 2)
+
+        # Record spread (best wins - worst wins)
+        record_spread = max(wins_list) - min(wins_list)
+
+        # Average points per game across the league
+        total_matchups = db.query(Matchup).filter(
+            Matchup.season_id == season.id,
+            Matchup.is_playoff == False,
+            Matchup.is_consolation == False,
+        ).all()
+        all_scores = []
+        for m in total_matchups:
+            all_scores.append(m.team1_points)
+            all_scores.append(m.team2_points)
+        avg_ppg = round(sum(all_scores) / len(all_scores), 2) if all_scores else 0.0
+
+        # Closest standings gap: minimum difference in wins between
+        # adjacent teams when sorted by wins descending
+        sorted_wins = sorted(wins_list, reverse=True)
+        gaps = [sorted_wins[i] - sorted_wins[i + 1] for i in range(len(sorted_wins) - 1)]
+        closest_gap = min(gaps) if gaps else 0
+
+        # Gini coefficient for scoring — 0 = perfect equality, 1 = total inequality
+        sorted_pf = sorted(points_for_list)
+        n = len(sorted_pf)
+        if mean_pf > 0:
+            numerator = sum((2 * (i + 1) - n - 1) * sorted_pf[i] for i in range(n))
+            gini = round(numerator / (n * n * mean_pf), 4)
+        else:
+            gini = 0.0
+
+        results.append({
+            "year": season.year,
+            "num_teams": num_teams,
+            "scoring_std_dev": scoring_std_dev,
+            "scoring_range": scoring_range,
+            "record_spread": record_spread,
+            "avg_points_per_game": avg_ppg,
+            "closest_standings_gap": closest_gap,
+            "gini_coefficient": gini,
+        })
+
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Consolation Bracket
+# ---------------------------------------------------------------------------
+
+def compute_consolation_bracket(db: Session, year: int | None = None) -> list[dict]:
+    """
+    Per-manager consolation bracket stats: games, wins, losses, win%,
+    average points scored in consolation matchups, and times missed playoffs.
+    """
+    managers = db.query(Manager).all()
+    mgr_map = {m.id: m for m in managers}
+
+    # Map team_id -> manager_id
+    teams = db.query(Team).all()
+    team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
+
+    # Count missed playoffs per manager
+    missed_playoffs: dict[int, int] = defaultdict(int)
+    for t in teams:
+        if year and t.season.year != year:
+            continue
+        if not t.made_playoffs:
+            missed_playoffs[t.manager_id] += 1
+
+    # Query consolation matchups
+    q = db.query(Matchup).filter(Matchup.is_consolation == True)
+    if year:
+        q = q.join(Season).filter(Season.year == year)
+    consolation_matchups = q.all()
+
+    # Aggregate per manager
+    stats: dict[int, dict] = defaultdict(lambda: {
+        "wins": 0, "losses": 0, "points": []
+    })
+
+    for m in consolation_matchups:
+        mgr1 = team_to_mgr.get(m.team1_id)
+        mgr2 = team_to_mgr.get(m.team2_id)
+        if mgr1 is None or mgr2 is None:
+            continue
+
+        # Team 1
+        stats[mgr1]["points"].append(m.team1_points)
+        # Team 2
+        stats[mgr2]["points"].append(m.team2_points)
+
+        if m.winner_team_id == m.team1_id:
+            stats[mgr1]["wins"] += 1
+            stats[mgr2]["losses"] += 1
+        elif m.winner_team_id == m.team2_id:
+            stats[mgr2]["wins"] += 1
+            stats[mgr1]["losses"] += 1
+
+    results = []
+    for mgr_id, s in stats.items():
+        mgr = mgr_map.get(mgr_id)
+        if not mgr:
+            continue
+        games = s["wins"] + s["losses"]
+        win_pct = round(s["wins"] / games, 4) if games else 0.0
+        avg_pts = round(sum(s["points"]) / len(s["points"]), 2) if s["points"] else 0.0
+
+        results.append({
+            "manager_id": mgr_id,
+            "manager_name": mgr.display_name,
+            "times_missed_playoffs": missed_playoffs.get(mgr_id, 0),
+            "consolation_games": games,
+            "consolation_wins": s["wins"],
+            "consolation_losses": s["losses"],
+            "consolation_win_pct": win_pct,
+            "consolation_avg_points": avg_pts,
+        })
+
+    # Also include managers who missed playoffs but have no consolation games
+    for mgr_id, count in missed_playoffs.items():
+        if mgr_id not in stats:
+            mgr = mgr_map.get(mgr_id)
+            if mgr:
+                results.append({
+                    "manager_id": mgr_id,
+                    "manager_name": mgr.display_name,
+                    "times_missed_playoffs": count,
+                    "consolation_games": 0,
+                    "consolation_wins": 0,
+                    "consolation_losses": 0,
+                    "consolation_win_pct": 0.0,
+                    "consolation_avg_points": 0.0,
+                })
+
+    results.sort(key=lambda x: (-x["consolation_wins"], -x["consolation_win_pct"]))
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Manager Tiers
+# ---------------------------------------------------------------------------
+
+def compute_manager_tiers(db: Session) -> list[dict]:
+    """
+    Clusters managers into performance tiers based on a composite score
+    computed from: win%, avg PPG, championships, playoff appearance rate,
+    and consistency (low std dev of season finishes).
+    Only managers with 3+ seasons are included.
+    """
+    managers = db.query(Manager).all()
+    mgr_map = {m.id: m for m in managers}
+
+    # Gather per-manager career data
+    raw: list[dict] = []
+    for mgr in managers:
+        teams = db.query(Team).filter(Team.manager_id == mgr.id).all()
+        if len(teams) < 3:
+            continue
+
+        total_wins = sum(t.wins for t in teams)
+        total_losses = sum(t.losses for t in teams)
+        total_ties = sum(t.ties for t in teams)
+        total_games = total_wins + total_losses + total_ties
+        win_pct = total_wins / total_games if total_games else 0.0
+
+        total_pf = sum(t.points_for for t in teams)
+        avg_ppg = total_pf / total_games if total_games else 0.0
+
+        championships = sum(1 for t in teams if t.is_champion)
+        playoff_apps = sum(1 for t in teams if t.made_playoffs)
+        playoff_rate = playoff_apps / len(teams) if teams else 0.0
+
+        # Consistency of season finishes (lower std dev = more consistent)
+        finishes = [t.final_rank for t in teams if t.final_rank is not None]
+        if len(finishes) >= 2:
+            mean_finish = sum(finishes) / len(finishes)
+            variance = sum((f - mean_finish) ** 2 for f in finishes) / len(finishes)
+            finish_std = math.sqrt(variance)
+        else:
+            finish_std = 0.0
+
+        raw.append({
+            "manager_id": mgr.id,
+            "manager_name": mgr.display_name,
+            "win_pct": round(win_pct, 4),
+            "avg_ppg": round(avg_ppg, 2),
+            "championships": championships,
+            "playoff_rate": round(playoff_rate, 4),
+            "finish_std": finish_std,
+            "seasons_played": len(teams),
+        })
+
+    if not raw:
+        return []
+
+    # Percentile-rank each dimension 0-100
+    def pct_rank(items: list[dict], key: str, invert: bool = False) -> dict[int, float]:
+        vals = sorted(items, key=lambda x: x[key], reverse=not invert)
+        n = len(vals)
+        return {
+            v["manager_id"]: round((n - 1 - rank) / max(n - 1, 1) * 100, 1)
+            for rank, v in enumerate(vals)
+        }
+
+    pct_win = pct_rank(raw, "win_pct")
+    pct_ppg = pct_rank(raw, "avg_ppg")
+    pct_champ = pct_rank(raw, "championships")
+    pct_playoff = pct_rank(raw, "playoff_rate")
+    pct_consistency = pct_rank(raw, "finish_std", invert=True)  # lower std = better
+
+    # Composite score: weighted average
+    # Win% and PPG are strongest signals; championships and playoffs reward success;
+    # consistency adds a stability dimension.
+    weights = {
+        "win_pct": 0.25,
+        "avg_ppg": 0.25,
+        "championships": 0.20,
+        "playoff_rate": 0.15,
+        "consistency": 0.15,
+    }
+
+    results = []
+    for r in raw:
+        mid = r["manager_id"]
+        composite = (
+            pct_win[mid] * weights["win_pct"]
+            + pct_ppg[mid] * weights["avg_ppg"]
+            + pct_champ[mid] * weights["championships"]
+            + pct_playoff[mid] * weights["playoff_rate"]
+            + pct_consistency[mid] * weights["consistency"]
+        )
+        results.append({
+            **r,
+            "composite_score": round(composite, 1),
+            "consistency_score": round(pct_consistency[mid], 1),
+        })
+
+    # Sort by composite score descending
+    results.sort(key=lambda x: -x["composite_score"])
+
+    # Assign tiers based on percentile position in the sorted list
+    n = len(results)
+    for i, r in enumerate(results):
+        pct_position = i / n  # 0 = top, 1 = bottom
+        if pct_position < 0.20:
+            r["tier"] = "Elite"
+        elif pct_position < 0.50:
+            r["tier"] = "Contender"
+        elif pct_position < 0.80:
+            r["tier"] = "Middle of the Pack"
+        else:
+            r["tier"] = "Rebuilding"
+
+    # Remove internal field
+    for r in results:
+        r.pop("finish_std", None)
+
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Strength of Schedule
+# ---------------------------------------------------------------------------
+
+def compute_strength_of_schedule(db: Session, year: int | None = None) -> list[dict]:
+    """
+    For each manager, compute the average win% and points_for of the opponents
+    they actually faced in regular-season matchups.
+
+    Metrics:
+    - avg_opp_win_pct: mean win% of all opponents faced
+    - avg_opp_pf: mean points_for of all opponents faced (season total PF)
+    - sos_rank: 1 = hardest schedule (highest avg_opp_win_pct)
+    - actual_win_pct: manager's own win%
+    - adjusted_win_pct: actual_win_pct + (avg_opp_win_pct - league_avg_opp_win_pct)
+    - wins_above_expected: actual_wins - expected_wins (where expected = games * league_avg_win_pct_for_their_opponents)
+    """
+    teams = db.query(Team).all()
+    managers = {m.id: m for m in db.query(Manager).all()}
+    seasons = {s.id: s for s in db.query(Season).all()}
+
+    # Map team_id -> manager_id and team_id -> season_id
+    team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
+    team_to_season: dict[int, int] = {t.id: t.season_id for t in teams}
+
+    # Build team win percentages: team_id -> (wins, losses, ties)
+    team_record: dict[int, dict] = {}
+    for t in teams:
+        total_games = t.wins + t.losses + t.ties
+        team_record[t.id] = {
+            "wins": t.wins,
+            "losses": t.losses,
+            "ties": t.ties,
+            "games": total_games,
+            "win_pct": t.wins / total_games if total_games else 0.0,
+            "points_for": t.points_for,
+        }
+
+    # Get regular-season matchups
+    matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
+    if year:
+        season = db.query(Season).filter(Season.year == year).first()
+        if not season:
+            return []
+        matchup_q = matchup_q.filter(Matchup.season_id == season.id)
+
+    matchups = matchup_q.all()
+
+    # For each manager, collect the team_ids of opponents they faced
+    # Key: manager_id -> list of opponent team_ids
+    mgr_opponents: dict[int, list[int]] = defaultdict(list)
+    mgr_wins: dict[int, float] = defaultdict(float)
+    mgr_games: dict[int, int] = defaultdict(int)
+
+    for m in matchups:
+        mgr1 = team_to_mgr.get(m.team1_id)
+        mgr2 = team_to_mgr.get(m.team2_id)
+        if mgr1 is None or mgr2 is None:
+            continue
+
+        mgr_opponents[mgr1].append(m.team2_id)
+        mgr_opponents[mgr2].append(m.team1_id)
+
+        mgr_games[mgr1] += 1
+        mgr_games[mgr2] += 1
+
+        if m.winner_team_id == m.team1_id:
+            mgr_wins[mgr1] += 1
+        elif m.winner_team_id == m.team2_id:
+            mgr_wins[mgr2] += 1
+        else:
+            mgr_wins[mgr1] += 0.5
+            mgr_wins[mgr2] += 0.5
+
+    # Compute per-manager SOS metrics
+    results = []
+    for mgr_id, opp_team_ids in mgr_opponents.items():
+        if mgr_id not in managers:
+            continue
+
+        games = mgr_games[mgr_id]
+        if games == 0:
+            continue
+
+        # Average opponent win% (using each opponent team's season win%)
+        opp_win_pcts = [team_record[tid]["win_pct"] for tid in opp_team_ids if tid in team_record]
+        avg_opp_win_pct = sum(opp_win_pcts) / len(opp_win_pcts) if opp_win_pcts else 0.0
+
+        # Average opponent points_for (season total divided by games for per-game avg)
+        opp_pfs = []
+        for tid in opp_team_ids:
+            if tid in team_record:
+                rec = team_record[tid]
+                ppg = rec["points_for"] / rec["games"] if rec["games"] else 0.0
+                opp_pfs.append(ppg)
+        avg_opp_pf = sum(opp_pfs) / len(opp_pfs) if opp_pfs else 0.0
+
+        actual_win_pct = mgr_wins[mgr_id] / games if games else 0.0
+
+        results.append({
+            "manager_id": mgr_id,
+            "manager_name": managers[mgr_id].display_name,
+            "year": year,
+            "games": games,
+            "actual_win_pct": round(actual_win_pct, 4),
+            "avg_opp_win_pct": round(avg_opp_win_pct, 4),
+            "avg_opp_pf": round(avg_opp_pf, 2),
+            "sos_rank": 0,  # filled below
+            "adjusted_win_pct": 0.0,  # filled below
+            "wins_above_expected": 0.0,  # filled below
+        })
+
+    if not results:
+        return []
+
+    # League average opponent win% (used as baseline)
+    league_avg_opp_wp = sum(r["avg_opp_win_pct"] for r in results) / len(results)
+
+    # Compute adjusted win% and wins above expected
+    for r in results:
+        # Adjusted win% = actual + (opp_strength - league_avg_opp_strength)
+        # This rewards managers who faced harder schedules
+        adjustment = r["avg_opp_win_pct"] - league_avg_opp_wp
+        r["adjusted_win_pct"] = round(r["actual_win_pct"] + adjustment, 4)
+
+        # Expected win% given opponent quality:
+        # If you faced average opponents, your expected win% = actual_win_pct
+        # The delta from schedule difficulty shifts expected wins
+        expected_win_pct = r["actual_win_pct"] - adjustment
+        expected_wins = expected_win_pct * r["games"]
+        actual_wins = r["actual_win_pct"] * r["games"]
+        r["wins_above_expected"] = round(actual_wins - expected_wins, 2)
+
+    # SOS rank: 1 = hardest schedule (highest avg_opp_win_pct)
+    results.sort(key=lambda x: -x["avg_opp_win_pct"])
+    for i, r in enumerate(results):
+        r["sos_rank"] = i + 1
+
+    # Final sort by adjusted win% descending
+    results.sort(key=lambda x: -x["adjusted_win_pct"])
+
+    return results

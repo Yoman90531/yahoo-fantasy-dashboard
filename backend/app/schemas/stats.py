@@ -184,3 +184,126 @@ class RivalryDetail(BaseModel):
     longest_streak: dict  # {holder: "a"|"b", length: int}
     biggest_blowout: RivalryMatchup | None
     closest_game: RivalryMatchup | None
+
+
+# ---------------------------------------------------------------------------
+# Win Margins
+# ---------------------------------------------------------------------------
+
+class WinMarginRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    avg_win_margin: float
+    avg_loss_margin: float
+    blowout_wins: int
+    close_wins: int
+    blowout_losses: int
+    close_losses: int
+    biggest_win: float
+    biggest_loss: float
+
+
+# ---------------------------------------------------------------------------
+# League Parity
+# ---------------------------------------------------------------------------
+
+class LeagueParityRow(BaseModel):
+    year: int
+    num_teams: int
+    scoring_std_dev: float
+    scoring_range: float
+    record_spread: int
+    avg_points_per_game: float
+    closest_standings_gap: int
+    gini_coefficient: float
+
+
+# ---------------------------------------------------------------------------
+# Consolation Bracket
+# ---------------------------------------------------------------------------
+
+class ConsolationRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    times_missed_playoffs: int
+    consolation_games: int
+    consolation_wins: int
+    consolation_losses: int
+    consolation_win_pct: float
+    consolation_avg_points: float
+
+
+# ---------------------------------------------------------------------------
+# Playoff vs Regular Season Performance
+# ---------------------------------------------------------------------------
+
+class PlayoffPerformanceRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    reg_wins: int
+    reg_losses: int
+    reg_win_pct: float
+    reg_avg_pts: float
+    reg_games: int
+    playoff_wins: int
+    playoff_losses: int
+    playoff_win_pct: float
+    playoff_avg_pts: float
+    playoff_games: int
+    delta_win_pct: float
+    delta_avg_pts: float
+
+
+# ---------------------------------------------------------------------------
+# Streak Tracker
+# ---------------------------------------------------------------------------
+
+class StreakRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    current_streak_type: str  # "W", "L", or "T"
+    current_streak_length: int
+    longest_win_streak: int
+    longest_win_start_year: int | None
+    longest_win_start_week: int | None
+    longest_win_end_year: int | None
+    longest_win_end_week: int | None
+    longest_loss_streak: int
+    longest_loss_start_year: int | None
+    longest_loss_start_week: int | None
+    longest_loss_end_year: int | None
+    longest_loss_end_week: int | None
+
+
+# ---------------------------------------------------------------------------
+# Manager Tiers
+# ---------------------------------------------------------------------------
+
+class ManagerTierRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    tier: str  # "Elite", "Contender", "Middle of the Pack", "Rebuilding"
+    composite_score: float
+    win_pct: float
+    avg_ppg: float
+    championships: int
+    playoff_rate: float
+    consistency_score: float
+    seasons_played: int
+
+
+# ---------------------------------------------------------------------------
+# Strength of Schedule
+# ---------------------------------------------------------------------------
+
+class StrengthOfScheduleRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    year: int | None  # None = all-time
+    games: int
+    actual_win_pct: float
+    avg_opp_win_pct: float
+    avg_opp_pf: float
+    sos_rank: int
+    adjusted_win_pct: float
+    wins_above_expected: float
