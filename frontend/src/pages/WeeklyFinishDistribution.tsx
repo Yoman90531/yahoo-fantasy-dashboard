@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer,
@@ -18,8 +19,35 @@ const BUCKETS = [
   { key: 'last',         label: 'Last',         color: '#7f1d1d' },
 ]
 
+type WFSortKey = 'manager_name' | 'total_weeks' | 'first' | 'top_three_total' | 'top_half_total' | 'bottom_half' | 'bot_three_total' | 'last' | 'pct_top_half'
+
 export default function WeeklyFinishDistribution() {
   const { data, loading, error } = useApi<WeeklyFinishRow[]>(() => statsApi.weeklyFinishDistribution(), [])
+  const [sort, setSort] = useState<{ key: WFSortKey; dir: 1 | -1 }>({ key: 'pct_top_half', dir: -1 })
+
+  const toggle = (key: WFSortKey) =>
+    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })
+
+  const getValue = (d: WeeklyFinishRow, key: WFSortKey): number | string => {
+    if (key === 'manager_name') return d.manager_name
+    if (key === 'top_three_total') return d.first + d.top_three
+    if (key === 'top_half_total') return d.first + d.top_three + d.top_half
+    if (key === 'bot_three_total') return d.bottom_three + d.last
+    return d[key as keyof WeeklyFinishRow] as number
+  }
+
+  const sorted = [...(data ?? [])].sort((a, b) => {
+    const av = getValue(a, sort.key)
+    const bv = getValue(b, sort.key)
+    if (typeof av === 'string') return av.localeCompare(bv as string) * sort.dir
+    return ((av as number) - (bv as number)) * sort.dir
+  })
+
+  const th = (label: string, key: WFSortKey, cls = 'text-right') => (
+    <th className={`px-4 py-3 ${cls} cursor-pointer hover:text-white select-none`} onClick={() => toggle(key)}>
+      {label} {sort.key === key ? (sort.dir === -1 ? '↓' : '↑') : ''}
+    </th>
+  )
 
   const chartData = data?.map(d => ({
     name: d.manager_name,
@@ -72,19 +100,31 @@ export default function WeeklyFinishDistribution() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-900 text-gray-400 text-xs uppercase tracking-wider">
-                  <th className="px-4 py-3 text-left">Manager</th>
-                  <th className="px-4 py-3 text-right">Weeks</th>
-                  <th className="px-4 py-3 text-right text-amber-400">1st</th>
-                  <th className="px-4 py-3 text-right text-emerald-400">Top 3</th>
-                  <th className="px-4 py-3 text-right text-blue-400">Top Half</th>
-                  <th className="px-4 py-3 text-right text-indigo-400">Bot Half</th>
-                  <th className="px-4 py-3 text-right text-red-400">Bot 3</th>
-                  <th className="px-4 py-3 text-right text-gray-500">Last</th>
-                  <th className="px-4 py-3 text-right">% Top Half</th>
+                  {th('Manager', 'manager_name', 'text-left')}
+                  {th('Weeks', 'total_weeks')}
+                  <th className="px-4 py-3 text-right text-amber-400 cursor-pointer hover:text-amber-300 select-none" onClick={() => toggle('first')}>
+                    1st {sort.key === 'first' ? (sort.dir === -1 ? '↓' : '↑') : ''}
+                  </th>
+                  <th className="px-4 py-3 text-right text-emerald-400 cursor-pointer hover:text-emerald-300 select-none" onClick={() => toggle('top_three_total')}>
+                    Top 3 {sort.key === 'top_three_total' ? (sort.dir === -1 ? '↓' : '↑') : ''}
+                  </th>
+                  <th className="px-4 py-3 text-right text-blue-400 cursor-pointer hover:text-blue-300 select-none" onClick={() => toggle('top_half_total')}>
+                    Top Half {sort.key === 'top_half_total' ? (sort.dir === -1 ? '↓' : '↑') : ''}
+                  </th>
+                  <th className="px-4 py-3 text-right text-indigo-400 cursor-pointer hover:text-indigo-300 select-none" onClick={() => toggle('bottom_half')}>
+                    Bot Half {sort.key === 'bottom_half' ? (sort.dir === -1 ? '↓' : '↑') : ''}
+                  </th>
+                  <th className="px-4 py-3 text-right text-red-400 cursor-pointer hover:text-red-300 select-none" onClick={() => toggle('bot_three_total')}>
+                    Bot 3 {sort.key === 'bot_three_total' ? (sort.dir === -1 ? '↓' : '↑') : ''}
+                  </th>
+                  <th className="px-4 py-3 text-right text-gray-500 cursor-pointer hover:text-gray-300 select-none" onClick={() => toggle('last')}>
+                    Last {sort.key === 'last' ? (sort.dir === -1 ? '↓' : '↑') : ''}
+                  </th>
+                  {th('% Top Half', 'pct_top_half')}
                 </tr>
               </thead>
               <tbody>
-                {data.map(d => (
+                {sorted.map(d => (
                   <tr key={d.manager_id} className="border-t border-gray-800 hover:bg-gray-800 transition-colors">
                     <td className="px-4 py-3 font-medium text-white">{d.manager_name}</td>
                     <td className="px-4 py-3 text-right text-gray-400">{d.total_weeks}</td>

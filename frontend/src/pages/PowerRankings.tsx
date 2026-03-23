@@ -7,16 +7,34 @@ import { useApi } from '../hooks/useApi'
 import { statsApi, seasonsApi } from '../api/client'
 import type { PowerRankingRow, SeasonSummary } from '../types'
 
+type PRSortKey = 'manager_name' | 'overall_score' | 'win_rate' | 'scoring' | 'consistency' | 'luck_adjusted' | 'playoff_success'
+
 export default function PowerRankings() {
   const [year, setYear] = useState<number | undefined>(undefined)
   const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [sort, setSort] = useState<{ key: PRSortKey; dir: 1 | -1 }>({ key: 'overall_score', dir: -1 })
   const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
   const { data, loading, error } = useApi<PowerRankingRow[]>(() => statsApi.powerRankings(year), [year])
 
-  // Auto-select top 3 when data loads
-  const radarManagers = data
-    ? data.filter((_, i) => selected.size > 0 ? selected.has(data[i].manager_id) : i < 3)
-    : []
+  const toggleSort = (key: PRSortKey) =>
+    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })
+
+  const sorted = [...(data ?? [])].sort((a, b) => {
+    if (sort.key === 'manager_name') return a.manager_name.localeCompare(b.manager_name) * sort.dir
+    if (sort.key === 'overall_score') return (a.overall_score - b.overall_score) * sort.dir
+    return (a.dimensions[sort.key] - b.dimensions[sort.key]) * sort.dir
+  })
+
+  const th = (label: string, key: PRSortKey) => (
+    <th className="px-4 py-3 text-right cursor-pointer hover:text-white select-none" onClick={() => toggleSort(key)}>
+      {label} {sort.key === key ? (sort.dir === -1 ? '↓' : '↑') : ''}
+    </th>
+  )
+
+  // Auto-select top 3 (by overall_score desc) for radar when none selected
+  const radarManagers = (data ?? []).filter((r, i) =>
+    selected.size > 0 ? selected.has(r.manager_id) : i < 3
+  )
 
   function toggleManager(id: number) {
     setSelected(prev => {
@@ -112,17 +130,19 @@ export default function PowerRankings() {
               <thead>
                 <tr className="bg-gray-900 text-gray-400 text-xs uppercase tracking-wider">
                   <th className="px-4 py-3 text-left w-8">#</th>
-                  <th className="px-4 py-3 text-left">Manager</th>
-                  <th className="px-4 py-3 text-right">Overall</th>
-                  <th className="px-4 py-3 text-right">Win Rate</th>
-                  <th className="px-4 py-3 text-right">Scoring</th>
-                  <th className="px-4 py-3 text-right">Consistency</th>
-                  <th className="px-4 py-3 text-right">Skill</th>
-                  <th className="px-4 py-3 text-right">Playoffs</th>
+                  <th className="px-4 py-3 text-left cursor-pointer hover:text-white select-none" onClick={() => toggleSort('manager_name')}>
+                    Manager {sort.key === 'manager_name' ? (sort.dir === -1 ? '↓' : '↑') : ''}
+                  </th>
+                  {th('Overall', 'overall_score')}
+                  {th('Win Rate', 'win_rate')}
+                  {th('Scoring', 'scoring')}
+                  {th('Consistency', 'consistency')}
+                  {th('Skill', 'luck_adjusted')}
+                  {th('Playoffs', 'playoff_success')}
                 </tr>
               </thead>
               <tbody>
-                {data.map((r, i) => {
+                {sorted.map((r, i) => {
                   const isSelected = selected.size > 0 ? selected.has(r.manager_id) : i < 3
                   return (
                     <tr

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import BoxPlotChart from '../components/charts/BoxPlotChart'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
@@ -6,8 +7,26 @@ import { useApi } from '../hooks/useApi'
 import { statsApi } from '../api/client'
 import type { ScoreDistributionRow } from '../types'
 
+type SDSortKey = 'manager_name' | 'n' | 'min' | 'q1' | 'median' | 'mean' | 'q3' | 'max' | 'std_dev' | 'outlier_count'
+
 export default function ScoringDistribution() {
   const { data, loading, error } = useApi<ScoreDistributionRow[]>(() => statsApi.scoreDistribution(), [])
+  const [sort, setSort] = useState<{ key: SDSortKey; dir: 1 | -1 }>({ key: 'median', dir: -1 })
+
+  const toggle = (key: SDSortKey) =>
+    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })
+
+  const sorted = [...(data ?? [])].sort((a, b) => {
+    if (sort.key === 'manager_name') return a.manager_name.localeCompare(b.manager_name) * sort.dir
+    if (sort.key === 'outlier_count') return (a.outliers.length - b.outliers.length) * sort.dir
+    return ((a[sort.key as keyof ScoreDistributionRow] as number) - (b[sort.key as keyof ScoreDistributionRow] as number)) * sort.dir
+  })
+
+  const th = (label: string, key: SDSortKey, align: 'left' | 'right' = 'right') => (
+    <th className={`px-4 py-3 text-${align} cursor-pointer hover:text-white select-none`} onClick={() => toggle(key)}>
+      {label} {sort.key === key ? (sort.dir === -1 ? '↓' : '↑') : ''}
+    </th>
+  )
 
   return (
     <PageWrapper
@@ -28,20 +47,20 @@ export default function ScoringDistribution() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-900 text-gray-400 text-xs uppercase tracking-wider">
-                  <th className="px-4 py-3 text-left">Manager</th>
-                  <th className="px-4 py-3 text-right">Weeks</th>
-                  <th className="px-4 py-3 text-right">Min</th>
-                  <th className="px-4 py-3 text-right">Q1</th>
-                  <th className="px-4 py-3 text-right">Median</th>
-                  <th className="px-4 py-3 text-right">Mean</th>
-                  <th className="px-4 py-3 text-right">Q3</th>
-                  <th className="px-4 py-3 text-right">Max</th>
-                  <th className="px-4 py-3 text-right">Std Dev</th>
-                  <th className="px-4 py-3 text-right">Outliers</th>
+                  {th('Manager', 'manager_name', 'left')}
+                  {th('Weeks', 'n')}
+                  {th('Min', 'min')}
+                  {th('Q1', 'q1')}
+                  {th('Median', 'median')}
+                  {th('Mean', 'mean')}
+                  {th('Q3', 'q3')}
+                  {th('Max', 'max')}
+                  {th('Std Dev', 'std_dev')}
+                  {th('Outliers', 'outlier_count')}
                 </tr>
               </thead>
               <tbody>
-                {data.map(d => (
+                {sorted.map(d => (
                   <tr key={d.manager_id} className="border-t border-gray-800 hover:bg-gray-800 transition-colors">
                     <td className="px-4 py-3 font-medium text-white">{d.manager_name}</td>
                     <td className="px-4 py-3 text-right text-gray-400">{d.n}</td>

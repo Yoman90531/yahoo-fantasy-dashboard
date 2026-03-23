@@ -6,7 +6,7 @@ interface Props {
   rows: StandingsRow[]
 }
 
-type SortKey = 'final_rank' | 'wins' | 'losses' | 'points_for' | 'points_against' | 'pf_pa_ratio'
+type SortKey = 'final_rank' | 'wins' | 'losses' | 'ties' | 'points_for' | 'points_against' | 'pf_pa_ratio' | 'made_playoffs'
 
 export default function StandingsTable({ rows }: Props) {
   const navigate = useNavigate()
@@ -20,6 +20,9 @@ export default function StandingsTable({ rows }: Props) {
     if (sort.key === 'pf_pa_ratio') {
       av = a.points_against > 0 ? a.points_for / a.points_against : 0
       bv = b.points_against > 0 ? b.points_for / b.points_against : 0
+    } else if (sort.key === 'made_playoffs') {
+      av = a.made_playoffs ? 1 : 0
+      bv = b.made_playoffs ? 1 : 0
     } else {
       av = (a[sort.key] as number) ?? 999
       bv = (b[sort.key] as number) ?? 999
@@ -46,11 +49,11 @@ export default function StandingsTable({ rows }: Props) {
             <th className="px-4 py-3 text-left">Team</th>
             {th('W', 'wins')}
             {th('L', 'losses')}
-            <th className="px-4 py-3 text-right">T</th>
+            {th('T', 'ties')}
             {th('PF', 'points_for')}
             {th('PA', 'points_against')}
             {th('PF/PA', 'pf_pa_ratio')}
-            <th className="px-4 py-3 text-center">Playoffs</th>
+            {th('Playoffs', 'made_playoffs', 'center')}
           </tr>
         </thead>
         <tbody>

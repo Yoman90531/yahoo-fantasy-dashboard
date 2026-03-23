@@ -7,10 +7,27 @@ import { useApi } from '../hooks/useApi'
 import { statsApi, seasonsApi } from '../api/client'
 import type { LuckIndexRow, SeasonSummary } from '../types'
 
+type LuckSortKey = 'manager_name' | 'actual_wins' | 'expected_wins' | 'luck_score'
+
 export default function LuckIndex() {
   const [year, setYear] = useState<number | undefined>(undefined)
+  const [sort, setSort] = useState<{ key: LuckSortKey; dir: 1 | -1 }>({ key: 'luck_score', dir: -1 })
   const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
   const { data, loading, error } = useApi<LuckIndexRow[]>(() => statsApi.luckIndex(year), [year])
+
+  const toggle = (key: LuckSortKey) =>
+    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })
+
+  const sorted = [...(data ?? [])].sort((a, b) => {
+    if (sort.key === 'manager_name') return a.manager_name.localeCompare(b.manager_name) * sort.dir
+    return ((a[sort.key] as number) - (b[sort.key] as number)) * sort.dir
+  })
+
+  const th = (label: string, key: LuckSortKey, align: 'left' | 'right' = 'right') => (
+    <th className={`px-4 py-3 text-${align} cursor-pointer hover:text-white select-none`} onClick={() => toggle(key)}>
+      {label} {sort.key === key ? (sort.dir === -1 ? '↓' : '↑') : ''}
+    </th>
+  )
 
   const barData = (data ?? []).map(r => ({
     name: r.manager_name.split(' ')[0],
@@ -56,14 +73,14 @@ export default function LuckIndex() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-900 text-gray-400 text-xs uppercase tracking-wider">
-                  <th className="px-4 py-3 text-left">Manager</th>
-                  <th className="px-4 py-3 text-right">Actual Wins</th>
-                  <th className="px-4 py-3 text-right">Expected Wins</th>
-                  <th className="px-4 py-3 text-right">Luck Score</th>
+                  {th('Manager', 'manager_name', 'left')}
+                  {th('Actual Wins', 'actual_wins')}
+                  {th('Expected Wins', 'expected_wins')}
+                  {th('Luck Score', 'luck_score')}
                 </tr>
               </thead>
               <tbody>
-                {data.map(r => (
+                {sorted.map(r => (
                   <tr key={r.manager_id} className="border-t border-gray-800 hover:bg-gray-800 transition-colors">
                     <td className="px-4 py-3 font-medium text-white">{r.manager_name}</td>
                     <td className="px-4 py-3 text-right">{r.actual_wins}</td>

@@ -1,11 +1,79 @@
+import { useState } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import { useApi } from '../hooks/useApi'
 import { statsApi } from '../api/client'
-import type { EraBlock } from '../types'
+import type { EraBlock, EraManagerRow } from '../types'
 
 const ERA_COLORS = ['text-blue-400', 'text-emerald-400', 'text-amber-400']
+
+type EraSortKey = 'manager_name' | 'seasons' | 'wins' | 'losses' | 'win_pct' | 'avg_pf' | 'championships' | 'playoff_appearances'
+
+function EraTable({ managers }: { managers: EraManagerRow[] }) {
+  const [sort, setSort] = useState<{ key: EraSortKey; dir: 1 | -1 }>({ key: 'win_pct', dir: -1 })
+
+  const toggle = (key: EraSortKey) =>
+    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })
+
+  const sorted = [...managers].sort((a, b) => {
+    if (sort.key === 'manager_name') return a.manager_name.localeCompare(b.manager_name) * sort.dir
+    return ((a[sort.key] as number) - (b[sort.key] as number)) * sort.dir
+  })
+
+  const th = (label: string, key: EraSortKey, align: 'left' | 'right' = 'right') => (
+    <th className={`px-4 py-2 text-${align} cursor-pointer hover:text-white select-none`} onClick={() => toggle(key)}>
+      {label} {sort.key === key ? (sort.dir === -1 ? '↓' : '↑') : ''}
+    </th>
+  )
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+            <th className="px-5 py-2 text-left w-6">#</th>
+            {th('Manager', 'manager_name', 'left')}
+            {th('Seasons', 'seasons')}
+            {th('W', 'wins')}
+            {th('L', 'losses')}
+            {th('Win%', 'win_pct')}
+            {th('Avg PF/Wk', 'avg_pf')}
+            {th('Champs', 'championships')}
+            {th('Playoffs', 'playoff_appearances')}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((m, mi) => (
+            <tr
+              key={m.manager_id}
+              className={`border-t border-gray-800/50 transition-colors ${
+                mi === 0 ? 'bg-amber-950/20' : 'hover:bg-gray-800/40'
+              }`}
+            >
+              <td className="px-5 py-2.5 text-gray-500 text-xs">{mi + 1}</td>
+              <td className="px-4 py-2.5 font-medium text-white">
+                {mi === 0 && <span className="mr-1 text-amber-400">👑</span>}
+                {m.manager_name}
+              </td>
+              <td className="px-4 py-2.5 text-right text-gray-400">{m.seasons}</td>
+              <td className="px-4 py-2.5 text-right text-green-400">{m.wins}</td>
+              <td className="px-4 py-2.5 text-right text-red-400">{m.losses}</td>
+              <td className="px-4 py-2.5 text-right font-semibold">
+                {(m.win_pct * 100).toFixed(1)}%
+              </td>
+              <td className="px-4 py-2.5 text-right text-blue-400">{m.avg_pf.toFixed(1)}</td>
+              <td className="px-4 py-2.5 text-right text-amber-400 font-bold">
+                {m.championships > 0 ? m.championships : '—'}
+              </td>
+              <td className="px-4 py-2.5 text-right text-gray-300">{m.playoff_appearances}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 export default function ManagerEras() {
   const { data, loading, error } = useApi<EraBlock[]>(() => statsApi.managerEras(), [])
@@ -35,51 +103,7 @@ export default function ManagerEras() {
                 </span>
               </div>
 
-              {/* Era leaderboard */}
-              <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
-                    <th className="px-5 py-2 text-left w-6">#</th>
-                    <th className="px-4 py-2 text-left">Manager</th>
-                    <th className="px-4 py-2 text-right">Seasons</th>
-                    <th className="px-4 py-2 text-right">W</th>
-                    <th className="px-4 py-2 text-right">L</th>
-                    <th className="px-4 py-2 text-right">Win%</th>
-                    <th className="px-4 py-2 text-right">Avg PF/Wk</th>
-                    <th className="px-4 py-2 text-right">Champs</th>
-                    <th className="px-4 py-2 text-right">Playoffs</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {era.managers.map((m, mi) => (
-                    <tr
-                      key={m.manager_id}
-                      className={`border-t border-gray-800/50 transition-colors ${
-                        mi === 0 ? 'bg-amber-950/20' : 'hover:bg-gray-800/40'
-                      }`}
-                    >
-                      <td className="px-5 py-2.5 text-gray-500 text-xs">{mi + 1}</td>
-                      <td className="px-4 py-2.5 font-medium text-white">
-                        {mi === 0 && <span className="mr-1 text-amber-400">👑</span>}
-                        {m.manager_name}
-                      </td>
-                      <td className="px-4 py-2.5 text-right text-gray-400">{m.seasons}</td>
-                      <td className="px-4 py-2.5 text-right text-green-400">{m.wins}</td>
-                      <td className="px-4 py-2.5 text-right text-red-400">{m.losses}</td>
-                      <td className="px-4 py-2.5 text-right font-semibold">
-                        {(m.win_pct * 100).toFixed(1)}%
-                      </td>
-                      <td className="px-4 py-2.5 text-right text-blue-400">{m.avg_pf.toFixed(1)}</td>
-                      <td className="px-4 py-2.5 text-right text-amber-400 font-bold">
-                        {m.championships > 0 ? m.championships : '—'}
-                      </td>
-                      <td className="px-4 py-2.5 text-right text-gray-300">{m.playoff_appearances}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              </div>
+              <EraTable managers={era.managers} />
             </div>
           ))}
         </div>
