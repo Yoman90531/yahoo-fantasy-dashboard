@@ -82,6 +82,7 @@ export default function ManagerEras() {
     <PageWrapper
       title="Manager Eras"
       subtitle="Who dominated which time period? Each era covers a distinct chapter of the league's history."
+      dataScope="regular"
     >
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

@@ -46,6 +46,7 @@ export default function LeagueParity() {
     <PageWrapper
       title="League Parity"
       subtitle="How competitive and balanced was each season? Lower standard deviation and smaller spreads indicate tighter competition."
+      dataScope="regular"
     >
       {/* Explainer */}
       <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">

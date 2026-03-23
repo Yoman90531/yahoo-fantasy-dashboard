@@ -41,6 +41,7 @@ export default function PlayoffPerformance() {
     <PageWrapper
       title="Playoff vs Regular Season"
       subtitle="How does each manager's playoff performance compare to their regular season? Positive delta = better in playoffs."
+      dataScope="playoffs"
     >
       {/* Explainer */}
       <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">

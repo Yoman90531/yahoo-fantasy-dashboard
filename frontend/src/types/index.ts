@@ -292,6 +292,10 @@ export interface RivalryMatchup {
   winner: 'a' | 'b' | 'tie'
   margin: number
   is_playoff: boolean
+  game_id: number | null
+  league_id: string | null
+  team_a_yahoo_id: number | null
+  team_b_yahoo_id: number | null
 }
 
 export interface RivalryTrend {

@@ -52,6 +52,7 @@ export default function PowerRankings() {
     <PageWrapper
       title="Power Rankings"
       subtitle="Composite dominance score across 5 dimensions. Click rows to compare on the radar chart."
+      dataScope="regular"
     >
       {/* Year filter */}
       <div className="flex items-center gap-3 mb-6">

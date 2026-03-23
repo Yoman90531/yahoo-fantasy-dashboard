@@ -53,6 +53,7 @@ const navigation: NavEntry[] = [
       { to: '/projections', label: 'Projections', icon: '🎯' },
       { to: '/playoff-performance', label: 'Playoff Performance', icon: '🏟️' },
       { to: '/streaks', label: 'Streak Tracker', icon: '🔥' },
+      { to: '/strength-of-schedule', label: 'Strength of Schedule', icon: '💪' },
     ],
   },
   {
@@ -135,8 +136,8 @@ export default function Sidebar() {
           </svg>
         </button>
         <div>
-          <span className="text-brand-500 font-bold text-sm">Fantasy</span>
-          <span className="text-gray-500 text-sm ml-1">Dashboard</span>
+          <span className="text-brand-500 font-bold text-sm">GARYS</span>
+          <span className="text-gray-500 text-sm ml-1">Fantasy Dashboard</span>
         </div>
       </div>
 
@@ -160,8 +161,8 @@ export default function Sidebar() {
         {/* Desktop logo / mobile close row */}
         <div className="mb-8 px-3 flex items-center justify-between">
           <div>
-            <div className="text-brand-500 font-bold text-lg leading-tight">Fantasy</div>
-            <div className="text-gray-400 text-sm">Dashboard</div>
+            <div className="text-brand-500 font-bold text-lg leading-tight">GARYS</div>
+            <div className="text-gray-400 text-sm">Fantasy Dashboard</div>
           </div>
           <button
             className="md:hidden text-gray-500 hover:text-white p-1 rounded"

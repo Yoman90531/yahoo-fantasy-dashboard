@@ -156,6 +156,10 @@ class RivalryMatchup(BaseModel):
     winner: str  # "a", "b", or "tie"
     margin: float
     is_playoff: bool
+    game_id: int | None = None
+    league_id: str | None = None
+    team_a_yahoo_id: int | None = None
+    team_b_yahoo_id: int | None = None
 
 class RivalryTrend(BaseModel):
     year: int

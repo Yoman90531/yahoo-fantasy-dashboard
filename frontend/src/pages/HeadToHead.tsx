@@ -13,6 +13,7 @@ export default function HeadToHead() {
     <PageWrapper
       title="Head-to-Head"
       subtitle="All-time matchup records between every pair of managers. Cell value = wins. Hover for details."
+      dataScope="playoffs"
     >
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

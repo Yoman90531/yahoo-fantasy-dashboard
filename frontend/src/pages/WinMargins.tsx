@@ -41,6 +41,7 @@ export default function WinMargins() {
     <PageWrapper
       title="Win Margin Analytics"
       subtitle="How dominant are wins? How painful are losses? Analyze the margin of victory and defeat for each manager."
+      dataScope="regular"
     >
       {/* Explainer */}
       <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">

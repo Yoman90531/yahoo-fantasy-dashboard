@@ -30,7 +30,7 @@ export default function Dashboard() {
   const longestDrought = droughts?.[0]
 
   return (
-    <PageWrapper title="Fantasy Football Dashboard" subtitle={`${seasons.length} seasons of data`}>
+    <PageWrapper title="GARYS Fantasy Dashboard" subtitle={`${seasons.length} seasons of data`}>
       {/* Headline stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <StatCard
@@ -64,12 +64,12 @@ export default function Dashboard() {
       {/* Quick links */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mb-6">
         {[
-          { to: '/seasons', label: 'Season-by-Season', icon: '📅', desc: 'Standings & results by year' },
-          { to: '/alltime', label: 'All-Time Records', icon: '📊', desc: 'Career stats for every manager' },
+          { to: '/seasons', label: 'Standings & Seasons', icon: '📅', desc: 'Standings & results by year' },
           { to: '/headtohead', label: 'Head-to-Head', icon: '⚔️', desc: 'All-time matchup records' },
-          { to: '/weekly-records', label: 'Weekly Records', icon: '🏆', desc: 'Highest scores, blowouts, close calls' },
-          { to: '/luck-index', label: 'Luck Index', icon: '🎲', desc: 'Who got lucky? Who deserved better?' },
-          { to: '/sync', label: 'Sync Data', icon: '🔄', desc: 'Update from Yahoo' },
+          { to: '/power-rankings', label: 'Power Rankings', icon: '👑', desc: 'Composite manager ratings' },
+          { to: '/manager-tiers', label: 'Manager Tiers', icon: '🏷️', desc: 'Elite, contender, or rebuilding?' },
+          { to: '/season-replay', label: 'Season Replay', icon: '📋', desc: 'Browse every matchup by week' },
+          { to: '/awards', label: 'Awards', icon: '🏅', desc: 'Season superlatives & records' },
         ].map(l => (
           <Link
             key={l.to}

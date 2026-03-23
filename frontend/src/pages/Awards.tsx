@@ -15,6 +15,7 @@ export default function Awards() {
     <PageWrapper
       title="Awards"
       subtitle="Auto-generated superlatives — the best (and worst) of each season."
+      dataScope="all"
     >
       {/* Year filter */}
       <div className="flex items-center gap-3 mb-6">

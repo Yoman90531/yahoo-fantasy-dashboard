@@ -53,7 +53,8 @@ export default function StreakTracker() {
   return (
     <PageWrapper
       title="Streak Tracker"
-      subtitle="Winning and losing streaks across all managers. Regular season only."
+      subtitle="Winning and losing streaks across all managers."
+      dataScope="regular"
     >
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

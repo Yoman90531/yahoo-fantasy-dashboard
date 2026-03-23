@@ -23,6 +23,7 @@ import LeagueParity from './pages/LeagueParity'
 import StreakTracker from './pages/StreakTracker'
 import ConsolationBracket from './pages/ConsolationBracket'
 import ManagerTiers from './pages/ManagerTiers'
+import StrengthOfSchedule from './pages/StrengthOfSchedule'
 
 export default function App() {
   return (
@@ -53,6 +54,7 @@ export default function App() {
             <Route path="/streaks" element={<StreakTracker />} />
             <Route path="/consolation" element={<ConsolationBracket />} />
             <Route path="/manager-tiers" element={<ManagerTiers />} />
+            <Route path="/strength-of-schedule" element={<StrengthOfSchedule />} />
             <Route path="/sync" element={<SyncStatus />} />
           </Routes>
         </main>

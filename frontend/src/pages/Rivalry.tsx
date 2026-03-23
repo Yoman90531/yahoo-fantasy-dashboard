@@ -36,6 +36,7 @@ export default function Rivalry() {
     <PageWrapper
       title={data ? `${data.manager_a_name} vs ${data.manager_b_name}` : 'Rivalry'}
       subtitle="Full head-to-head rivalry history."
+      dataScope="playoffs"
     >
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
@@ -123,10 +124,22 @@ export default function Rivalry() {
                 </tr>
               </thead>
               <tbody>
-                {data.matchups.map((m, i) => (
+                {data.matchups.map((m, i) => {
+                  const yahooUrl = m.game_id && m.league_id
+                    ? `https://football.fantasysports.yahoo.com/f1/${m.league_id}/matchup?week=${m.week}&mid1=${m.team_a_yahoo_id}&mid2=${m.team_b_yahoo_id}`
+                    : null
+                  return (
                   <tr key={i} className="border-t border-gray-800 hover:bg-gray-800 transition-colors">
                     <td className="px-4 py-3 text-gray-300">{m.year}</td>
-                    <td className="px-4 py-3 text-gray-300">{m.week}</td>
+                    <td className="px-4 py-3">
+                      {yahooUrl ? (
+                        <a href={yahooUrl} target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300 underline">
+                          Wk {m.week}
+                        </a>
+                      ) : (
+                        <span className="text-gray-300">{m.week}</span>
+                      )}
+                    </td>
                     <td className={`px-4 py-3 text-right font-medium ${m.winner === 'a' ? 'text-green-400' : 'text-gray-400'}`}>
                       {m.a_points.toFixed(1)}
                     </td>
@@ -138,7 +151,8 @@ export default function Rivalry() {
                       {m.is_playoff && <span className="text-xs bg-brand-700 text-white px-2 py-0.5 rounded-full">Playoff</span>}
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

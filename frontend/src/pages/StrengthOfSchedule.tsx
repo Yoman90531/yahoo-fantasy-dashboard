@@ -52,6 +52,7 @@ export default function StrengthOfSchedule() {
     <PageWrapper
       title="Strength of Schedule"
       subtitle="Who had the toughest opponents? SOS-adjusted win% accounts for schedule difficulty."
+      dataScope="regular"
     >
       {/* Formula explainer */}
       <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">

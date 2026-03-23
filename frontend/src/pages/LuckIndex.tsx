@@ -38,6 +38,7 @@ export default function LuckIndex() {
     <PageWrapper
       title="Luck Index"
       subtitle="How lucky has each manager been? Positive = got luckier than expected. Negative = deserved better."
+      dataScope="regular"
     >
       {/* Formula explainer */}
       <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">

@@ -32,6 +32,7 @@ export default function ScoringDistribution() {
     <PageWrapper
       title="Scoring Distribution"
       subtitle="Weekly score spread per manager across all seasons — sorted by median. Box = IQR (middle 50%), line = median, dot = mean, circles = outliers."
+      dataScope="regular"
     >
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

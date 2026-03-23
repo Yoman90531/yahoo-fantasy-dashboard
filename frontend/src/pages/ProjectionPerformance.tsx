@@ -39,7 +39,8 @@ export default function ProjectionPerformance() {
   return (
     <PageWrapper
       title="Projection Performance"
-      subtitle="How often does each manager outperform (or underperform) Yahoo's pre-game point projections? Regular season only, weeks with valid projection data."
+      subtitle="How often does each manager outperform (or underperform) Yahoo's pre-game point projections?"
+      dataScope="regular"
     >
       {/* Explainer */}
       <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">

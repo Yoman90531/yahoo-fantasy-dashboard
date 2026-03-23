@@ -28,6 +28,7 @@ export default function ThroneTracker() {
     <PageWrapper
       title="Throne Tracker"
       subtitle="Championship timeline — who wore the crown each year."
+      dataScope="all"
     >
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

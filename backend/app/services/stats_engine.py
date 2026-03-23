@@ -995,6 +995,7 @@ def compute_rivalry(db: Session, manager_a_id: int, manager_b_id: int) -> dict |
 
     teams = db.query(Team).all()
     team_to_mgr = {t.id: t.manager_id for t in teams}
+    team_yahoo_id = {t.id: t.yahoo_team_id for t in teams}
     season_map = {s.id: s for s in db.query(Season).all()}
 
     # Find all matchups between these two managers
@@ -1038,6 +1039,10 @@ def compute_rivalry(db: Session, manager_a_id: int, manager_b_id: int) -> dict |
                 "winner": winner,
                 "margin": round(abs(a_pts - b_pts), 2),
                 "is_playoff": m.is_playoff,
+                "game_id": s.game_id if s else None,
+                "league_id": s.league_id if s else None,
+                "team_a_yahoo_id": team_yahoo_id.get(a_tid),
+                "team_b_yahoo_id": team_yahoo_id.get(b_tid),
             })
 
     rivalry_matchups.sort(key=lambda x: (x["year"], x["week"]))

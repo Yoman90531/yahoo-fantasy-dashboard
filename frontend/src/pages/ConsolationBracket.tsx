@@ -51,6 +51,7 @@ export default function ConsolationBracket() {
     <PageWrapper
       title="Consolation Bracket"
       subtitle="Who dominates the loser bracket? Stats from consolation round matchups."
+      dataScope="playoffs"
     >
       {/* Year filter */}
       <div className="flex items-center gap-3 mb-6">

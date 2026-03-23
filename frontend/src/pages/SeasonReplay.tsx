@@ -196,7 +196,7 @@ export default function SeasonReplay() {
   const regWeeks = seasonDetail?.num_regular_season_weeks ?? maxWeek
 
   return (
-    <PageWrapper title="Season Replay" subtitle="Browse every matchup week by week.">
+    <PageWrapper title="Season Replay" subtitle="Browse every matchup week by week." dataScope="playoffs">
       {/* Selectors */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex items-center gap-2">

@@ -64,6 +64,7 @@ export default function ManagerTiers() {
     <PageWrapper
       title="Manager Tiers"
       subtitle="Career performance tiers based on composite scoring across win%, PPG, championships, playoff rate, and consistency. Minimum 3 seasons required."
+      dataScope="regular"
     >
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

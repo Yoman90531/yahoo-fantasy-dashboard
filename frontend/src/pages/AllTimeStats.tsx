@@ -25,7 +25,7 @@ export default function AllTimeStats() {
   }))
 
   return (
-    <PageWrapper title="All-Time Stats" subtitle="Career records for every manager. Click a row to see their full profile.">
+    <PageWrapper title="All-Time Stats" subtitle="Career records for every manager. Click a row to see their full profile." dataScope="all">
       <AllTimeTable managers={managers} />
 
       <div className="grid md:grid-cols-2 gap-6 mt-8">

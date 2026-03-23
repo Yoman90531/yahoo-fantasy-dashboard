@@ -53,7 +53,7 @@ export default function WeeklyRecords() {
   if (!data) return null
 
   return (
-    <PageWrapper title="Weekly Records" subtitle="The best, worst, and most dramatic single-week performances in league history.">
+    <PageWrapper title="Weekly Records" subtitle="The best, worst, and most dramatic single-week performances in league history." dataScope="all">
       <div className="flex flex-col gap-6">
         <Section title="Highest Scores Ever">
           <RecordTable

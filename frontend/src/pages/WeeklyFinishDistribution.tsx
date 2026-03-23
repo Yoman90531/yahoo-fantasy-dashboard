@@ -62,7 +62,8 @@ export default function WeeklyFinishDistribution() {
   return (
     <PageWrapper
       title="Weekly Finish Distribution"
-      subtitle="How often each manager finishes 1st, top-3, top-half, bottom-half, bottom-3, or last in weekly scoring — regular season only, all time."
+      subtitle="How often each manager finishes 1st, top-3, top-half, bottom-half, bottom-3, or last in weekly scoring."
+      dataScope="regular"
     >
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
