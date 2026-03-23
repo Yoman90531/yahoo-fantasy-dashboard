@@ -25,6 +25,39 @@ def _get_active_managers(db: Session) -> list:
     ).all()
 
 
+def _all_teams(db: Session) -> list:
+    """Load all teams once."""
+    return db.query(Team).all()
+
+
+def _team_to_manager(teams: list) -> dict[int, int]:
+    """Map team.id -> manager_id."""
+    return {t.id: t.manager_id for t in teams}
+
+
+def _team_yahoo_ids(teams: list) -> dict[int, int]:
+    """Map team.id -> yahoo_team_id."""
+    return {t.id: t.yahoo_team_id for t in teams}
+
+
+def _season_map(db: Session) -> dict[int, Season]:
+    """Map season.id -> Season object."""
+    return {s.id: s for s in db.query(Season).all()}
+
+
+def _get_matchups(db: Session, *, is_playoff: bool | None = None, is_consolation: bool = False) -> list:
+    """Load matchups with standard filters."""
+    q = db.query(Matchup).filter(Matchup.is_consolation == is_consolation)
+    if is_playoff is not None:
+        q = q.filter(Matchup.is_playoff == is_playoff)
+    return q.all()
+
+
+def _get_season_by_year(db: Session, year: int):
+    """Look up a single season by year, or None."""
+    return db.query(Season).filter(Season.year == year).first()
+
+
 # ---------------------------------------------------------------------------
 # All-time records
 # ---------------------------------------------------------------------------
@@ -37,10 +70,14 @@ def compute_all_time_records(db: Session) -> list[dict]:
     managers = _get_active_managers(db)
     all_seasons = db.query(Season).order_by(Season.year.desc()).all()
     most_recent_year = all_seasons[0].year if all_seasons else None
+    all_teams = _all_teams(db)
+    teams_by_mgr: dict[int, list] = defaultdict(list)
+    for t in all_teams:
+        teams_by_mgr[t.manager_id].append(t)
 
     results = []
     for mgr in managers:
-        teams = db.query(Team).filter(Team.manager_id == mgr.id).all()
+        teams = teams_by_mgr.get(mgr.id, [])
         if not teams:
             continue
 
@@ -100,10 +137,10 @@ def compute_head_to_head(db: Session) -> dict:
     mgr_by_id = {m.id: m for m in managers}
 
     # Map team_id → manager_id
-    teams = db.query(Team).all()
-    team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
+    teams = _all_teams(db)
+    team_to_mgr: dict[int, int] = _team_to_manager(teams)
 
-    matchups = db.query(Matchup).filter(Matchup.is_consolation == False).all()
+    matchups = _get_matchups(db)
 
     # records[a_id][b_id] = {"wins": 0, "losses": 0, "ties": 0, "pf": 0.0, "pa": 0.0}
     records: dict[int, dict[int, dict]] = defaultdict(lambda: defaultdict(lambda: {
@@ -178,16 +215,16 @@ def compute_luck_index(db: Session, year: int | None = None) -> list[dict]:
 
     If year is None, computes all-time luck.
     """
-    teams = db.query(Team).all()
-    team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
+    teams = _all_teams(db)
+    team_to_mgr: dict[int, int] = _team_to_manager(teams)
     team_season: dict[int, int] = {t.id: t.season_id for t in teams}
 
     managers = {m.id: m for m in _get_active_managers(db)}
-    seasons = {s.id: s for s in db.query(Season).all()}
+    seasons = _season_map(db)
 
     matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
     if year:
-        season = db.query(Season).filter(Season.year == year).first()
+        season = _get_season_by_year(db, year)
         if not season:
             return []
         matchup_q = matchup_q.filter(Matchup.season_id == season.id)
@@ -281,10 +318,10 @@ def _matchup_to_entries(m: Matchup, db: Session, team_to_mgr: dict, mgr_map: dic
 
 
 def compute_weekly_records(db: Session, top_n: int = 10) -> dict:
-    teams = db.query(Team).all()
-    team_to_mgr = {t.id: t.manager_id for t in teams}
+    teams = _all_teams(db)
+    team_to_mgr = _team_to_manager(teams)
     mgr_map = {m.id: m for m in _get_active_managers(db)}
-    season_map = {s.id: s for s in db.query(Season).all()}
+    season_map = _season_map(db)
 
     matchups = db.query(Matchup).all()
 
@@ -387,14 +424,14 @@ def compute_season_scoring(db: Session) -> dict:
 # ---------------------------------------------------------------------------
 
 def compute_consistency(db: Session, year: int | None = None) -> list[dict]:
-    teams = db.query(Team).all()
-    team_to_mgr = {t.id: t.manager_id for t in teams}
+    teams = _all_teams(db)
+    team_to_mgr = _team_to_manager(teams)
     mgr_map = {m.id: m for m in _get_active_managers(db)}
-    season_map = {s.id: s for s in db.query(Season).all()}
+    season_map = _season_map(db)
 
     matchup_q = db.query(Matchup)
     if year:
-        season = db.query(Season).filter(Season.year == year).first()
+        season = _get_season_by_year(db, year)
         if season:
             matchup_q = matchup_q.filter(Matchup.season_id == season.id)
 
@@ -670,7 +707,7 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
     awards = []
 
     if year:
-        season = db.query(Season).filter(Season.year == year).first()
+        season = _get_season_by_year(db, year)
         if not season:
             return {"year": year, "awards": []}
         season_ids = [season.id]
@@ -891,13 +928,13 @@ def compute_power_rankings(db: Session, year: int | None = None) -> list[dict]:
     """
     # Gather raw data
     if year:
-        season = db.query(Season).filter(Season.year == year).first()
+        season = _get_season_by_year(db, year)
         if not season:
             return []
         teams = db.query(Team).filter(Team.season_id == season.id).all()
         mgr_ids = [t.manager_id for t in teams]
     else:
-        teams = db.query(Team).all()
+        teams = _all_teams(db)
         mgr_ids = list({t.manager_id for t in teams})
 
     if not mgr_ids:
@@ -1005,17 +1042,13 @@ def compute_rivalry(db: Session, manager_a_id: int, manager_b_id: int) -> dict |
     if not mgr_a or not mgr_b:
         return None
 
-    teams = db.query(Team).all()
-    team_to_mgr = {t.id: t.manager_id for t in teams}
-    team_yahoo_id = {t.id: t.yahoo_team_id for t in teams}
-    season_map = {s.id: s for s in db.query(Season).all()}
+    teams = _all_teams(db)
+    team_to_mgr = _team_to_manager(teams)
+    team_yahoo_id = _team_yahoo_ids(teams)
+    season_map = _season_map(db)
 
     # Find all matchups between these two managers
-    all_matchups = (
-        db.query(Matchup)
-        .filter(Matchup.is_consolation == False)
-        .all()
-    )
+    all_matchups = _get_matchups(db)
 
     rivalry_matchups = []
     for m in all_matchups:
@@ -1148,8 +1181,8 @@ def compute_score_distribution(db: Session) -> list[dict]:
     Per-manager weekly score distribution: min, Q1, median, Q3, max, mean,
     std_dev, and outliers (beyond 1.5*IQR). Includes all matchup weeks.
     """
-    teams = db.query(Team).all()
-    team_to_mgr = {t.id: t.manager_id for t in teams}
+    teams = _all_teams(db)
+    team_to_mgr = _team_to_manager(teams)
     mgr_map = {m.id: m for m in _get_active_managers(db)}
 
     mgr_scores: dict[int, list[float]] = defaultdict(list)
@@ -1208,11 +1241,11 @@ def compute_weekly_finish_distribution(db: Session) -> list[dict]:
     Bucket each manager's finishes into: 1st, top-3, top-half, bottom-half,
     bottom-3, last. Returns counts and percentages per manager.
     """
-    teams = db.query(Team).all()
-    team_to_mgr = {t.id: t.manager_id for t in teams}
+    teams = _all_teams(db)
+    team_to_mgr = _team_to_manager(teams)
     mgr_map = {m.id: m for m in _get_active_managers(db)}
 
-    matchups = db.query(Matchup).filter(Matchup.is_playoff == False).all()
+    matchups = _get_matchups(db, is_playoff=False)
 
     # Build weekly score maps: (season_id, week) -> [(team_id, pts)]
     week_scores: dict[tuple, list] = defaultdict(list)
@@ -1283,7 +1316,7 @@ def compute_manager_eras(db: Session) -> list[dict]:
     Divides seasons into three eras and returns per-manager stats for each.
     """
     seasons_by_year = {s.year: s for s in db.query(Season).all()}
-    teams = db.query(Team).all()
+    teams = _all_teams(db)
     mgr_map = {m.id: m for m in _get_active_managers(db)}
 
     results = []
@@ -1352,7 +1385,7 @@ def compute_projection_performance(db: Session, year: int | None = None) -> list
     for mgr in managers:
         teams_q = db.query(Team).filter(Team.manager_id == mgr.id)
         if year:
-            season = db.query(Season).filter(Season.year == year).first()
+            season = _get_season_by_year(db, year)
             if season:
                 teams_q = teams_q.filter(Team.season_id == season.id)
         for t in teams_q.all():
@@ -1371,7 +1404,7 @@ def compute_projection_performance(db: Session, year: int | None = None) -> list
         )
     )
     if year:
-        season = db.query(Season).filter(Season.year == year).first()
+        season = _get_season_by_year(db, year)
         if season:
             q = q.filter(Matchup.season_id == season.id)
 
@@ -1544,13 +1577,13 @@ def compute_win_margins(db: Session, year: int | None = None) -> list[dict]:
     Per-manager win/loss margin analytics: average margins, blowout/close
     game counts, and biggest win/loss.
     """
-    teams = db.query(Team).all()
-    team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
+    teams = _all_teams(db)
+    team_to_mgr: dict[int, int] = _team_to_manager(teams)
     managers = {m.id: m for m in _get_active_managers(db)}
 
     matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
     if year:
-        season = db.query(Season).filter(Season.year == year).first()
+        season = _get_season_by_year(db, year)
         if not season:
             return []
         matchup_q = matchup_q.filter(Matchup.season_id == season.id)
@@ -1814,8 +1847,8 @@ def compute_consolation_bracket(db: Session, year: int | None = None) -> list[di
     mgr_map = {m.id: m for m in managers}
 
     # Map team_id -> manager_id
-    teams = db.query(Team).all()
-    team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
+    teams = _all_teams(db)
+    team_to_mgr: dict[int, int] = _team_to_manager(teams)
 
     # Count missed playoffs per manager
     missed_playoffs: dict[int, int] = defaultdict(int)
@@ -2033,12 +2066,12 @@ def compute_strength_of_schedule(db: Session, year: int | None = None) -> list[d
     - adjusted_win_pct: actual_win_pct + (avg_opp_win_pct - league_avg_opp_win_pct)
     - wins_above_expected: actual_wins - expected_wins (where expected = games * league_avg_win_pct_for_their_opponents)
     """
-    teams = db.query(Team).all()
+    teams = _all_teams(db)
     managers = {m.id: m for m in _get_active_managers(db)}
-    seasons = {s.id: s for s in db.query(Season).all()}
+    seasons = _season_map(db)
 
     # Map team_id -> manager_id and team_id -> season_id
-    team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
+    team_to_mgr: dict[int, int] = _team_to_manager(teams)
     team_to_season: dict[int, int] = {t.id: t.season_id for t in teams}
 
     # Build team win percentages: team_id -> (wins, losses, ties)
@@ -2057,7 +2090,7 @@ def compute_strength_of_schedule(db: Session, year: int | None = None) -> list[d
     # Get regular-season matchups
     matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
     if year:
-        season = db.query(Season).filter(Season.year == year).first()
+        season = _get_season_by_year(db, year)
         if not season:
             return []
         matchup_q = matchup_q.filter(Matchup.season_id == season.id)
