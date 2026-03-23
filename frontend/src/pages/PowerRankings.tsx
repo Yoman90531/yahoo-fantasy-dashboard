@@ -3,6 +3,7 @@ import PageWrapper from '../components/layout/PageWrapper'
 import PowerRadarChart from '../components/charts/PowerRadarChart'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import YearFilter from '../components/cards/YearFilter'
 import { useApi } from '../hooks/useApi'
 import { statsApi, seasonsApi } from '../api/client'
 import type { PowerRankingRow, SeasonSummary } from '../types'
@@ -54,23 +55,7 @@ export default function PowerRankings() {
       subtitle="Composite dominance score across 5 dimensions. Click rows to compare on the radar chart."
       dataScope="regular"
     >
-      {/* Year filter */}
-      <div className="flex items-center gap-3 mb-6">
-        <label className="text-gray-400 text-sm">Season:</label>
-        <select
-          value={year ?? ''}
-          onChange={e => {
-            setYear(e.target.value ? Number(e.target.value) : undefined)
-            setSelected(new Set())
-          }}
-          className="bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500"
-        >
-          <option value="">All time</option>
-          {[...(seasons ?? [])].reverse().map(s => (
-            <option key={s.year} value={s.year}>{s.year}</option>
-          ))}
-        </select>
-      </div>
+      <YearFilter seasons={seasons} year={year} onChange={y => { setYear(y); setSelected(new Set()) }} />
 
       {/* Methodology */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">

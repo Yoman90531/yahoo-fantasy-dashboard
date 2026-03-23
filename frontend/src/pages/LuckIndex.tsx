@@ -3,31 +3,20 @@ import PageWrapper from '../components/layout/PageWrapper'
 import WinRateBarChart from '../components/charts/WinRateBarChart'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import YearFilter from '../components/cards/YearFilter'
+import ExplainerCard from '../components/cards/ExplainerCard'
 import { useApi } from '../hooks/useApi'
+import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi, seasonsApi } from '../api/client'
 import type { LuckIndexRow, SeasonSummary } from '../types'
 
-type LuckSortKey = 'manager_name' | 'actual_wins' | 'expected_wins' | 'luck_score'
+type SortKey = 'manager_name' | 'actual_wins' | 'expected_wins' | 'luck_score'
 
 export default function LuckIndex() {
   const [year, setYear] = useState<number | undefined>(undefined)
-  const [sort, setSort] = useState<{ key: LuckSortKey; dir: 1 | -1 }>({ key: 'luck_score', dir: -1 })
   const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
   const { data, loading, error } = useApi<LuckIndexRow[]>(() => statsApi.luckIndex(year), [year])
-
-  const toggle = (key: LuckSortKey) =>
-    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })
-
-  const sorted = [...(data ?? [])].sort((a, b) => {
-    if (sort.key === 'manager_name') return a.manager_name.localeCompare(b.manager_name) * sort.dir
-    return ((a[sort.key] as number) - (b[sort.key] as number)) * sort.dir
-  })
-
-  const th = (label: string, key: LuckSortKey, align: 'left' | 'right' = 'right') => (
-    <th className={`px-4 py-3 text-${align} cursor-pointer hover:text-white select-none`} onClick={() => toggle(key)}>
-      {label} {sort.key === key ? (sort.dir === -1 ? '↓' : '↑') : ''}
-    </th>
-  )
+  const { sorted, th } = useSortedTable<LuckIndexRow, SortKey>(data, 'luck_score')
 
   const barData = (data ?? []).map(r => ({
     name: r.manager_name.split(' ')[0],
@@ -40,26 +29,11 @@ export default function LuckIndex() {
       subtitle="How lucky has each manager been? Positive = got luckier than expected. Negative = deserved better."
       dataScope="regular"
     >
-      {/* Formula explainer */}
-      <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">
-        <span className="text-gray-200 font-medium">How it works: </span>
+      <ExplainerCard>
         Each week, we calculate how many other teams you would have beaten with your score. That gives an "expected wins" number. Your luck score = actual wins − expected wins. Positive means you benefited from favorable scheduling. Negative means you were unlucky.
-      </div>
+      </ExplainerCard>
 
-      {/* Year filter */}
-      <div className="flex items-center gap-3 mb-6">
-        <label className="text-gray-400 text-sm">Filter by season:</label>
-        <select
-          value={year ?? ''}
-          onChange={e => setYear(e.target.value ? Number(e.target.value) : undefined)}
-          className="bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500"
-        >
-          <option value="">All time</option>
-          {[...(seasons ?? [])].reverse().map(s => (
-            <option key={s.year} value={s.year}>{s.year}</option>
-          ))}
-        </select>
-      </div>
+      <YearFilter seasons={seasons} year={year} onChange={setYear} />
 
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

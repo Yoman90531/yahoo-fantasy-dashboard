@@ -5,7 +5,10 @@ import {
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import YearFilter from '../components/cards/YearFilter'
+import ExplainerCard from '../components/cards/ExplainerCard'
 import { useApi } from '../hooks/useApi'
+import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi, seasonsApi } from '../api/client'
 import type { PlayoffPerformanceRow, SeasonSummary } from '../types'
 
@@ -13,23 +16,9 @@ type SortKey = 'manager_name' | 'reg_win_pct' | 'playoff_win_pct' | 'delta_win_p
 
 export default function PlayoffPerformance() {
   const [year, setYear] = useState<number | undefined>(undefined)
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'delta_win_pct', dir: -1 })
   const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
   const { data, loading, error } = useApi<PlayoffPerformanceRow[]>(() => statsApi.playoffPerformance(year), [year])
-
-  const toggle = (key: SortKey) =>
-    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })
-
-  const sorted = [...(data ?? [])].sort((a, b) => {
-    if (sort.key === 'manager_name') return a.manager_name.localeCompare(b.manager_name) * sort.dir
-    return ((a[sort.key] as number) - (b[sort.key] as number)) * sort.dir
-  })
-
-  const th = (label: string, key: SortKey, align: 'left' | 'right' = 'right') => (
-    <th className={`px-4 py-3 text-${align} cursor-pointer hover:text-white select-none`} onClick={() => toggle(key)}>
-      {label} {sort.key === key ? (sort.dir === -1 ? '\u2193' : '\u2191') : ''}
-    </th>
-  )
+  const { sorted, th } = useSortedTable<PlayoffPerformanceRow, SortKey>(data, 'delta_win_pct')
 
   const chartData = (data ?? []).map(r => ({
     name: r.manager_name.split(' ')[0],
@@ -43,26 +32,11 @@ export default function PlayoffPerformance() {
       subtitle="How does each manager's playoff performance compare to their regular season? Positive delta = better in playoffs."
       dataScope="playoffs"
     >
-      {/* Explainer */}
-      <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">
-        <span className="text-gray-200 font-medium">How it works: </span>
+      <ExplainerCard>
         We split each manager's matchups into regular season and playoff games (excluding consolation). Win rates and average scores are compared between the two, and the delta shows how much better (or worse) each manager performs when it matters most.
-      </div>
+      </ExplainerCard>
 
-      {/* Year filter */}
-      <div className="flex items-center gap-3 mb-6">
-        <label className="text-gray-400 text-sm">Filter by season:</label>
-        <select
-          value={year ?? ''}
-          onChange={e => setYear(e.target.value ? Number(e.target.value) : undefined)}
-          className="bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500"
-        >
-          <option value="">All time</option>
-          {[...(seasons ?? [])].reverse().map(s => (
-            <option key={s.year} value={s.year}>{s.year}</option>
-          ))}
-        </select>
-      </div>
+      <YearFilter seasons={seasons} year={year} onChange={setYear} />
 
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import { useApi } from '../hooks/useApi'
+import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi } from '../api/client'
 import type { StreakRow } from '../types'
 
@@ -20,22 +20,8 @@ function formatWhen(startYear: number | null, startWeek: number | null, endYear:
 }
 
 export default function StreakTracker() {
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'current_streak_length', dir: -1 })
   const { data, loading, error } = useApi<StreakRow[]>(() => statsApi.streaks(), [])
-
-  const toggle = (key: SortKey) =>
-    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })
-
-  const sorted = [...(data ?? [])].sort((a, b) => {
-    if (sort.key === 'manager_name') return a.manager_name.localeCompare(b.manager_name) * sort.dir
-    return ((a[sort.key] as number) - (b[sort.key] as number)) * sort.dir
-  })
-
-  const th = (label: string, key: SortKey, align: 'left' | 'right' = 'right') => (
-    <th className={`px-4 py-3 text-${align} cursor-pointer hover:text-white select-none`} onClick={() => toggle(key)}>
-      {label} {sort.key === key ? (sort.dir === -1 ? '\u2193' : '\u2191') : ''}
-    </th>
-  )
+  const { sorted, th } = useSortedTable<StreakRow, SortKey>(data, 'current_streak_length')
 
   // Summary card helpers
   const activeWinStreaks = (data ?? []).filter(r => r.current_streak_type === 'W' && r.current_streak_length > 0)

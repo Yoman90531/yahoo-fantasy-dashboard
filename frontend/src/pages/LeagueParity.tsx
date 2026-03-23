@@ -1,11 +1,12 @@
-import { useState } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import ExplainerCard from '../components/cards/ExplainerCard'
 import { useApi } from '../hooks/useApi'
+import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi } from '../api/client'
 import type { LeagueParityRow } from '../types'
 
@@ -13,20 +14,7 @@ type SortKey = 'year' | 'scoring_std_dev' | 'scoring_range' | 'record_spread' | 
 
 export default function LeagueParity() {
   const { data, loading, error } = useApi<LeagueParityRow[]>(() => statsApi.leagueParity(), [])
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'year', dir: 1 })
-
-  const toggle = (key: SortKey) =>
-    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'year' ? 1 : -1 })
-
-  const sorted = [...(data ?? [])].sort((a, b) => {
-    return ((a[sort.key] as number) - (b[sort.key] as number)) * sort.dir
-  })
-
-  const th = (label: string, key: SortKey, align: 'left' | 'right' = 'right') => (
-    <th className={`px-4 py-3 text-${align} cursor-pointer hover:text-white select-none`} onClick={() => toggle(key)}>
-      {label} {sort.key === key ? (sort.dir === -1 ? '\u2193' : '\u2191') : ''}
-    </th>
-  )
+  const { sorted, th } = useSortedTable<LeagueParityRow, SortKey>(data, 'year', 1)
 
   // Determine most/least competitive seasons by scoring std dev (lower = more parity)
   const mostCompetitive = data && data.length > 0
@@ -48,11 +36,9 @@ export default function LeagueParity() {
       subtitle="How competitive and balanced was each season? Lower standard deviation and smaller spreads indicate tighter competition."
       dataScope="regular"
     >
-      {/* Explainer */}
-      <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">
-        <span className="text-gray-200 font-medium">How it works: </span>
+      <ExplainerCard>
         We measure parity by looking at the spread in scoring and records across all managers each season. A low scoring standard deviation means everyone scored similarly. A small record spread means wins were evenly distributed. The Gini coefficient (0 = perfect equality, 1 = total inequality) captures overall scoring balance.
-      </div>
+      </ExplainerCard>
 
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

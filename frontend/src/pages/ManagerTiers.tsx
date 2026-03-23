@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import { useApi } from '../hooks/useApi'
+import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi } from '../api/client'
 import type { ManagerTierRow } from '../types'
 
@@ -38,27 +38,13 @@ const TIER_CONFIG: Record<string, { bg: string; border: string; header: string; 
 const TIER_ORDER = ['Elite', 'Contender', 'Middle of the Pack', 'Rebuilding']
 
 export default function ManagerTiers() {
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'composite_score', dir: -1 })
   const { data, loading, error } = useApi<ManagerTierRow[]>(() => statsApi.managerTiers(), [])
-
-  const toggleSort = (key: SortKey) =>
-    setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })
-
-  const sorted = [...(data ?? [])].sort((a, b) => {
-    if (sort.key === 'manager_name') return a.manager_name.localeCompare(b.manager_name) * sort.dir
-    return ((a[sort.key] as number) - (b[sort.key] as number)) * sort.dir
-  })
+  const { sorted, th } = useSortedTable<ManagerTierRow, SortKey>(data, 'composite_score')
 
   const tierGroups = TIER_ORDER.map(tier => ({
     tier,
     managers: (data ?? []).filter(m => m.tier === tier),
   })).filter(g => g.managers.length > 0)
-
-  const th = (label: string, key: SortKey) => (
-    <th className="px-4 py-3 text-right cursor-pointer hover:text-white select-none" onClick={() => toggleSort(key)}>
-      {label} {sort.key === key ? (sort.dir === -1 ? '\u2193' : '\u2191') : ''}
-    </th>
-  )
 
   return (
     <PageWrapper
@@ -140,9 +126,7 @@ export default function ManagerTiers() {
               <thead>
                 <tr className="bg-gray-900 text-gray-400 text-xs uppercase tracking-wider">
                   <th className="px-4 py-3 text-left w-8">#</th>
-                  <th className="px-4 py-3 text-left cursor-pointer hover:text-white select-none" onClick={() => toggleSort('manager_name')}>
-                    Manager {sort.key === 'manager_name' ? (sort.dir === -1 ? '\u2193' : '\u2191') : ''}
-                  </th>
+                  {th('Manager', 'manager_name', 'left')}
                   <th className="px-4 py-3 text-left">Tier</th>
                   {th('Score', 'composite_score')}
                   {th('Win %', 'win_pct')}

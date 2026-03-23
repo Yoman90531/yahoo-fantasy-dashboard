@@ -14,6 +14,18 @@ from app.models.matchup import Matchup
 
 
 # ---------------------------------------------------------------------------
+# Shared helpers
+# ---------------------------------------------------------------------------
+
+def _get_active_managers(db: Session) -> list:
+    """Return all managers that aren't hidden."""
+    return db.query(Manager).filter(
+        ~Manager.yahoo_guid.like("hidden_%"),
+        ~Manager.display_name.like("%hidden%"),
+    ).all()
+
+
+# ---------------------------------------------------------------------------
 # All-time records
 # ---------------------------------------------------------------------------
 
@@ -22,7 +34,7 @@ def compute_all_time_records(db: Session) -> list[dict]:
     Returns per-manager all-time stats: W/L/T, PF, PA, championships,
     runner-ups, playoff appearances, seasons played, current drought.
     """
-    managers = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()
+    managers = _get_active_managers(db)
     all_seasons = db.query(Season).order_by(Season.year.desc()).all()
     most_recent_year = all_seasons[0].year if all_seasons else None
 
@@ -170,7 +182,7 @@ def compute_luck_index(db: Session, year: int | None = None) -> list[dict]:
     team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
     team_season: dict[int, int] = {t.id: t.season_id for t in teams}
 
-    managers = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    managers = {m.id: m for m in _get_active_managers(db)}
     seasons = {s.id: s for s in db.query(Season).all()}
 
     matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
@@ -271,7 +283,7 @@ def _matchup_to_entries(m: Matchup, db: Session, team_to_mgr: dict, mgr_map: dic
 def compute_weekly_records(db: Session, top_n: int = 10) -> dict:
     teams = db.query(Team).all()
     team_to_mgr = {t.id: t.manager_id for t in teams}
-    mgr_map = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    mgr_map = {m.id: m for m in _get_active_managers(db)}
     season_map = {s.id: s for s in db.query(Season).all()}
 
     matchups = db.query(Matchup).all()
@@ -347,7 +359,7 @@ def compute_season_scoring(db: Session) -> dict:
     { managers: [name, ...], seasons: [{year, name: pf, ...}, ...] }
     """
     seasons = db.query(Season).order_by(Season.year).all()
-    managers = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()
+    managers = _get_active_managers(db)
     mgr_by_id = {m.id: m.display_name for m in managers}
 
     # Collect all names that appear in at least one team
@@ -377,7 +389,7 @@ def compute_season_scoring(db: Session) -> dict:
 def compute_consistency(db: Session, year: int | None = None) -> list[dict]:
     teams = db.query(Team).all()
     team_to_mgr = {t.id: t.manager_id for t in teams}
-    mgr_map = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    mgr_map = {m.id: m for m in _get_active_managers(db)}
     season_map = {s.id: s for s in db.query(Season).all()}
 
     matchup_q = db.query(Matchup)
@@ -484,7 +496,7 @@ def compute_trophy_case(db: Session, manager_id: int) -> dict | None:
 # ---------------------------------------------------------------------------
 
 def compute_droughts(db: Session) -> list[dict]:
-    managers = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()
+    managers = _get_active_managers(db)
     all_seasons = db.query(Season).order_by(Season.year.desc()).all()
     most_recent_year = all_seasons[0].year if all_seasons else 0
 
@@ -591,7 +603,7 @@ def compute_streaks(db: Session, manager_id: int) -> dict:
 def compute_throne_tracker(db: Session) -> dict:
     """Championship timeline with dynasty detection."""
     seasons = db.query(Season).order_by(Season.year).all()
-    mgr_map = {m.id: m.display_name for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    mgr_map = {m.id: m.display_name for m in _get_active_managers(db)}
 
     timeline = []
     for s in seasons:
@@ -668,7 +680,7 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
     teams = db.query(Team).filter(Team.season_id.in_(season_ids)).all()
     team_ids = [t.id for t in teams]
     team_to_mgr = {t.id: t.manager_id for t in teams}
-    mgr_map = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    mgr_map = {m.id: m for m in _get_active_managers(db)}
 
     matchups = (
         db.query(Matchup)
@@ -891,7 +903,7 @@ def compute_power_rankings(db: Session, year: int | None = None) -> list[dict]:
     if not mgr_ids:
         return []
 
-    mgr_map = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    mgr_map = {m.id: m for m in _get_active_managers(db)}
 
     # 1. Win Rate
     mgr_wins: dict[int, int] = defaultdict(int)
@@ -1138,7 +1150,7 @@ def compute_score_distribution(db: Session) -> list[dict]:
     """
     teams = db.query(Team).all()
     team_to_mgr = {t.id: t.manager_id for t in teams}
-    mgr_map = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    mgr_map = {m.id: m for m in _get_active_managers(db)}
 
     mgr_scores: dict[int, list[float]] = defaultdict(list)
     for m in db.query(Matchup).all():
@@ -1198,7 +1210,7 @@ def compute_weekly_finish_distribution(db: Session) -> list[dict]:
     """
     teams = db.query(Team).all()
     team_to_mgr = {t.id: t.manager_id for t in teams}
-    mgr_map = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    mgr_map = {m.id: m for m in _get_active_managers(db)}
 
     matchups = db.query(Matchup).filter(Matchup.is_playoff == False).all()
 
@@ -1272,7 +1284,7 @@ def compute_manager_eras(db: Session) -> list[dict]:
     """
     seasons_by_year = {s.year: s for s in db.query(Season).all()}
     teams = db.query(Team).all()
-    mgr_map = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    mgr_map = {m.id: m for m in _get_active_managers(db)}
 
     results = []
     for era in ERAS:
@@ -1332,7 +1344,7 @@ def compute_projection_performance(db: Session, year: int | None = None) -> list
     Only includes weeks where projected data is available (non-null, non-zero).
     Regular season only.
     """
-    managers = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()
+    managers = _get_active_managers(db)
     mgr_map = {m.id: m for m in managers}
 
     # Build team_id -> manager_id map
@@ -1433,7 +1445,7 @@ def compute_playoff_performance(db: Session, year: int | None = None) -> list[di
     Compares each manager's regular-season record/scoring against their
     playoff record/scoring.  Returns a list sorted by delta_win_pct desc.
     """
-    managers = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    managers = {m.id: m for m in _get_active_managers(db)}
 
     # Build matchup query
     q = (
@@ -1534,7 +1546,7 @@ def compute_win_margins(db: Session, year: int | None = None) -> list[dict]:
     """
     teams = db.query(Team).all()
     team_to_mgr: dict[int, int] = {t.id: t.manager_id for t in teams}
-    managers = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    managers = {m.id: m for m in _get_active_managers(db)}
 
     matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
     if year:
@@ -1607,7 +1619,7 @@ def compute_win_margins(db: Session, year: int | None = None) -> list[dict]:
 
 def compute_streaks_all(db: Session) -> list[dict]:
     """Returns current and best win/loss streaks for every manager."""
-    managers = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()
+    managers = _get_active_managers(db)
     mgr_map = {m.id: m.display_name for m in managers}
 
     # Pre-fetch all regular-season matchups in chronological order
@@ -1798,7 +1810,7 @@ def compute_consolation_bracket(db: Session, year: int | None = None) -> list[di
     Per-manager consolation bracket stats: games, wins, losses, win%,
     average points scored in consolation matchups, and times missed playoffs.
     """
-    managers = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()
+    managers = _get_active_managers(db)
     mgr_map = {m.id: m for m in managers}
 
     # Map team_id -> manager_id
@@ -1893,7 +1905,7 @@ def compute_manager_tiers(db: Session) -> list[dict]:
     and consistency (low std dev of season finishes).
     Only managers with 3+ seasons are included.
     """
-    managers = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()
+    managers = _get_active_managers(db)
     mgr_map = {m.id: m for m in managers}
 
     # Gather per-manager career data
@@ -2022,7 +2034,7 @@ def compute_strength_of_schedule(db: Session, year: int | None = None) -> list[d
     - wins_above_expected: actual_wins - expected_wins (where expected = games * league_avg_win_pct_for_their_opponents)
     """
     teams = db.query(Team).all()
-    managers = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    managers = {m.id: m for m in _get_active_managers(db)}
     seasons = {s.id: s for s in db.query(Season).all()}
 
     # Map team_id -> manager_id and team_id -> season_id
