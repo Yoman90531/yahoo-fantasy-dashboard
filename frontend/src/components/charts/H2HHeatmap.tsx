@@ -22,6 +22,7 @@ const HEADER_H = 140
 export default function H2HHeatmap({ data }: Props) {
   const { managers, records } = data
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null)
+  const [hovered, setHovered] = useState<string | null>(null)
   const navigate = useNavigate()
 
   const lookup: Record<string, { wins: number; losses: number; ties: number; win_pct: number }> = {}
@@ -43,6 +44,10 @@ export default function H2HHeatmap({ data }: Props) {
 
   return (
     <div className="overflow-auto">
+      <p className="text-xs text-gray-500 mb-3 flex items-center gap-1.5">
+        <span className="inline-block w-3 h-3 rounded-sm bg-green-900 border border-green-700" />
+        Click any colored cell to see the full rivalry breakdown
+      </p>
       <table
         style={{
           borderCollapse: 'collapse',
@@ -112,6 +117,8 @@ export default function H2HHeatmap({ data }: Props) {
                   ? `${row.name} vs ${col.name}: ${rec.wins}-${rec.losses}${rec.ties ? `-${rec.ties}` : ''} (${(rec.win_pct * 100).toFixed(0)}%)`
                   : ''
 
+                const cellKey = `${row.id}-${col.id}`
+                const isHovered = hovered === cellKey
                 return (
                   <td
                     key={col.id}
@@ -119,18 +126,27 @@ export default function H2HHeatmap({ data }: Props) {
                       width: CELL,
                       minWidth: CELL,
                       height: CELL,
-                      backgroundColor: bg,
+                      backgroundColor: isHovered && rec ? '#ffffff22' : bg,
                       textAlign: 'center',
                       verticalAlign: 'middle',
                       fontSize: 11,
                       fontFamily: 'monospace',
                       color: '#e5e7eb',
-                      border: '1px solid #030712',
+                      border: isHovered && rec ? '2px solid #60a5fa' : '1px solid #030712',
                       cursor: rec ? 'pointer' : 'default',
+                      transition: 'background-color 0.1s, border-color 0.1s',
                     }}
                     onClick={() => rec && navigate(`/rivalry?a=${row.id}&b=${col.id}`)}
-                    onMouseEnter={e => rec && setTooltip({ x: e.clientX, y: e.clientY, text: tipText })}
-                    onMouseLeave={() => setTooltip(null)}
+                    onMouseEnter={e => {
+                      if (rec) {
+                        setHovered(cellKey)
+                        setTooltip({ x: e.clientX, y: e.clientY, text: tipText })
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      setHovered(null)
+                      setTooltip(null)
+                    }}
                   >
                     {rec ? rec.wins : ''}
                   </td>

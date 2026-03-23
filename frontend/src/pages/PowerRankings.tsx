@@ -83,31 +83,37 @@ export default function PowerRankings() {
             {
               label: 'Win Rate',
               color: 'text-blue-400',
-              desc: 'Regular-season wins divided by total games played. The most direct measure of whether you win your matchup.',
+              formula: 'Wins ÷ Games Played',
+              desc: 'The most direct measure of success — did you win your matchup? A manager who goes 10-3 in a season scores 77% here. Reflects how well you convert good rosters into actual wins.',
             },
             {
               label: 'Scoring',
               color: 'text-emerald-400',
-              desc: 'Average points scored per game. Rewards managers who consistently put up big numbers regardless of opponent.',
+              formula: 'Avg Points Per Week',
+              desc: 'Raw weekly scoring power averaged across all regular-season games. Regardless of opponent or luck, this asks: how many points did you actually put up? High scorers are dangerous every week.',
             },
             {
               label: 'Consistency',
               color: 'text-amber-400',
-              desc: 'Inverse of weekly score standard deviation. A high score here means you show up every week — no boom-or-bust.',
+              formula: '1 ÷ Score Std Deviation',
+              desc: 'How predictable is your output week to week? A low standard deviation = high consistency. Boom-or-bust managers score high one week and tank the next. Steady managers show up reliably and avoid catastrophic losses.',
             },
             {
               label: 'Skill',
               color: 'text-purple-400',
-              desc: 'Expected wins per game based on how your score ranks against every other team\'s score that week. High skill means you would have beaten most opponents most weeks — luck-adjusted.',
+              formula: 'Expected Wins Per Game',
+              desc: 'Each week, your score is ranked against all other teams\' scores. Your "expected wins" = fraction of opponents you would have beaten. A manager with high skill consistently puts up scores that would beat most opponents — regardless of who they actually faced.',
             },
             {
               label: 'Playoffs',
               color: 'text-rose-400',
-              desc: 'Average postseason success per season: champion = 100 pts, runner-up = 70, made playoffs = 40, missed = 0. Rewards managers who peak when it matters.',
+              formula: 'Postseason Success Score',
+              desc: 'Rewards peaking when it matters most. Championship = 100 pts, runner-up = 70, made playoffs = 40, missed playoffs = 0 — averaged per season played. A manager who always makes the playoffs but never wins scores lower than one who wins titles.',
             },
           ].map(d => (
             <div key={d.label} className="bg-gray-800 rounded-lg p-3">
-              <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${d.color}`}>{d.label}</div>
+              <div className={`text-xs font-semibold uppercase tracking-wider mb-0.5 ${d.color}`}>{d.label}</div>
+              <div className="text-[10px] text-gray-500 font-mono mb-1.5">{d.formula}</div>
               <p className="text-xs text-gray-400 leading-relaxed">{d.desc}</p>
             </div>
           ))}
