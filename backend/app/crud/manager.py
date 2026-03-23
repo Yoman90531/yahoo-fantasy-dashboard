@@ -18,7 +18,7 @@ def upsert_manager(db: Session, yahoo_guid: str, display_name: str, nickname: st
 
 
 def get_all(db: Session) -> list[Manager]:
-    return db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%")).order_by(Manager.display_name).all()
+    return db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).order_by(Manager.display_name).all()
 
 
 def get_by_id(db: Session, manager_id: int) -> Manager | None:

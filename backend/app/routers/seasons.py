@@ -78,7 +78,7 @@ def get_season_matchups(year: int, week: int | None = None, db: Session = Depend
     matchups = q.order_by(Matchup.week).all()
 
     teams = {t.id: t for t in crud.team.get_by_season(db, season.id)}
-    managers = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%")).all()}
+    managers = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
 
     result = []
     for m in matchups:
