@@ -60,25 +60,28 @@ export default function H2HHeatmap({ data }: Props) {
             {managers.map(col => (
               <th
                 key={col.id}
-                style={{ width: CELL, minWidth: CELL, padding: 0, overflow: 'visible', position: 'relative' }}
+                style={{ width: CELL, minWidth: CELL, padding: 0 }}
               >
-                {/* spacer forces the th height; label floats above via absolute */}
-                <div style={{ height: HEADER_H }} />
-                <span
-                  style={{
-                    position: 'absolute',
-                    bottom: 4,
-                    left: 0,
-                    display: 'inline-block',
-                    transformOrigin: 'bottom left',
-                    transform: 'rotate(-45deg)',
-                    whiteSpace: 'nowrap',
-                    fontSize: 11,
-                    color: '#9ca3af',
-                  }}
-                >
-                  {col.name}
-                </span>
+                <div style={{
+                  height: HEADER_H,
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'center',
+                  paddingBottom: 6,
+                }}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      transformOrigin: '50% 100%',
+                      transform: 'rotate(-45deg)',
+                      whiteSpace: 'nowrap',
+                      fontSize: 11,
+                      color: '#9ca3af',
+                    }}
+                  >
+                    {col.name}
+                  </span>
+                </div>
               </th>
             ))}
           </tr>

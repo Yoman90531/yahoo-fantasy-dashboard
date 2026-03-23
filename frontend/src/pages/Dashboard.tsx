@@ -32,7 +32,7 @@ export default function Dashboard() {
   return (
     <PageWrapper title="Fantasy Football Dashboard" subtitle={`${seasons.length} seasons of data`}>
       {/* Headline stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <StatCard
           label="Current Champion"
           value={latestSeason?.champion_name ?? '—'}
@@ -62,7 +62,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mb-6">
         {[
           { to: '/seasons', label: 'Season-by-Season', icon: '📅', desc: 'Standings & results by year' },
           { to: '/alltime', label: 'All-Time Records', icon: '📊', desc: 'Career stats for every manager' },

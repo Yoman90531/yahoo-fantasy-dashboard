@@ -1120,3 +1120,199 @@ def compute_rivalry(db: Session, manager_a_id: int, manager_b_id: int) -> dict |
         "biggest_blowout": biggest,
         "closest_game": closest,
     }
+
+
+# ---------------------------------------------------------------------------
+# Score Distribution (box plot stats per manager)
+# ---------------------------------------------------------------------------
+
+def compute_score_distribution(db: Session) -> list[dict]:
+    """
+    Per-manager weekly score distribution: min, Q1, median, Q3, max, mean,
+    std_dev, and outliers (beyond 1.5*IQR). Includes all matchup weeks.
+    """
+    teams = db.query(Team).all()
+    team_to_mgr = {t.id: t.manager_id for t in teams}
+    mgr_map = {m.id: m for m in db.query(Manager).all()}
+
+    mgr_scores: dict[int, list[float]] = defaultdict(list)
+    for m in db.query(Matchup).all():
+        for team_id, pts in [(m.team1_id, m.team1_points), (m.team2_id, m.team2_points)]:
+            mid = team_to_mgr.get(team_id)
+            if mid:
+                mgr_scores[mid].append(pts)
+
+    results = []
+    for mid, scores in mgr_scores.items():
+        if len(scores) < 4:
+            continue
+        s = sorted(scores)
+        n = len(s)
+
+        def percentile(p):
+            idx = (n - 1) * p
+            lo, hi = int(idx), min(int(idx) + 1, n - 1)
+            return s[lo] + (s[hi] - s[lo]) * (idx - lo)
+
+        q1, med, q3 = percentile(0.25), percentile(0.5), percentile(0.75)
+        iqr = q3 - q1
+        lo_fence = q1 - 1.5 * iqr
+        hi_fence = q3 + 1.5 * iqr
+        whisker_lo = min(v for v in s if v >= lo_fence)
+        whisker_hi = max(v for v in s if v <= hi_fence)
+        outliers = [v for v in s if v < lo_fence or v > hi_fence]
+        mean = sum(scores) / n
+        variance = sum((v - mean) ** 2 for v in scores) / (n - 1)
+
+        results.append({
+            "manager_id": mid,
+            "manager_name": mgr_map[mid].display_name if mid in mgr_map else str(mid),
+            "n": n,
+            "min": round(whisker_lo, 2),
+            "q1": round(q1, 2),
+            "median": round(med, 2),
+            "q3": round(q3, 2),
+            "max": round(whisker_hi, 2),
+            "mean": round(mean, 2),
+            "std_dev": round(math.sqrt(variance), 2),
+            "outliers": [round(v, 2) for v in outliers],
+        })
+
+    return sorted(results, key=lambda x: -x["median"])
+
+
+# ---------------------------------------------------------------------------
+# Weekly Finish Distribution
+# ---------------------------------------------------------------------------
+
+def compute_weekly_finish_distribution(db: Session) -> list[dict]:
+    """
+    For every regular-season week, rank all teams by score within that week.
+    Bucket each manager's finishes into: 1st, top-3, top-half, bottom-half,
+    bottom-3, last. Returns counts and percentages per manager.
+    """
+    teams = db.query(Team).all()
+    team_to_mgr = {t.id: t.manager_id for t in teams}
+    mgr_map = {m.id: m for m in db.query(Manager).all()}
+
+    matchups = db.query(Matchup).filter(Matchup.is_playoff == False).all()
+
+    # Build weekly score maps: (season_id, week) -> [(team_id, pts)]
+    week_scores: dict[tuple, list] = defaultdict(list)
+    for m in matchups:
+        week_scores[(m.season_id, m.week)].append((m.team1_id, m.team1_points))
+        week_scores[(m.season_id, m.week)].append((m.team2_id, m.team2_points))
+
+    # Tally finish buckets per manager
+    buckets = ("first", "top_three", "top_half", "bottom_half", "bottom_three", "last")
+    mgr_counts: dict[int, dict[str, int]] = defaultdict(lambda: {b: 0 for b in buckets})
+
+    for scores in week_scores.values():
+        n = len(scores)
+        if n < 2:
+            continue
+        ranked = sorted(scores, key=lambda x: -x[1])  # highest score = rank 1
+        for rank_idx, (team_id, _) in enumerate(ranked):
+            mid = team_to_mgr.get(team_id)
+            if not mid:
+                continue
+            rank = rank_idx + 1  # 1-based
+            if rank == 1:
+                mgr_counts[mid]["first"] += 1
+            elif rank <= 3:
+                mgr_counts[mid]["top_three"] += 1
+            elif rank <= n // 2:
+                mgr_counts[mid]["top_half"] += 1
+            elif rank >= n and n > 3:
+                mgr_counts[mid]["last"] += 1
+            elif rank >= n - 2 and n > 3:
+                mgr_counts[mid]["bottom_three"] += 1
+            else:
+                mgr_counts[mid]["bottom_half"] += 1
+
+    results = []
+    for mid, counts in mgr_counts.items():
+        total = sum(counts.values())
+        if total == 0:
+            continue
+        results.append({
+            "manager_id": mid,
+            "manager_name": mgr_map[mid].display_name if mid in mgr_map else str(mid),
+            "total_weeks": total,
+            **counts,
+            "pct_first": round(counts["first"] / total * 100, 1),
+            "pct_top_three": round((counts["first"] + counts["top_three"]) / total * 100, 1),
+            "pct_top_half": round((counts["first"] + counts["top_three"] + counts["top_half"]) / total * 100, 1),
+            "pct_last": round(counts["last"] / total * 100, 1),
+            "pct_bottom_three": round((counts["last"] + counts["bottom_three"]) / total * 100, 1),
+        })
+
+    return sorted(results, key=lambda x: -x["pct_top_half"])
+
+
+# ---------------------------------------------------------------------------
+# Manager Eras
+# ---------------------------------------------------------------------------
+
+ERAS = [
+    {"name": "Early Years", "start": 2012, "end": 2016},
+    {"name": "Middle Years", "start": 2017, "end": 2020},
+    {"name": "Recent Years", "start": 2021, "end": 9999},
+]
+
+
+def compute_manager_eras(db: Session) -> list[dict]:
+    """
+    Divides seasons into three eras and returns per-manager stats for each.
+    """
+    seasons_by_year = {s.year: s for s in db.query(Season).all()}
+    teams = db.query(Team).all()
+    mgr_map = {m.id: m for m in db.query(Manager).all()}
+
+    results = []
+    for era in ERAS:
+        era_seasons = [s for y, s in seasons_by_year.items() if era["start"] <= y <= era["end"]]
+        if not era_seasons:
+            continue
+        season_ids = {s.id for s in era_seasons}
+        era_teams = [t for t in teams if t.season_id in season_ids]
+
+        # Aggregate per manager
+        mgr_stats: dict[int, dict] = {}
+        for t in era_teams:
+            mid = t.manager_id
+            if mid not in mgr_stats:
+                mgr_stats[mid] = {"wins": 0, "losses": 0, "ties": 0, "champs": 0, "playoffs": 0, "seasons": 0, "pf": 0.0}
+            s = mgr_stats[mid]
+            s["wins"] += t.wins
+            s["losses"] += t.losses
+            s["ties"] += t.ties
+            s["champs"] += int(t.is_champion)
+            s["playoffs"] += int(t.made_playoffs)
+            s["seasons"] += 1
+            s["pf"] += t.points_for
+
+        era_rows = []
+        for mid, s in mgr_stats.items():
+            games = s["wins"] + s["losses"] + s["ties"]
+            era_rows.append({
+                "manager_id": mid,
+                "manager_name": mgr_map[mid].display_name if mid in mgr_map else str(mid),
+                "seasons": s["seasons"],
+                "wins": s["wins"],
+                "losses": s["losses"],
+                "win_pct": round(s["wins"] / games, 4) if games else 0.0,
+                "avg_pf": round(s["pf"] / games, 2) if games else 0.0,
+                "championships": s["champs"],
+                "playoff_appearances": s["playoffs"],
+            })
+
+        era_rows.sort(key=lambda x: (-x["championships"], -x["win_pct"]))
+        results.append({
+            "era_name": era["name"],
+            "years": f"{era['start']}–{min(era['end'], max(y for y in seasons_by_year))}",
+            "num_seasons": len(era_seasons),
+            "managers": era_rows,
+        })
+
+    return results

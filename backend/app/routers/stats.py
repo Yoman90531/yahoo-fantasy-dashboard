@@ -55,6 +55,21 @@ def season_scoring(db: Session = Depends(get_db)):
     return stats_engine.compute_season_scoring(db)
 
 
+@router.get("/score-distribution")
+def score_distribution(db: Session = Depends(get_db)):
+    return stats_engine.compute_score_distribution(db)
+
+
+@router.get("/weekly-finish-distribution")
+def weekly_finish_distribution(db: Session = Depends(get_db)):
+    return stats_engine.compute_weekly_finish_distribution(db)
+
+
+@router.get("/manager-eras")
+def manager_eras(db: Session = Depends(get_db)):
+    return stats_engine.compute_manager_eras(db)
+
+
 @router.get("/throne-tracker")
 def throne_tracker(db: Session = Depends(get_db)):
     return stats_engine.compute_throne_tracker(db)

@@ -177,6 +177,59 @@ export interface SyncStatusRow {
   error_msg: string | null
 }
 
+// Score Distribution
+export interface ScoreDistributionRow {
+  manager_id: number
+  manager_name: string
+  n: number
+  min: number
+  q1: number
+  median: number
+  q3: number
+  max: number
+  mean: number
+  std_dev: number
+  outliers: number[]
+}
+
+// Weekly Finish Distribution
+export interface WeeklyFinishRow {
+  manager_id: number
+  manager_name: string
+  total_weeks: number
+  first: number
+  top_three: number
+  top_half: number
+  bottom_half: number
+  bottom_three: number
+  last: number
+  pct_first: number
+  pct_top_three: number
+  pct_top_half: number
+  pct_last: number
+  pct_bottom_three: number
+}
+
+// Manager Eras
+export interface EraManagerRow {
+  manager_id: number
+  manager_name: string
+  seasons: number
+  wins: number
+  losses: number
+  win_pct: number
+  avg_pf: number
+  championships: number
+  playoff_appearances: number
+}
+
+export interface EraBlock {
+  era_name: string
+  years: string
+  num_seasons: number
+  managers: EraManagerRow[]
+}
+
 // Throne Tracker
 export interface ThroneEntry {
   year: number
