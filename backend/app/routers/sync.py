@@ -55,18 +55,28 @@ def sync_log(limit: int = 50, db: Session = Depends(get_db)):
 
 def _run_sync_task(years: list[int], force: bool):
     """Background task: runs sync for given years."""
+    import json
     import logging
+    from pathlib import Path
     from app.database import SessionLocal
     from app.services.yahoo_sync import get_game_id_map, sync_season
-    from app.config import settings
 
     logger = logging.getLogger(__name__)
+
+    # Load league IDs from data/league_ids.json
+    league_ids_path = Path(__file__).resolve().parents[3] / "data" / "league_ids.json"
+    with open(league_ids_path) as f:
+        league_id_map: dict[int, str] = {int(k): v for k, v in json.load(f).items()}
+
     db = SessionLocal()
     try:
         game_id_map = get_game_id_map(start_year=min(years))
         for year in years:
             if year not in game_id_map:
                 logger.warning(f"No game_id for {year}, skipping.")
+                continue
+            if year not in league_id_map:
+                logger.warning(f"No league_id for {year}, skipping.")
                 continue
             if not force:
                 existing = (
@@ -77,7 +87,7 @@ def _run_sync_task(years: list[int], force: bool):
                 if existing:
                     continue
             try:
-                sync_season(db, year=year, game_id=game_id_map[year], log_id_ref=[])
+                sync_season(db, year=year, game_id=game_id_map[year], league_id=league_id_map[year], log_id_ref=[])
             except Exception as e:
                 logger.error(f"Sync failed for {year}: {e}")
     finally:
