@@ -3,7 +3,9 @@ Stats engine — all computed analytics for the dashboard.
 Every function takes a SQLAlchemy Session and returns plain Python dicts/lists
 that map directly to the Pydantic response schemas in schemas/stats.py.
 """
+import json
 import math
+import os
 from collections import defaultdict
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, or_
@@ -14,15 +16,42 @@ from app.models.matchup import Matchup
 
 
 # ---------------------------------------------------------------------------
+# Manager overrides — loaded once from data/manager_overrides.json
+# ---------------------------------------------------------------------------
+
+_OVERRIDES_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "manager_overrides.json")
+
+def _load_overrides() -> dict[str, str]:
+    """Load GUID -> display_name renames from manager_overrides.json."""
+    try:
+        with open(_OVERRIDES_PATH, "r") as f:
+            data = json.load(f)
+        return data.get("renames", {})
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+_RENAMES = _load_overrides()
+
+
+def _apply_overrides(managers: list) -> list:
+    """Apply display_name overrides from manager_overrides.json in-memory."""
+    for mgr in managers:
+        if mgr.yahoo_guid in _RENAMES:
+            mgr.display_name = _RENAMES[mgr.yahoo_guid]
+    return managers
+
+
+# ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
 
 def _get_active_managers(db: Session) -> list:
-    """Return all managers that aren't hidden."""
-    return db.query(Manager).filter(
+    """Return all managers that aren't hidden, with overrides applied."""
+    managers = db.query(Manager).filter(
         ~Manager.yahoo_guid.like("hidden_%"),
         ~Manager.display_name.like("%hidden%"),
     ).all()
+    return _apply_overrides(managers)
 
 
 def _all_teams(db: Session) -> list:

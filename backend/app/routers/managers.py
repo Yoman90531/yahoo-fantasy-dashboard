@@ -49,6 +49,9 @@ def get_manager(manager_id: int, db: Session = Depends(get_db)):
         for t in teams
     ]
 
+    # Apply overrides
+    stats_engine._apply_overrides([mgr])
+
     return ManagerProfile(
         manager=ManagerOut(id=mgr.id, yahoo_guid=mgr.yahoo_guid, display_name=mgr.display_name, nickname=mgr.nickname),
         season_history=history,

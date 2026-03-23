@@ -6,6 +6,7 @@ from app.models.team import Team
 from app.models.manager import Manager
 from app.schemas.season import SeasonSummary, SeasonDetail, StandingsRow
 from app.schemas.matchup import MatchupOut
+from app.services.stats_engine import _apply_overrides
 from app import crud
 
 router = APIRouter(prefix="/seasons", tags=["seasons"])
@@ -21,6 +22,8 @@ def list_seasons(db: Session = Depends(get_db)):
             champ_team = db.query(Team).filter(Team.id == s.champion_team_id).first()
             if champ_team:
                 mgr = db.query(Manager).filter(Manager.id == champ_team.manager_id).first()
+                if mgr:
+                    _apply_overrides([mgr])
                 champion_name = mgr.display_name if mgr else None
         result.append(SeasonSummary(
             id=s.id, year=s.year, league_name=s.league_name,
@@ -39,6 +42,8 @@ def get_season(year: int, db: Session = Depends(get_db)):
     standings = []
     for t in sorted(teams, key=lambda x: (x.final_rank or 999)):
         mgr = db.query(Manager).filter(Manager.id == t.manager_id).first()
+        if mgr:
+            _apply_overrides([mgr])
         standings.append(StandingsRow(
             final_rank=t.final_rank,
             team_name=t.team_name,
@@ -78,7 +83,9 @@ def get_season_matchups(year: int, week: int | None = None, db: Session = Depend
     matchups = q.order_by(Matchup.week).all()
 
     teams = {t.id: t for t in crud.team.get_by_season(db, season.id)}
-    managers = {m.id: m for m in db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()}
+    mgr_list = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()
+    _apply_overrides(mgr_list)
+    managers = {m.id: m for m in mgr_list}
 
     result = []
     for m in matchups:
