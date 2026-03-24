@@ -54,6 +54,7 @@ const navigation: NavEntry[] = [
       { to: '/playoff-performance', label: 'Playoff Performance', icon: '🏟️' },
       { to: '/streaks', label: 'Streak Tracker', icon: '🔥' },
       { to: '/strength-of-schedule', label: 'Strength of Schedule', icon: '💪' },
+      { to: '/draft-analysis', label: 'Draft Analysis', icon: '📋' },
     ],
   },
   {

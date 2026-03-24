@@ -444,3 +444,53 @@ export interface ConsolationRow {
   consolation_win_pct: number
   consolation_avg_points: number
 }
+
+// Draft Analysis
+export interface PositionCapitalRow {
+  manager_id: number
+  manager_name: string
+  position: string
+  picks_spent: number
+  avg_pick: number
+  total_capital: number
+}
+
+export interface DraftTendencyRow {
+  manager_id: number
+  manager_name: string
+  position: string
+  early_round_pct: number
+  mid_round_pct: number
+  late_round_pct: number
+}
+
+export interface DraftGradeRow {
+  manager_id: number
+  manager_name: string
+  year: number
+  grade: string
+  composite_score: number
+  total_picks: number
+  avg_roi: number
+}
+
+export interface BestWorstPick {
+  manager_id: number
+  manager_name: string
+  year: number
+  round: number
+  pick: number
+  player_name: string
+  position: string
+  fantasy_points: number
+  pick_value: number
+  roi: number
+}
+
+export interface DraftAnalysis {
+  position_capital: PositionCapitalRow[]
+  tendencies: DraftTendencyRow[]
+  grades: DraftGradeRow[]
+  best_picks: BestWorstPick[]
+  worst_picks: BestWorstPick[]
+}

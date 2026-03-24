@@ -13,6 +13,8 @@ from app.models.manager import Manager
 from app.models.season import Season
 from app.models.team import Team
 from app.models.matchup import Matchup
+from app.models.draft_pick import DraftPick
+from app.models.player_season import PlayerSeason
 
 
 # ---------------------------------------------------------------------------
@@ -2243,3 +2245,165 @@ def compute_strength_of_schedule(db: Session, year: int | None = None) -> list[d
     results.sort(key=lambda x: -x["adjusted_win_pct"])
 
     return results
+
+
+# ---------------------------------------------------------------------------
+# Draft Analysis
+# ---------------------------------------------------------------------------
+
+def compute_draft_analysis(db: Session, year: int | None = None) -> dict:
+    """
+    Compute draft analytics: position capital, tendencies, grades, best/worst picks.
+    Joins draft picks with player season stats for ROI calculations.
+    """
+    managers = _get_active_managers(db)
+    mgr_map = {m.id: m.display_name for m in managers}
+    mgr_ids = set(mgr_map.keys())
+
+    seasons = db.query(Season).all()
+    season_map = {s.id: s for s in seasons}
+
+    teams = _all_teams(db)
+    t2m = _team_to_manager(teams)
+    team_season = {t.id: t.season_id for t in teams}
+
+    # Load draft picks
+    pick_q = db.query(DraftPick)
+    if year:
+        s = _get_season_by_year(db, year)
+        if not s:
+            return {"position_capital": [], "tendencies": [], "grades": [], "best_picks": [], "worst_picks": []}
+        pick_q = pick_q.filter(DraftPick.season_id == s.id)
+    picks = pick_q.all()
+
+    # Load player season stats keyed by (season_id, player_key)
+    ps_q = db.query(PlayerSeason)
+    if year:
+        ps_q = ps_q.filter(PlayerSeason.season_id == s.id)
+    player_stats = {(ps.season_id, ps.player_key): ps for ps in ps_q.all()}
+
+    # Compute max pick per season for pick value normalization
+    max_pick_per_season: dict[int, int] = defaultdict(int)
+    for p in picks:
+        if p.pick > max_pick_per_season[p.season_id]:
+            max_pick_per_season[p.season_id] = p.pick
+
+    # Enrich picks with manager info and ROI
+    enriched = []
+    for p in picks:
+        mgr_id = t2m.get(p.team_id)
+        if mgr_id not in mgr_ids:
+            continue
+        total_picks = max_pick_per_season[p.season_id]
+        pick_value = total_picks - p.pick + 1
+        ps = player_stats.get((p.season_id, p.player_key))
+        fantasy_points = ps.fantasy_points if ps else 0.0
+        roi = fantasy_points / pick_value if pick_value > 0 else 0.0
+        season_year = season_map[p.season_id].year
+        enriched.append({
+            "manager_id": mgr_id,
+            "manager_name": mgr_map[mgr_id],
+            "season_id": p.season_id,
+            "year": season_year,
+            "round": p.round,
+            "pick": p.pick,
+            "player_name": p.player_name,
+            "position": p.position,
+            "pick_value": pick_value,
+            "fantasy_points": fantasy_points,
+            "roi": round(roi, 2),
+        })
+
+    # --- Position Capital ---
+    cap_key = defaultdict(lambda: {"picks": [], "capital": 0.0})
+    for e in enriched:
+        key = (e["manager_id"], e["position"])
+        cap_key[key]["picks"].append(e["pick"])
+        cap_key[key]["capital"] += e["pick_value"]
+
+    position_capital = []
+    for (mid, pos), data in cap_key.items():
+        position_capital.append({
+            "manager_id": mid,
+            "manager_name": mgr_map[mid],
+            "position": pos,
+            "picks_spent": len(data["picks"]),
+            "avg_pick": round(sum(data["picks"]) / len(data["picks"]), 1),
+            "total_capital": round(data["capital"], 1),
+        })
+    position_capital.sort(key=lambda x: (x["manager_name"], -x["total_capital"]))
+
+    # --- Tendencies (early/mid/late round % by position) ---
+    tend_key = defaultdict(lambda: {"early": 0, "mid": 0, "late": 0, "total": 0})
+    for e in enriched:
+        key = (e["manager_id"], e["position"])
+        tend_key[key]["total"] += 1
+        if e["round"] <= 4:
+            tend_key[key]["early"] += 1
+        elif e["round"] <= 9:
+            tend_key[key]["mid"] += 1
+        else:
+            tend_key[key]["late"] += 1
+
+    tendencies = []
+    for (mid, pos), data in tend_key.items():
+        total = data["total"]
+        if total == 0:
+            continue
+        tendencies.append({
+            "manager_id": mid,
+            "manager_name": mgr_map[mid],
+            "position": pos,
+            "early_round_pct": round(data["early"] / total * 100, 1),
+            "mid_round_pct": round(data["mid"] / total * 100, 1),
+            "late_round_pct": round(data["late"] / total * 100, 1),
+        })
+    tendencies.sort(key=lambda x: (x["manager_name"], x["position"]))
+
+    # --- Draft Grades (per manager per season) ---
+    grade_key = defaultdict(list)
+    for e in enriched:
+        grade_key[(e["manager_id"], e["year"])].append(e)
+
+    def _letter_grade(score: float) -> str:
+        if score >= 12: return "A+"
+        if score >= 10: return "A"
+        if score >= 8: return "A-"
+        if score >= 6.5: return "B+"
+        if score >= 5: return "B"
+        if score >= 4: return "B-"
+        if score >= 3: return "C+"
+        if score >= 2: return "C"
+        if score >= 1.5: return "C-"
+        if score >= 1: return "D"
+        return "F"
+
+    grades = []
+    for (mid, yr), pick_list in grade_key.items():
+        rois = [p["roi"] for p in pick_list]
+        avg_roi = sum(rois) / len(rois) if rois else 0
+        grades.append({
+            "manager_id": mid,
+            "manager_name": mgr_map[mid],
+            "year": yr,
+            "grade": _letter_grade(avg_roi),
+            "composite_score": round(avg_roi, 2),
+            "total_picks": len(pick_list),
+            "avg_roi": round(avg_roi, 2),
+        })
+    grades.sort(key=lambda x: -x["composite_score"])
+
+    # --- Best / Worst Picks ---
+    picks_with_stats = [e for e in enriched if e["fantasy_points"] > 0]
+    picks_with_stats.sort(key=lambda x: -x["roi"])
+    best_picks = picks_with_stats[:10]
+    picks_with_stats.sort(key=lambda x: x["roi"])
+    worst_picks = [p for p in picks_with_stats if p["pick_value"] >= 5][:10]
+
+    return {
+        "position_capital": position_capital,
+        "tendencies": tendencies,
+        "grades": grades,
+        "best_picks": best_picks,
+        "worst_picks": worst_picks,
+    }

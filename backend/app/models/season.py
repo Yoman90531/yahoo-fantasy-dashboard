@@ -23,3 +23,5 @@ class Season(Base):
         "Team", back_populates="season", foreign_keys="Team.season_id"
     )
     matchups: Mapped[list["Matchup"]] = relationship("Matchup", back_populates="season")
+    draft_picks: Mapped[list["DraftPick"]] = relationship("DraftPick", back_populates="season")
+    player_seasons: Mapped[list["PlayerSeason"]] = relationship("PlayerSeason", back_populates="season")

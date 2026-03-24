@@ -24,5 +24,7 @@ class Team(Base):
 
     season: Mapped["Season"] = relationship("Season", back_populates="teams", foreign_keys=[season_id])
     manager: Mapped["Manager"] = relationship("Manager", back_populates="teams")
+    draft_picks: Mapped[list["DraftPick"]] = relationship("DraftPick", back_populates="team")
+    player_seasons: Mapped[list["PlayerSeason"]] = relationship("PlayerSeason", back_populates="team")
 
     __table_args__ = (UniqueConstraint("season_id", "yahoo_team_id", name="uq_teams_season_id_yahoo_team_id"),)

@@ -44,6 +44,10 @@ export const statsApi = {
   strengthOfSchedule: (year?: number) => api.get('/stats/strength-of-schedule', { params: year ? { year } : {} }).then(r => r.data),
 }
 
+export const draftApi = {
+  analysis: (year?: number) => api.get('/draft/analysis', { params: year ? { year } : {} }).then(r => r.data),
+}
+
 export const syncApi = {
   status: () => api.get('/sync/status').then(r => r.data),
   log: () => api.get('/sync/log').then(r => r.data),

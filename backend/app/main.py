@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from app.routers import seasons, managers, stats, sync
+from app.routers import seasons, managers, stats, sync, draft
 
 app = FastAPI(title="Fantasy Football Dashboard API", version="1.0.0")
 
@@ -21,6 +21,7 @@ app.include_router(seasons.router, prefix="/api")
 app.include_router(managers.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
 app.include_router(sync.router, prefix="/api")
+app.include_router(draft.router, prefix="/api")
 
 
 @app.get("/api/health")

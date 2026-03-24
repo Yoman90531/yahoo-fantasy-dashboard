@@ -240,6 +240,12 @@ def sync_season(db: Session, year: int, game_id: int, league_id: str, log_id_ref
 
             db.commit()
 
+        # --- Draft picks ---
+        _sync_draft(db, query, season, db_team_map)
+
+        # --- Player season stats ---
+        _sync_player_stats(db, query, season, db_team_map)
+
         # Mark champion on teams + season
         _mark_champion(db, season)
         _mark_playoff_teams(db, season, num_playoff_teams or 4)
@@ -311,3 +317,125 @@ def _mark_playoff_teams(db: Session, season, num_playoff_teams: int) -> None:
             Team.season_id == season.id,
             Team.final_rank <= num_playoff_teams,
         ).update({"made_playoffs": True}, synchronize_session=False)
+
+
+def _sync_draft(db: Session, query, season, db_team_map: dict[int, int]) -> None:
+    """Sync draft picks for a season. Non-fatal on failure (older seasons may lack data)."""
+    try:
+        draft_results = _retry(query.get_league_draft_results)
+        time.sleep(0.5)
+    except Exception as e:
+        logger.warning(f"Could not fetch draft data for {season.year}: {e}")
+        return
+
+    if not draft_results:
+        logger.info(f"No draft data available for {season.year}")
+        return
+
+    pick_count = 0
+    for pick in draft_results:
+        try:
+            pick_round = _safe_int(getattr(pick, "round", None))
+            pick_num = _safe_int(getattr(pick, "pick", None))
+            team_key = str(getattr(pick, "team_key", ""))
+            # Extract yahoo_team_id from team_key (format: "game_id.l.league_id.t.team_id")
+            yahoo_team_id = _safe_int(team_key.split(".t.")[-1]) if ".t." in team_key else 0
+
+            db_team_id = db_team_map.get(yahoo_team_id)
+            if not db_team_id:
+                logger.warning(f"Unknown team key {team_key} in draft for {season.year}")
+                continue
+
+            # Extract player info
+            player = getattr(pick, "player", None) or getattr(pick, "players", None)
+            if not player:
+                continue
+
+            # Handle player name
+            name_obj = getattr(player, "name", None)
+            if name_obj and hasattr(name_obj, "full"):
+                player_name = str(name_obj.full)
+            elif name_obj:
+                player_name = str(name_obj)
+            else:
+                player_name = str(getattr(player, "full_name", "Unknown"))
+
+            position = str(getattr(player, "display_position", ""))
+            player_key = str(getattr(player, "player_key", ""))
+
+            crud.draft_pick.upsert_draft_pick(
+                db,
+                season_id=season.id,
+                team_id=db_team_id,
+                round=pick_round,
+                pick=pick_num,
+                player_name=player_name,
+                position=position,
+                player_key=player_key or None,
+            )
+            pick_count += 1
+        except Exception as e:
+            logger.warning(f"Failed to process draft pick in {season.year}: {e}")
+            continue
+
+    db.commit()
+    logger.info(f"Synced {pick_count} draft picks for {season.year}")
+
+
+def _sync_player_stats(db: Session, query, season, db_team_map: dict[int, int]) -> None:
+    """Sync player season stats for each team. Non-fatal on failure."""
+    total_players = 0
+    for yahoo_team_id, db_team_id in db_team_map.items():
+        try:
+            time.sleep(0.5)
+            roster = _retry(query.get_team_roster_player_stats, team_id=yahoo_team_id)
+        except Exception as e:
+            logger.warning(f"Could not fetch roster stats for team {yahoo_team_id} in {season.year}: {e}")
+            continue
+
+        if not roster:
+            continue
+
+        # roster may be a list of players or an object with .players
+        players = roster if isinstance(roster, list) else getattr(roster, "players", roster)
+
+        for player in (players or []):
+            try:
+                player_key = str(getattr(player, "player_key", ""))
+                if not player_key:
+                    continue
+
+                name_obj = getattr(player, "name", None)
+                if name_obj and hasattr(name_obj, "full"):
+                    player_name = str(name_obj.full)
+                elif name_obj:
+                    player_name = str(name_obj)
+                else:
+                    player_name = str(getattr(player, "full_name", "Unknown"))
+
+                position = str(getattr(player, "display_position", ""))
+
+                # Get fantasy points
+                pts_obj = getattr(player, "player_points", None)
+                if pts_obj:
+                    fantasy_points = _safe_float(getattr(pts_obj, "total", 0))
+                else:
+                    fantasy_points = _safe_float(getattr(player, "player_points_value", 0))
+
+                crud.player_season.upsert_player_season(
+                    db,
+                    season_id=season.id,
+                    team_id=db_team_id,
+                    player_key=player_key,
+                    player_name=player_name,
+                    position=position,
+                    fantasy_points=fantasy_points,
+                )
+                total_players += 1
+            except Exception as e:
+                logger.warning(f"Failed to process player in {season.year}: {e}")
+                continue
+
+        db.commit()
+
+    logger.info(f"Synced {total_players} player stats for {season.year}")
