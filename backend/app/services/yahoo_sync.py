@@ -332,6 +332,14 @@ def _sync_draft(db: Session, query, season, db_team_map: dict[int, int]) -> None
         logger.info(f"No draft data available for {season.year}")
         return
 
+    # Debug: log first draft result to understand YFPY structure
+    if draft_results:
+        sample = draft_results[0]
+        logger.info(f"Draft sample type: {type(sample)}, attrs: {vars(sample) if hasattr(sample, '__dict__') else dir(sample)}")
+        # Check if it's a DraftResult wrapper with nested data
+        for attr in ['player_key', 'team_key', 'round', 'pick', 'player', 'players', 'cost', 'draft_result']:
+            logger.info(f"  draft.{attr} = {getattr(sample, attr, 'N/A')}")
+
     pick_count = 0
     for pick in draft_results:
         try:
