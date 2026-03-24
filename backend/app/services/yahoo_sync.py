@@ -240,11 +240,11 @@ def sync_season(db: Session, year: int, game_id: int, league_id: str, log_id_ref
 
             db.commit()
 
+        # --- Player season stats (sync before draft so we can look up names) ---
+        _sync_player_stats(db, query, season, db_team_map)
+
         # --- Draft picks ---
         _sync_draft(db, query, season, db_team_map)
-
-        # --- Player season stats ---
-        _sync_player_stats(db, query, season, db_team_map)
 
         # Mark champion on teams + season
         _mark_champion(db, season)
@@ -320,7 +320,10 @@ def _mark_playoff_teams(db: Session, season, num_playoff_teams: int) -> None:
 
 
 def _sync_draft(db: Session, query, season, db_team_map: dict[int, int]) -> None:
-    """Sync draft picks for a season. Non-fatal on failure (older seasons may lack data)."""
+    """Sync draft picks for a season. Non-fatal on failure (older seasons may lack data).
+    Uses player_seasons table (synced first) to look up player names and positions."""
+    from app.models.player_season import PlayerSeason
+
     try:
         draft_results = _retry(query.get_league_draft_results)
         time.sleep(0.5)
@@ -332,13 +335,9 @@ def _sync_draft(db: Session, query, season, db_team_map: dict[int, int]) -> None
         logger.info(f"No draft data available for {season.year}")
         return
 
-    # Debug: log first draft result to understand YFPY structure
-    if draft_results:
-        sample = draft_results[0]
-        logger.info(f"Draft sample type: {type(sample)}, attrs: {vars(sample) if hasattr(sample, '__dict__') else dir(sample)}")
-        # Check if it's a DraftResult wrapper with nested data
-        for attr in ['player_key', 'team_key', 'round', 'pick', 'player', 'players', 'cost', 'draft_result']:
-            logger.info(f"  draft.{attr} = {getattr(sample, attr, 'N/A')}")
+    # Build player_key -> (name, position) lookup from already-synced player_seasons
+    ps_rows = db.query(PlayerSeason).filter(PlayerSeason.season_id == season.id).all()
+    player_info = {ps.player_key: (ps.player_name, ps.position) for ps in ps_rows}
 
     pick_count = 0
     for pick in draft_results:
@@ -346,6 +345,8 @@ def _sync_draft(db: Session, query, season, db_team_map: dict[int, int]) -> None
             pick_round = _safe_int(getattr(pick, "round", None))
             pick_num = _safe_int(getattr(pick, "pick", None))
             team_key = str(getattr(pick, "team_key", ""))
+            player_key = str(getattr(pick, "player_key", ""))
+
             # Extract yahoo_team_id from team_key (format: "game_id.l.league_id.t.team_id")
             yahoo_team_id = _safe_int(team_key.split(".t.")[-1]) if ".t." in team_key else 0
 
@@ -354,22 +355,10 @@ def _sync_draft(db: Session, query, season, db_team_map: dict[int, int]) -> None
                 logger.warning(f"Unknown team key {team_key} in draft for {season.year}")
                 continue
 
-            # Extract player info
-            player = getattr(pick, "player", None) or getattr(pick, "players", None)
-            if not player:
-                continue
-
-            # Handle player name
-            name_obj = getattr(player, "name", None)
-            if name_obj and hasattr(name_obj, "full"):
-                player_name = str(name_obj.full)
-            elif name_obj:
-                player_name = str(name_obj)
-            else:
-                player_name = str(getattr(player, "full_name", "Unknown"))
-
-            position = str(getattr(player, "display_position", ""))
-            player_key = str(getattr(player, "player_key", ""))
+            # Look up player name and position from player_seasons
+            info = player_info.get(player_key)
+            player_name = info[0] if info else f"Unknown ({player_key})"
+            position = info[1] if info else "Unknown"
 
             crud.draft_pick.upsert_draft_pick(
                 db,
