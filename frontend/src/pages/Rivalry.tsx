@@ -126,7 +126,7 @@ export default function Rivalry() {
               <tbody>
                 {data.matchups.map((m, i) => {
                   const yahooUrl = m.game_id && m.league_id
-                    ? `https://football.fantasysports.yahoo.com/f1/${m.league_id}/matchup?week=${m.week}&mid1=${m.team_a_yahoo_id}&mid2=${m.team_b_yahoo_id}`
+                    ? `https://football.fantasysports.yahoo.com/${m.year}/f1/${m.league_id}/matchup?week=${m.week}&mid1=${m.team_a_yahoo_id}&mid2=${m.team_b_yahoo_id}`
                     : null
                   return (
                   <tr key={i} className="border-t border-gray-800 hover:bg-gray-800 transition-colors">

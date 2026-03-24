@@ -20,16 +20,28 @@ function RecordTable({ entries, columns }: { entries: WeeklyRecordEntry[]; colum
           </tr>
         </thead>
         <tbody>
-          {entries.map((e, i) => (
+          {entries.map((e, i) => {
+            const yahooUrl = e.league_id && e.yahoo_team_id && e.opponent_yahoo_team_id
+              ? `https://football.fantasysports.yahoo.com/${e.year}/f1/${e.league_id}/matchup?week=${e.week}&mid1=${e.yahoo_team_id}&mid2=${e.opponent_yahoo_team_id}`
+              : null
+            return (
             <tr key={i} className="border-t border-gray-800 hover:bg-gray-800 transition-colors">
               <td className="px-4 py-3 text-gray-500">{i + 1}</td>
               <td className="px-4 py-3 font-medium text-white">{e.manager_name}</td>
-              <td className="px-4 py-3 text-gray-400">{e.year} · Wk {e.week}</td>
+              <td className="px-4 py-3">
+                {yahooUrl ? (
+                  <a href={yahooUrl} target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300 underline">
+                    {e.year} · Wk {e.week}
+                  </a>
+                ) : (
+                  <span className="text-gray-400">{e.year} · Wk {e.week}</span>
+                )}
+              </td>
               {columns.map(c => (
                 <td key={c.label} className="px-4 py-3 text-right">{c.render(e)}</td>
               ))}
             </tr>
-          ))}
+          )})}
         </tbody>
       </table>
     </div>

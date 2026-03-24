@@ -37,6 +37,9 @@ class WeeklyRecordEntry(BaseModel):
     points: float
     opponent_points: float | None
     opponent_manager_name: str | None
+    league_id: str | None = None
+    yahoo_team_id: int | None = None
+    opponent_yahoo_team_id: int | None = None
 
 
 class WeeklyRecords(BaseModel):

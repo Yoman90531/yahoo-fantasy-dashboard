@@ -16,6 +16,9 @@ function MatchupCard({ matchup }: { matchup: MatchupOut }) {
   const isTie = matchup.winner_manager_id === null
   const isBlowout = matchup.margin >= BLOWOUT_THRESHOLD
   const isClose = matchup.margin > 0 && matchup.margin <= CLOSE_GAME_THRESHOLD
+  const yahooUrl = matchup.league_id && matchup.team1_yahoo_id && matchup.team2_yahoo_id
+    ? `https://football.fantasysports.yahoo.com/${matchup.season_year}/f1/${matchup.league_id}/matchup?week=${matchup.week}&mid1=${matchup.team1_yahoo_id}&mid2=${matchup.team2_yahoo_id}`
+    : null
 
   let borderClass = 'border-gray-800'
   if (isBlowout) borderClass = 'border-red-500/40'
@@ -98,9 +101,14 @@ function MatchupCard({ matchup }: { matchup: MatchupOut }) {
         </div>
       </div>
 
-      {/* Margin */}
-      <div className="text-center text-xs text-gray-500">
-        {isTie ? 'Tied' : `Margin: ${matchup.margin.toFixed(2)}`}
+      {/* Margin + Yahoo link */}
+      <div className="text-center text-xs text-gray-500 flex items-center justify-center gap-2">
+        <span>{isTie ? 'Tied' : `Margin: ${matchup.margin.toFixed(2)}`}</span>
+        {yahooUrl && (
+          <a href={yahooUrl} target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:text-brand-300 underline">
+            Yahoo
+          </a>
+        )}
       </div>
     </div>
   )

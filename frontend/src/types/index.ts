@@ -92,6 +92,9 @@ export interface MatchupOut {
   is_playoff: boolean
   is_championship: boolean
   margin: number
+  league_id: string | null
+  team1_yahoo_id: number | null
+  team2_yahoo_id: number | null
 }
 
 export interface H2HRecord {
@@ -131,6 +134,9 @@ export interface WeeklyRecordEntry {
   opponent_points: number | null
   opponent_manager_name: string | null
   margin?: number
+  league_id: string | null
+  yahoo_team_id: number | null
+  opponent_yahoo_team_id: number | null
 }
 
 export interface WeeklyRecords {

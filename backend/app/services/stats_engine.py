@@ -336,14 +336,14 @@ def compute_luck_index(db: Session, year: int | None = None) -> list[dict]:
 # Weekly records
 # ---------------------------------------------------------------------------
 
-def _matchup_to_entries(m: Matchup, db: Session, team_to_mgr: dict, mgr_map: dict, season_map: dict) -> tuple:
+def _matchup_to_entries(m: Matchup, db: Session, team_to_mgr: dict, mgr_map: dict, season_map: dict, team_yahoo_map: dict | None = None) -> tuple:
     """Returns (entry_t1, entry_t2) dicts for a matchup."""
     def make(team_id, pts, opp_id, opp_pts):
         mgr_id = team_to_mgr.get(team_id)
         opp_mgr_id = team_to_mgr.get(opp_id)
         team = db.query(Team).filter(Team.id == team_id).first()
         season = season_map.get(m.season_id)
-        return {
+        entry = {
             "manager_id": mgr_id,
             "manager_name": mgr_map[mgr_id].display_name if mgr_id in mgr_map else "Unknown",
             "team_name": team.team_name if team else None,
@@ -352,7 +352,11 @@ def _matchup_to_entries(m: Matchup, db: Session, team_to_mgr: dict, mgr_map: dic
             "points": round(pts, 2),
             "opponent_points": round(opp_pts, 2),
             "opponent_manager_name": mgr_map[opp_mgr_id].display_name if opp_mgr_id in mgr_map else "Unknown",
+            "league_id": season.league_id if season else None,
+            "yahoo_team_id": team_yahoo_map.get(team_id) if team_yahoo_map else None,
+            "opponent_yahoo_team_id": team_yahoo_map.get(opp_id) if team_yahoo_map else None,
         }
+        return entry
 
     return (
         make(m.team1_id, m.team1_points, m.team2_id, m.team2_points),
@@ -363,6 +367,7 @@ def _matchup_to_entries(m: Matchup, db: Session, team_to_mgr: dict, mgr_map: dic
 def compute_weekly_records(db: Session, top_n: int = 10) -> dict:
     teams = _all_teams(db)
     team_to_mgr = _team_to_manager(teams)
+    team_yahoo_map = _team_yahoo_ids(teams)
     mgr_map = {m.id: m for m in _get_active_managers(db)}
     season_map = _season_map(db)
 
@@ -370,7 +375,7 @@ def compute_weekly_records(db: Session, top_n: int = 10) -> dict:
 
     all_entries = []
     for m in matchups:
-        e1, e2 = _matchup_to_entries(m, db, team_to_mgr, mgr_map, season_map)
+        e1, e2 = _matchup_to_entries(m, db, team_to_mgr, mgr_map, season_map, team_yahoo_map)
         all_entries.append((m, e1, e2))
 
     # Highest individual scores

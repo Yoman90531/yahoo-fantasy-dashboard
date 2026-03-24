@@ -113,5 +113,8 @@ def get_season_matchups(year: int, week: int | None = None, db: Session = Depend
             is_playoff=m.is_playoff,
             is_championship=m.is_championship,
             margin=round(abs(m.team1_points - m.team2_points), 2),
+            league_id=season.league_id,
+            team1_yahoo_id=t1.yahoo_team_id if t1 else None,
+            team2_yahoo_id=t2.yahoo_team_id if t2 else None,
         ))
     return result
