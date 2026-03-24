@@ -34,10 +34,18 @@ _RENAMES = _load_overrides()
 
 
 def _apply_overrides(managers: list) -> list:
-    """Apply display_name overrides from manager_overrides.json in-memory."""
+    """Apply display_name overrides from manager_overrides.json in-memory.
+    Supports both exact GUID match and prefix match for truncated GUIDs."""
     for mgr in managers:
-        if mgr.yahoo_guid in _RENAMES:
-            mgr.display_name = _RENAMES[mgr.yahoo_guid]
+        guid = mgr.yahoo_guid
+        if guid in _RENAMES:
+            mgr.display_name = _RENAMES[guid]
+        else:
+            # Try prefix match for truncated GUIDs in overrides
+            for prefix, name in _RENAMES.items():
+                if guid.startswith(prefix) or prefix.startswith(guid):
+                    mgr.display_name = name
+                    break
     return managers
 
 

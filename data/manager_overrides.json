@@ -1,0 +1,14 @@
+{
+  "_instructions": {
+    "renames": "Map a manager's Yahoo GUID to a display name. Use this to fix --hidden-- managers or correct names.",
+    "merges": "Map a GUID to merge INTO another GUID. The 'merge_into' GUID's record will be kept, the other deleted."
+  },
+  "renames": {
+    "BPHZFVHKP3ZTT4RB": "JK",
+    "6MC5OCBN74EADFCF": "Brink",
+    "QMQZLQNDDIYU7B76": "BFND",
+    "VWOUQLXG6CXYN3ZLF7D2DOVRK4": "Lowell",
+    "S5JYLEFLOBIKIP2TDI6CS26WZA": "Gottlieb"
+  },
+  "merges": {}
+}
