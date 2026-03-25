@@ -129,10 +129,24 @@ def consolation_bracket(year: int | None = Query(None), db: Session = Depends(ge
 
 
 @router.get("/manager-tiers")
-def manager_tiers(db: Session = Depends(get_db)):
-    return stats_engine.compute_manager_tiers(db)
+def manager_tiers(
+    year_start: int | None = Query(None),
+    year_end: int | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    return stats_engine.compute_manager_tiers(db, year_start=year_start, year_end=year_end)
 
 
 @router.get("/strength-of-schedule")
 def strength_of_schedule(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_strength_of_schedule(db, year=year)
+
+
+@router.get("/what-if")
+def what_if(year: int | None = Query(None), db: Session = Depends(get_db)):
+    return stats_engine.compute_what_if(db, year=year)
+
+
+@router.get("/clutch-rating")
+def clutch_rating(year: int | None = Query(None), db: Session = Depends(get_db)):
+    return stats_engine.compute_clutch_rating(db, year=year)

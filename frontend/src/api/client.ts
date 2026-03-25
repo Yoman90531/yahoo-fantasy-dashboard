@@ -40,8 +40,10 @@ export const statsApi = {
   leagueParity: () => api.get('/stats/league-parity').then(r => r.data),
   streaks: () => api.get('/stats/streaks').then(r => r.data),
   consolation: (year?: number) => api.get('/stats/consolation', { params: year ? { year } : {} }).then(r => r.data),
-  managerTiers: () => api.get('/stats/manager-tiers').then(r => r.data),
+  managerTiers: (yearStart?: number, yearEnd?: number) => api.get('/stats/manager-tiers', { params: { ...(yearStart ? { year_start: yearStart } : {}), ...(yearEnd ? { year_end: yearEnd } : {}) } }).then(r => r.data),
   strengthOfSchedule: (year?: number) => api.get('/stats/strength-of-schedule', { params: year ? { year } : {} }).then(r => r.data),
+  whatIf: (year?: number) => api.get('/stats/what-if', { params: year ? { year } : {} }).then(r => r.data),
+  clutchRating: (year?: number) => api.get('/stats/clutch-rating', { params: year ? { year } : {} }).then(r => r.data),
 }
 
 export const draftApi = {

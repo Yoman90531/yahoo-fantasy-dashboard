@@ -6,6 +6,7 @@ that map directly to the Pydantic response schemas in schemas/stats.py.
 import json
 import math
 import os
+import random
 from collections import defaultdict
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, or_
@@ -1985,21 +1986,42 @@ def compute_consolation_bracket(db: Session, year: int | None = None) -> list[di
 # Manager Tiers
 # ---------------------------------------------------------------------------
 
-def compute_manager_tiers(db: Session) -> list[dict]:
+def compute_manager_tiers(db: Session, year_start: int | None = None, year_end: int | None = None) -> list[dict]:
     """
     Clusters managers into performance tiers based on a composite score
     computed from: win%, avg PPG, championships, playoff appearance rate,
     and consistency (low std dev of season finishes).
-    Only managers with 3+ seasons are included.
+    Only managers with 3+ seasons are included (or 1+ if year range is narrow).
     """
     managers = _get_active_managers(db)
     mgr_map = {m.id: m for m in managers}
 
+    # Build season filter for year range
+    season_ids = None
+    if year_start or year_end:
+        sq = db.query(Season)
+        if year_start:
+            sq = sq.filter(Season.year >= year_start)
+        if year_end:
+            sq = sq.filter(Season.year <= year_end)
+        season_ids = {s.id for s in sq.all()}
+
+    # Minimum seasons depends on range size
+    range_size = 99
+    if year_start and year_end:
+        range_size = year_end - year_start + 1
+    elif year_start or year_end:
+        range_size = 5
+    min_seasons = min(3, range_size)
+
     # Gather per-manager career data
     raw: list[dict] = []
     for mgr in managers:
-        teams = db.query(Team).filter(Team.manager_id == mgr.id).all()
-        if len(teams) < 3:
+        tq = db.query(Team).filter(Team.manager_id == mgr.id)
+        if season_ids is not None:
+            tq = tq.filter(Team.season_id.in_(season_ids))
+        teams = tq.all()
+        if len(teams) < min_seasons:
             continue
 
         total_wins = sum(t.wins for t in teams)
@@ -2407,3 +2429,238 @@ def compute_draft_analysis(db: Session, year: int | None = None) -> dict:
         "best_picks": best_picks,
         "worst_picks": worst_picks,
     }
+
+
+# ---------------------------------------------------------------------------
+# What If Schedule Simulator
+# ---------------------------------------------------------------------------
+
+def compute_what_if(db: Session, year: int | None = None, num_simulations: int = 1000) -> list[dict]:
+    """
+    Simulate randomized schedules to show how much final records depend on
+    schedule luck. For each season, randomizes weekly pairings and recalculates
+    records across N simulations.
+    """
+    managers = _get_active_managers(db)
+    mgr_map = {m.id: m.display_name for m in managers}
+    mgr_ids = set(mgr_map.keys())
+
+    teams = _all_teams(db)
+    t2m = _team_to_manager(teams)
+    seasons_q = db.query(Season)
+    if year:
+        seasons_q = seasons_q.filter(Season.year == year)
+    seasons = seasons_q.all()
+
+    # Accumulate across seasons
+    actual_wins: dict[int, int] = defaultdict(int)
+    actual_games: dict[int, int] = defaultdict(int)
+    sim_wins_total: dict[int, list[int]] = defaultdict(lambda: [0] * num_simulations)
+
+    for season in seasons:
+        # Get regular season matchups
+        matchups = (
+            db.query(Matchup)
+            .filter(Matchup.season_id == season.id, Matchup.is_playoff == False, Matchup.is_consolation == False)
+            .all()
+        )
+
+        # Organize scores by week: {week: [(mgr_id, points), ...]}
+        weekly_scores: dict[int, list[tuple[int, float]]] = defaultdict(list)
+        for m in matchups:
+            mgr1 = t2m.get(m.team1_id)
+            mgr2 = t2m.get(m.team2_id)
+            if mgr1 not in mgr_ids or mgr2 not in mgr_ids:
+                continue
+            weekly_scores[m.week].append((mgr1, m.team1_points))
+            weekly_scores[m.week].append((mgr2, m.team2_points))
+
+            # Track actual wins
+            actual_games[mgr1] += 1
+            actual_games[mgr2] += 1
+            if m.winner_team_id == m.team1_id:
+                actual_wins[mgr1] += 1
+            elif m.winner_team_id == m.team2_id:
+                actual_wins[mgr2] += 1
+
+        # Run simulations
+        for sim in range(num_simulations):
+            for week, scores in weekly_scores.items():
+                if len(scores) < 2:
+                    continue
+                # Shuffle and pair
+                shuffled = list(scores)
+                random.shuffle(shuffled)
+                for i in range(0, len(shuffled) - 1, 2):
+                    mgr_a, pts_a = shuffled[i]
+                    mgr_b, pts_b = shuffled[i + 1]
+                    if pts_a > pts_b:
+                        sim_wins_total[mgr_a][sim] += 1
+                    elif pts_b > pts_a:
+                        sim_wins_total[mgr_b][sim] += 1
+
+    results = []
+    for mid in mgr_ids:
+        if actual_games.get(mid, 0) == 0:
+            continue
+        sim_list = sim_wins_total.get(mid, [0] * num_simulations)
+        avg_sim = sum(sim_list) / len(sim_list)
+        best_sim = max(sim_list)
+        worst_sim = min(sim_list)
+        act_w = actual_wins.get(mid, 0)
+        schedule_luck = act_w - avg_sim
+
+        results.append({
+            "manager_id": mid,
+            "manager_name": mgr_map[mid],
+            "actual_wins": act_w,
+            "actual_games": actual_games[mid],
+            "avg_sim_wins": round(avg_sim, 1),
+            "best_sim_wins": best_sim,
+            "worst_sim_wins": worst_sim,
+            "schedule_luck": round(schedule_luck, 1),
+        })
+
+    results.sort(key=lambda x: -x["schedule_luck"])
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Clutch Rating
+# ---------------------------------------------------------------------------
+
+def compute_clutch_rating(db: Session, year: int | None = None) -> list[dict]:
+    """
+    Rate managers on performance in must-win situations:
+    - Late-season games (week >= 8) where the manager is within 2 games of the playoff cutline
+    - All non-consolation playoff matchups
+    """
+    managers = _get_active_managers(db)
+    mgr_map = {m.id: m.display_name for m in managers}
+    mgr_ids = set(mgr_map.keys())
+
+    teams = _all_teams(db)
+    t2m = _team_to_manager(teams)
+
+    seasons_q = db.query(Season)
+    if year:
+        seasons_q = seasons_q.filter(Season.year == year)
+    seasons = seasons_q.all()
+
+    # Accumulators per manager
+    clutch_stats: dict[int, dict] = defaultdict(lambda: {
+        "clutch_wins": 0, "clutch_losses": 0, "clutch_points": 0.0,
+        "reg_wins": 0, "reg_losses": 0, "reg_points": 0.0, "reg_games": 0,
+    })
+
+    for season in seasons:
+        num_playoff_teams = season.num_playoff_teams or 4
+        reg_weeks = season.num_regular_season_weeks or 13
+
+        matchups = (
+            db.query(Matchup)
+            .filter(Matchup.season_id == season.id, Matchup.is_consolation == False)
+            .order_by(Matchup.week)
+            .all()
+        )
+
+        # Track running records per manager per season to determine must-win
+        running_wins: dict[int, int] = defaultdict(int)
+        running_losses: dict[int, int] = defaultdict(int)
+
+        for m in matchups:
+            mgr1 = t2m.get(m.team1_id)
+            mgr2 = t2m.get(m.team2_id)
+            if mgr1 not in mgr_ids or mgr2 not in mgr_ids:
+                continue
+
+            is_clutch = False
+
+            if m.is_playoff:
+                # All playoff games are clutch
+                is_clutch = True
+            elif m.week >= 8 and m.week <= reg_weeks:
+                # Late-season game — check if near playoff cutline
+                # Get all running records for this season to find cutline
+                all_records = []
+                for mid in mgr_ids:
+                    w = running_wins.get(mid, 0)
+                    l = running_losses.get(mid, 0)
+                    if w + l > 0:  # only include managers in this season
+                        all_records.append((mid, w))
+
+                if all_records:
+                    all_records.sort(key=lambda x: -x[1])
+                    # Playoff cutline: wins of the team in the last playoff spot
+                    cutline_idx = min(num_playoff_teams - 1, len(all_records) - 1)
+                    cutline_wins = all_records[cutline_idx][1]
+
+                    # A game is must-win if the manager is within 2 wins of the cutline
+                    for mgr_id in [mgr1, mgr2]:
+                        mgr_wins = running_wins.get(mgr_id, 0)
+                        if abs(mgr_wins - cutline_wins) <= 2:
+                            is_clutch = True
+                            break
+
+            # Record stats
+            for mgr_id, pts, opp_id in [(mgr1, m.team1_points, m.team2_id), (mgr2, m.team2_points, m.team1_id)]:
+                won = m.winner_team_id == (m.team1_id if mgr_id == mgr1 else m.team2_id)
+
+                if is_clutch:
+                    clutch_stats[mgr_id]["clutch_points"] += pts
+                    if won:
+                        clutch_stats[mgr_id]["clutch_wins"] += 1
+                    else:
+                        clutch_stats[mgr_id]["clutch_losses"] += 1
+                elif not m.is_playoff:
+                    clutch_stats[mgr_id]["reg_points"] += pts
+                    clutch_stats[mgr_id]["reg_games"] += 1
+                    if won:
+                        clutch_stats[mgr_id]["reg_wins"] += 1
+                    else:
+                        clutch_stats[mgr_id]["reg_losses"] += 1
+
+            # Update running records (regular season only)
+            if not m.is_playoff:
+                if m.winner_team_id == m.team1_id:
+                    running_wins[mgr1] += 1
+                    running_losses[mgr2] += 1
+                elif m.winner_team_id == m.team2_id:
+                    running_wins[mgr2] += 1
+                    running_losses[mgr1] += 1
+
+    results = []
+    for mid in mgr_ids:
+        s = clutch_stats.get(mid)
+        if not s:
+            continue
+        clutch_games = s["clutch_wins"] + s["clutch_losses"]
+        if clutch_games == 0:
+            continue
+
+        clutch_win_pct = round(s["clutch_wins"] / clutch_games * 100, 1)
+        clutch_avg_pts = round(s["clutch_points"] / clutch_games, 2)
+        reg_avg_pts = round(s["reg_points"] / s["reg_games"], 2) if s["reg_games"] else 0.0
+        scoring_boost = round(clutch_avg_pts - reg_avg_pts, 2)
+
+        results.append({
+            "manager_id": mid,
+            "manager_name": mgr_map[mid],
+            "clutch_games": clutch_games,
+            "clutch_wins": s["clutch_wins"],
+            "clutch_losses": s["clutch_losses"],
+            "clutch_win_pct": clutch_win_pct,
+            "clutch_avg_points": clutch_avg_pts,
+            "reg_avg_points": reg_avg_pts,
+            "scoring_boost": scoring_boost,
+        })
+
+    # Compute clutch_rating: composite of win% (60%) + normalized scoring boost (40%)
+    if results:
+        max_boost = max(abs(r["scoring_boost"]) for r in results) or 1
+        for r in results:
+            norm_boost = (r["scoring_boost"] / max_boost + 1) / 2 * 100  # 0-100 scale
+            r["clutch_rating"] = round(r["clutch_win_pct"] * 0.6 + norm_boost * 0.4, 1)
+
+    results.sort(key=lambda x: -x.get("clutch_rating", 0))
+    return results

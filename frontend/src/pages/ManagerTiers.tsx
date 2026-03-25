@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import YearRangeFilter from '../components/cards/YearRangeFilter'
 import { useApi } from '../hooks/useApi'
 import { useSortedTable } from '../hooks/useSortedTable'
-import { statsApi } from '../api/client'
-import type { ManagerTierRow } from '../types'
+import { statsApi, seasonsApi } from '../api/client'
+import type { ManagerTierRow, SeasonSummary } from '../types'
 
 type SortKey = 'manager_name' | 'composite_score' | 'win_pct' | 'avg_ppg' | 'championships' | 'playoff_rate' | 'consistency_score' | 'seasons_played'
 
@@ -38,7 +40,10 @@ const TIER_CONFIG: Record<string, { bg: string; border: string; header: string; 
 const TIER_ORDER = ['Elite', 'Contender', 'Middle of the Pack', 'Rebuilding']
 
 export default function ManagerTiers() {
-  const { data, loading, error } = useApi<ManagerTierRow[]>(() => statsApi.managerTiers(), [])
+  const [yearStart, setYearStart] = useState<number | undefined>(undefined)
+  const [yearEnd, setYearEnd] = useState<number | undefined>(undefined)
+  const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
+  const { data, loading, error } = useApi<ManagerTierRow[]>(() => statsApi.managerTiers(yearStart, yearEnd), [yearStart, yearEnd])
   const { sorted, th } = useSortedTable<ManagerTierRow, SortKey>(data, 'composite_score')
 
   const tierGroups = TIER_ORDER.map(tier => ({
@@ -52,6 +57,13 @@ export default function ManagerTiers() {
       subtitle="Career performance tiers based on composite scoring across win%, PPG, championships, playoff rate, and consistency. Minimum 3 seasons required."
       dataScope="regular"
     >
+      <YearRangeFilter
+        seasons={seasons}
+        yearStart={yearStart}
+        yearEnd={yearEnd}
+        onChange={(s, e) => { setYearStart(s); setYearEnd(e) }}
+      />
+
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
 

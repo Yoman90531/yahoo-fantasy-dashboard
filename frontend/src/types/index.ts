@@ -494,3 +494,29 @@ export interface DraftAnalysis {
   best_picks: BestWorstPick[]
   worst_picks: BestWorstPick[]
 }
+
+// What If Schedule Simulator
+export interface WhatIfRow {
+  manager_id: number
+  manager_name: string
+  actual_wins: number
+  actual_games: number
+  avg_sim_wins: number
+  best_sim_wins: number
+  worst_sim_wins: number
+  schedule_luck: number
+}
+
+// Clutch Rating
+export interface ClutchRatingRow {
+  manager_id: number
+  manager_name: string
+  clutch_games: number
+  clutch_wins: number
+  clutch_losses: number
+  clutch_win_pct: number
+  clutch_avg_points: number
+  reg_avg_points: number
+  scoring_boost: number
+  clutch_rating: number
+}

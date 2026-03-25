@@ -55,6 +55,8 @@ const navigation: NavEntry[] = [
       { to: '/streaks', label: 'Streak Tracker', icon: '🔥' },
       { to: '/strength-of-schedule', label: 'Strength of Schedule', icon: '💪' },
       { to: '/draft-analysis', label: 'Draft Analysis', icon: '📋' },
+      { to: '/what-if', label: 'What If Simulator', icon: '🔀' },
+      { to: '/clutch-rating', label: 'Clutch Rating', icon: '🎯' },
     ],
   },
   {

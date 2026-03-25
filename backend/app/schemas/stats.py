@@ -314,3 +314,27 @@ class StrengthOfScheduleRow(BaseModel):
     sos_rank: int
     adjusted_win_pct: float
     wins_above_expected: float
+
+
+class WhatIfRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    actual_wins: int
+    actual_games: int
+    avg_sim_wins: float
+    best_sim_wins: int
+    worst_sim_wins: int
+    schedule_luck: float
+
+
+class ClutchRatingRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    clutch_games: int
+    clutch_wins: int
+    clutch_losses: int
+    clutch_win_pct: float
+    clutch_avg_points: float
+    reg_avg_points: float
+    scoring_boost: float
+    clutch_rating: float

@@ -25,6 +25,8 @@ import ConsolationBracket from './pages/ConsolationBracket'
 import ManagerTiers from './pages/ManagerTiers'
 import StrengthOfSchedule from './pages/StrengthOfSchedule'
 import DraftAnalysis from './pages/DraftAnalysis'
+import WhatIfSimulator from './pages/WhatIfSimulator'
+import ClutchRating from './pages/ClutchRating'
 
 export default function App() {
   return (
@@ -57,6 +59,8 @@ export default function App() {
             <Route path="/manager-tiers" element={<ManagerTiers />} />
             <Route path="/strength-of-schedule" element={<StrengthOfSchedule />} />
             <Route path="/draft-analysis" element={<DraftAnalysis />} />
+            <Route path="/what-if" element={<WhatIfSimulator />} />
+            <Route path="/clutch-rating" element={<ClutchRating />} />
             <Route path="/sync" element={<SyncStatus />} />
           </Routes>
         </main>
