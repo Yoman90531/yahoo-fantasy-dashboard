@@ -1,17 +1,15 @@
 # Yahoo Fantasy Dashboard — TODO
 
-## Pending
-- [ ] Ability to define range of years to drive outputs (e.g., Manager Tiers)
-- [ ] What If schedule simulator
-- [ ] Clutch Rating for must-win games
-
 ## Requires New Yahoo API Sync
-- [ ] Draft & Roster Analysis: position ROI vs draft capital, free agency effectiveness, drafting strategy tendencies (draft picks data)
-- [ ] Player-Level Contributions (player stats data)
 - [ ] Transaction Volume analysis (transactions data)
 - [ ] Bench vs Starter Analysis (roster lineups data)
 
 ## Completed
+- [x] Year Range Filter for Manager Tiers (From/To year selection)
+- [x] What If Schedule Simulator (1,000 randomized schedule simulations)
+- [x] Clutch Rating for must-win games (late season + playoff performance)
+- [x] Draft & Roster Analysis with player stats sync (position ROI, draft grades, tendencies)
+- [x] Player-Level Contributions (player_seasons table synced from Yahoo API)
 - [x] Hyperlink game references to Yahoo Fantasy matchup pages (Rivalry, Season Replay, Weekly Records)
 - [x] Build Strength of Schedule page
 - [x] Build Manager Tiers / Clustering page
