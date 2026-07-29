@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from sqlalchemy import create_engine, event, MetaData
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from app.config import settings
@@ -12,6 +14,12 @@ naming_convention = {
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=naming_convention)
+
+
+if settings.database_url.startswith("sqlite:///"):
+    sqlite_path = settings.database_url.removeprefix("sqlite:///")
+    if sqlite_path != ":memory:":
+        Path(sqlite_path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
 
 
 engine = create_engine(

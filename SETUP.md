@@ -38,7 +38,7 @@ copy .env.example .env
 ```bash
 python scripts/auth_init.py
 # A browser window will open — log in with your Yahoo account and authorize
-# Token is saved to data/tokens.json
+# Token is saved to data/.env
 ```
 
 ### Sync historical data
@@ -67,7 +67,7 @@ uvicorn app.main:app --reload
 cd frontend
 npm install
 npm run dev
-# Site running at http://localhost:5173
+# Site running at http://localhost:5173/fantasy/
 ```
 
 ---
@@ -86,7 +86,7 @@ cd backend && venv\Scripts\activate && uvicorn app.main:app --reload
 cd frontend && npm run dev
 ```
 
-Then open http://localhost:5173 in your browser.
+Then open http://localhost:5173/fantasy/ in your browser.
 
 ---
 
@@ -98,3 +98,32 @@ python sync_runner.py --years 2025 --force
 ```
 
 Or use the **Sync Data** page in the dashboard.
+
+---
+
+## VibeDan Production Deployment
+
+The production app is served below `https://vibedan.duckdns.org/fantasy/`.
+Caddy owns public HTTP and HTTPS; this compose project only listens on the
+Docker host bridge at `172.17.0.1:3001`.
+
+```bash
+cp .env.production.example .env.production
+# Fill in the Yahoo credentials, league ID, and first season year.
+
+chmod +x deploy.sh
+./deploy.sh
+```
+
+Yahoo OAuth and all synced data are stored in the `app-data` Docker volume.
+Authenticate and initialize the data after the first deployment:
+
+```bash
+docker compose exec app python scripts/auth_init.py
+docker compose exec app python scripts/find_league_ids.py
+docker compose exec app python sync_runner.py --years 2025
+docker compose exec app python sync_runner.py
+```
+
+Do not run `docker compose down -v` unless you intend to delete the database,
+Yahoo tokens, league IDs, and manager overrides.

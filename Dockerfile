@@ -20,8 +20,8 @@ COPY backend/ ./
 # Copy built frontend into backend/static (where FastAPI serves it)
 COPY --from=frontend-build /app/frontend/dist ./static
 
-# Create data directory
-RUN mkdir -p /app/data
+# Runtime state is mounted here by Docker Compose.
+RUN mkdir -p /data
 
 EXPOSE 8000
 

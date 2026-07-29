@@ -7,5 +7,6 @@ backend/__pycache__
 *.pyc
 .git
 .env
+.env.production
 data/fantasy.db
 data/tokens.json

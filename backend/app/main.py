@@ -1,13 +1,22 @@
-import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from app import models  # noqa: F401
+from app.database import Base, engine
 from app.routers import seasons, managers, stats, sync, draft
 
-app = FastAPI(title="Fantasy Football Dashboard API", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+app = FastAPI(title="Fantasy Football Dashboard API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

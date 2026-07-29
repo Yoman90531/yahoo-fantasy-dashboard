@@ -30,7 +30,7 @@ import ClutchRating from './pages/ClutchRating'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/fantasy">
       <div className="flex min-h-screen">
         <Sidebar />
         <main className="flex-1 overflow-auto pt-12 md:pt-0">
