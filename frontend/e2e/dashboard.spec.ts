@@ -50,8 +50,37 @@ test('league headquarters renders its historical overview', async ({ page }) => 
   await page.goto('/fantasy/')
 
   await expect(page.getByRole('heading', { name: 'GARYS League HQ' })).toBeVisible()
-  await expect(page.getByRole('region', { name: 'Key insights' })).toBeVisible()
+  const draftCalendar = page.getByRole('region', { name: '2026 Draft Calendar' })
+  const keyInsights = page.getByRole('region', { name: 'Key insights' })
+
+  await expect(draftCalendar).toBeVisible()
+  await expect(draftCalendar.getByText('Pre-draft action center')).toBeVisible()
+  await expect(keyInsights).toBeVisible()
+
+  const [draftCalendarBox, keyInsightsBox] = await Promise.all([
+    draftCalendar.boundingBox(),
+    keyInsights.boundingBox(),
+  ])
+  expect(draftCalendarBox).not.toBeNull()
+  expect(keyInsightsBox).not.toBeNull()
+  expect(draftCalendarBox!.y).toBeLessThan(keyInsightsBox!.y)
+
   await expect(page.getByRole('heading', { name: 'Championship Timeline' })).toBeVisible()
+})
+
+test('secret Karna headquarters is unlisted and renders the prank insights', async ({ page }) => {
+  await page.goto('/fantasy/karna')
+
+  await expect(page.getByRole('heading', { name: 'GARYS League HQ' })).toBeVisible()
+  await expect(page.getByRole('region', { name: '2026 Draft Calendar' })).toBeVisible()
+  await expect(
+    page.getByRole('region', { name: 'Key insights' }).getByText(
+      'Three championships are doing heroic PR for Karna’s 89–98 career record—a 47.6% win rate over 14 seasons.',
+    ),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Karna' }),
+  ).toHaveCount(0)
 })
 
 test('season archive loads the latest season', async ({ page }) => {

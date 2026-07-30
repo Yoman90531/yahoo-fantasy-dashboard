@@ -1,6 +1,7 @@
 // All-time editorial takeaways for the completed 2012–2025 seasons.
 export type InsightKey =
   | 'leagueHq'
+  | 'karnaPrank'
   | 'seasonArchive'
   | 'weekByWeek'
   | 'allTimeStandings'
@@ -24,6 +25,13 @@ export const KEY_INSIGHTS: Record<InsightKey, readonly string[]> = {
     'Karna has defined the recent era, winning three of the past five titles: 2021, 2023, and 2025.',
     'Six managers have won exactly one championship, underscoring the league’s broad title distribution.',
     'Lowell is the all-time scoring leader with 20,954.28 points and a league-high 32 weekly scoring crowns.',
+  ],
+  karnaPrank: [
+    'Three championships are doing heroic PR for Karna’s 89–98 career record—a 47.6% win rate over 14 seasons.',
+    'Karna owns the lowest weekly score in league history: 39.70 points against JK in Week 16 of 2012.',
+    'He has missed the playoffs eight times in 14 seasons, more than any other manager in the league.',
+    'When sent to the consolation bracket, Karna went 5–11—a 31.3% win rate—with an 80.85-point average.',
+    'Karna once lost 11 straight games from Week 3 through Week 13 of 2015, the second-longest skid in league history.',
   ],
   seasonArchive: [
     'Lowell’s 2020 championship season set the best record: 12–1, a 92.3% win rate.',

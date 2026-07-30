@@ -54,6 +54,7 @@ function AppRoutes() {
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/karna" element={<Dashboard insightKey="karnaPrank" />} />
 
           <Route
             path="/seasons"

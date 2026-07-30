@@ -3,15 +3,20 @@ import ChampionshipHistory from '../components/dashboard/ChampionshipHistory'
 import AwardsSection from '../components/dashboard/AwardsSection'
 import KeyDatesSection from '../components/dashboard/KeyDatesSection'
 import KeyInsights from '../components/cards/KeyInsights'
+import type { InsightKey } from '../content/keyInsights'
 import { useSeasons } from '../hooks/useSeasons'
 
-export default function Dashboard() {
+interface Props {
+  insightKey?: InsightKey
+}
+
+export default function Dashboard({ insightKey = 'leagueHq' }: Props) {
   const { data: seasons } = useSeasons()
 
   return (
     <PageWrapper title="GARYS League HQ" subtitle="Championship history, league lore, and the business ahead.">
-      <KeyInsights insightKey="leagueHq" />
       <KeyDatesSection />
+      <KeyInsights insightKey={insightKey} />
 
       <section aria-label="League history and superlatives" className="mt-10">
         <ChampionshipHistory />
