@@ -11,9 +11,14 @@ import json
 import math
 import sys
 from collections import Counter, defaultdict
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from app.services.manager_names import override_name_for_guid
 
 
 BASE_URL = (
@@ -413,11 +418,20 @@ def run_audit() -> Audit:
         audit.fetch(f"/api/managers/{manager_id}/streak")
         trophy = audit.fetch(f"/api/stats/trophy-case/{manager_id}")
         if isinstance(profile, dict):
-            actual_name = profile.get("manager", {}).get("display_name")
+            profile_manager = profile.get("manager", {})
+            actual_name = profile_manager.get("display_name")
             if actual_name != expected_name:
                 audit.error(
                     f"Manager {manager_id} profile name {actual_name!r} does not "
                     f"match season name {expected_name!r}."
+                )
+            expected_override = override_name_for_guid(
+                profile_manager.get("yahoo_guid", "")
+            )
+            if expected_override and actual_name != expected_override:
+                audit.error(
+                    f"Manager {manager_id} profile name {actual_name!r} does not "
+                    f"match canonical name {expected_override!r}."
                 )
         if isinstance(trophy, dict) and trophy.get("manager_name") != expected_name:
             audit.error(

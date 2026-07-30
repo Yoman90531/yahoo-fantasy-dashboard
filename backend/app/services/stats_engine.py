@@ -3,9 +3,7 @@ Stats engine — all computed analytics for the dashboard.
 Every function takes a SQLAlchemy Session and returns plain Python dicts/lists
 that map directly to the Pydantic response schemas in schemas/stats.py.
 """
-import json
 import math
-import os
 from collections import defaultdict
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, or_
@@ -15,38 +13,22 @@ from app.models.team import Team
 from app.models.matchup import Matchup
 from app.models.draft_pick import DraftPick
 from app.models.player_season import PlayerSeason
+from app.services.manager_names import MANAGER_RENAMES, override_name_for_guid
 
 
 # ---------------------------------------------------------------------------
-# Manager overrides — loaded once from data/manager_overrides.json
+# Canonical manager names plus custom data/manager_overrides.json entries
 # ---------------------------------------------------------------------------
 
-_OVERRIDES_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "manager_overrides.json")
-
-def _load_overrides() -> dict[str, str]:
-    """Load GUID -> display_name renames from manager_overrides.json."""
-    try:
-        with open(_OVERRIDES_PATH, "r") as f:
-            data = json.load(f)
-        return data.get("renames", {})
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
-
-_RENAMES = _load_overrides()
+_RENAMES = MANAGER_RENAMES
 
 
 def _override_name_for_guid(guid: str) -> str | None:
-    """Return the configured display name for a Yahoo GUID, including prefixes."""
-    if guid in _RENAMES:
-        return _RENAMES[guid]
-    for prefix, name in _RENAMES.items():
-        if guid.startswith(prefix) or prefix.startswith(guid):
-            return name
-    return None
+    return override_name_for_guid(guid)
 
 
 def _apply_overrides(managers: list) -> list:
-    """Apply display_name overrides from manager_overrides.json in-memory.
+    """Apply canonical and custom display-name overrides in memory.
     Supports both exact GUID match and prefix match for truncated GUIDs."""
     for mgr in managers:
         override_name = _override_name_for_guid(mgr.yahoo_guid)

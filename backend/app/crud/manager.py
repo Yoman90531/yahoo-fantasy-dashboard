@@ -1,9 +1,11 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.sqlite import insert
 from app.models.manager import Manager
+from app.services.manager_names import resolve_manager_name
 
 
 def upsert_manager(db: Session, yahoo_guid: str, display_name: str, nickname: str | None = None) -> Manager:
+    display_name = resolve_manager_name(yahoo_guid, display_name)
     stmt = (
         insert(Manager)
         .values(yahoo_guid=yahoo_guid, display_name=display_name, nickname=nickname)
@@ -18,8 +20,26 @@ def upsert_manager(db: Session, yahoo_guid: str, display_name: str, nickname: st
 
 
 def get_all(db: Session) -> list[Manager]:
-    return db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).order_by(Manager.display_name).all()
+    managers = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%")).all()
+    for manager in managers:
+        manager.display_name = resolve_manager_name(
+            manager.yahoo_guid,
+            manager.display_name,
+        )
+    return sorted(
+        (
+            manager for manager in managers
+            if "hidden" not in manager.display_name.lower()
+        ),
+        key=lambda manager: manager.display_name,
+    )
 
 
 def get_by_id(db: Session, manager_id: int) -> Manager | None:
-    return db.query(Manager).filter(Manager.id == manager_id).first()
+    manager = db.query(Manager).filter(Manager.id == manager_id).first()
+    if manager:
+        manager.display_name = resolve_manager_name(
+            manager.yahoo_guid,
+            manager.display_name,
+        )
+    return manager

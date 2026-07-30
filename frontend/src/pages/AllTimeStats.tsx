@@ -15,12 +15,12 @@ export default function AllTimeStats() {
   if (!managers?.length) return <PageWrapper title="All-Time Standings"><p className="text-gray-500">No data yet. Run a data sync first.</p></PageWrapper>
 
   const barData = managers.map(m => ({
-    name: m.nickname ?? m.display_name.split(' ')[0],
+    name: m.display_name,
     value: parseFloat((m.win_pct * 100).toFixed(1)),
   }))
 
   const pfData = managers.map(m => ({
-    name: m.nickname ?? m.display_name.split(' ')[0],
+    name: m.display_name,
     value: m.total_points_for,
   }))
 

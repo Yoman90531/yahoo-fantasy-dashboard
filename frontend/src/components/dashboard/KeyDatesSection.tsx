@@ -8,7 +8,7 @@ const KEY_DATES = [
   { date: 'By Aug 26', event: 'Submit rule proposals', owner: 'Jeremy' },
   { date: 'Aug 27', event: 'Set up draft on Yahoo', owner: 'Dan' },
   { date: 'By Aug 28', event: 'Vote on rules and ratify constitution', owner: 'Jeremy' },
-  { date: 'Aug 28', event: 'Send dues', owner: 'Ryan' },
+  { date: 'Aug 28', event: 'Send dues', owner: 'Kang' },
   { date: 'Aug 28, 6:00 PM ET', event: 'Draft', owner: 'Dan', featured: true },
 ]
 

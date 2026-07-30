@@ -18,12 +18,13 @@ OVERRIDES_FILE = DATA_DIR / "manager_overrides.json"
 
 
 def load_overrides():
+    from app.services.manager_names import MANAGER_RENAMES
+
     if not OVERRIDES_FILE.exists():
-        print(f"No overrides file found at {OVERRIDES_FILE}")
-        sys.exit(1)
+        return MANAGER_RENAMES, {}
     with open(OVERRIDES_FILE) as f:
         data = json.load(f)
-    return data.get("renames", {}), data.get("merges", {})
+    return MANAGER_RENAMES, data.get("merges", {})
 
 
 def main():

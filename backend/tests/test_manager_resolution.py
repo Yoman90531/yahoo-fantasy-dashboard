@@ -8,14 +8,17 @@ os.environ.setdefault("LEAGUE_ID", "test")
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app import crud
 from app.database import Base
 from app.models import draft_pick, manager, matchup, player_season, season, team
 from app.models.manager import Manager
 from app.models.matchup import Matchup
 from app.models.season import Season
 from app.models.team import Team
+from app.routers.managers import get_manager
 from app.routers.seasons import get_season_matchups
 from app.services.stats_engine import (
+    _get_active_managers,
     _tie_aware_percentiles,
     compute_manager_tiers,
     compute_rivalry,
@@ -23,6 +26,17 @@ from app.services.stats_engine import (
     compute_weekly_records,
 )
 from scripts.audit_data import audit_database
+
+
+CANONICAL_NAME_CASES = (
+    ("BWP2TR2AM6UCK4O2SSB5QENMTA", "Dan Yo", "Dan"),
+    ("GOGUB4NMXEO7JMGK4ORGST5T6U", "karna", "Karna"),
+    ("55RLOFACMDZLSPWTEKYND5WLJ4", "Benito", "Bennett"),
+    ("6YACMFT7CNJGCBKVZZMEYUMMGM", "Ben", "Himmel"),
+    ("CFFTOVALCAGKZTO5CYUVZLQNXU", "Ryan", "Kang"),
+    ("LY5H326U5L3SALUER4S4FAPPKY", "Sandy August", "Sandy"),
+    ("SMZJC5CPSCDSMMO2Z6ZTD4XEKE", "Michael C", "Michael"),
+)
 
 
 class ManagerResolutionTest(unittest.TestCase):
@@ -162,6 +176,27 @@ class ManagerResolutionTest(unittest.TestCase):
         self.assertEqual(scores[1], scores[2])
         self.assertEqual(scores[1], 75.0)
         self.assertEqual(scores[3], 0.0)
+
+    def test_requested_manager_names_are_canonical_everywhere(self) -> None:
+        manager_ids = {}
+        for guid, yahoo_name, expected_name in CANONICAL_NAME_CASES:
+            persisted = crud.manager.upsert_manager(
+                self.db,
+                yahoo_guid=guid,
+                display_name=yahoo_name,
+            )
+            manager_ids[guid] = persisted.id
+            self.assertEqual(persisted.display_name, expected_name)
+        self.db.commit()
+
+        active_by_guid = {
+            manager.yahoo_guid: manager.display_name
+            for manager in _get_active_managers(self.db)
+        }
+        for guid, _yahoo_name, expected_name in CANONICAL_NAME_CASES:
+            self.assertEqual(active_by_guid[guid], expected_name)
+            profile = get_manager(manager_ids[guid], db=self.db)
+            self.assertEqual(profile.manager.display_name, expected_name)
 
 
 if __name__ == "__main__":
