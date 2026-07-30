@@ -66,8 +66,12 @@ jobs:
 
             docker compose build app
             docker compose run --rm --no-deps app python scripts/backup_database.py
+            docker compose run --rm --no-deps app python scripts/migrate_database.py
             docker compose pull caddy
-            docker compose up -d --remove-orphans
+            if ! docker compose up -d --remove-orphans; then
+              docker compose logs --tail=200 app caddy
+              exit 1
+            fi
             docker compose up -d --force-recreate --no-deps caddy
             docker compose ps
 

@@ -17,8 +17,14 @@ docker compose build app
 echo "==> Backing up the current database..."
 docker compose run --rm --no-deps app python scripts/backup_database.py
 
+echo "==> Migrating the database..."
+docker compose run --rm --no-deps app python scripts/migrate_database.py
+
 echo "==> Starting the dashboard and site router..."
-docker compose up -d --remove-orphans
+if ! docker compose up -d --remove-orphans; then
+    docker compose logs --tail=200 app caddy
+    exit 1
+fi
 docker compose up -d --force-recreate --no-deps caddy
 
 echo "==> Waiting for the dashboard health check..."
