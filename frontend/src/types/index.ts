@@ -253,22 +253,6 @@ export interface SeasonAwards {
   awards: Award[]
 }
 
-// Power Rankings
-export interface PowerDimensions {
-  win_rate: number
-  scoring: number
-  consistency: number
-  luck_adjusted: number
-  playoff_success: number
-}
-
-export interface PowerRankingRow {
-  manager_id: number
-  manager_name: string
-  overall_score: number
-  dimensions: PowerDimensions
-}
-
 // Rivalry
 export interface RivalryMatchup {
   year: number
@@ -393,10 +377,18 @@ export interface ManagerTierRow {
   composite_score: number
   win_pct: number
   avg_ppg: number
+  expected_win_pct: number
   championships: number
   playoff_rate: number
   consistency_score: number
   seasons_played: number
+  dimension_scores: {
+    win_pct: number
+    avg_ppg: number
+    expected_win_pct: number
+    championships: number
+    playoff_rate: number
+  }
 }
 
 // Strength of Schedule

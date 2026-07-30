@@ -16,6 +16,8 @@ from app.models.season import Season
 from app.models.team import Team
 from app.routers.seasons import get_season_matchups
 from app.services.stats_engine import (
+    _tie_aware_percentiles,
+    compute_manager_tiers,
     compute_rivalry,
     compute_trophy_case,
     compute_weekly_records,
@@ -142,6 +144,24 @@ class ManagerResolutionTest(unittest.TestCase):
             if not warning.startswith("Manager overrides with no matching database row:")
         ]
         self.assertEqual(unexpected_warnings, [])
+
+    def test_career_tiers_include_schedule_adjusted_performance(self) -> None:
+        rows = compute_manager_tiers(self.db, year_start=2017, year_end=2017)
+        by_manager = {row["manager_id"]: row for row in rows}
+
+        self.assertEqual(by_manager[22]["expected_win_pct"], 1.0)
+        self.assertEqual(by_manager[23]["expected_win_pct"], 0.0)
+        self.assertEqual(by_manager[22]["dimension_scores"]["expected_win_pct"], 100.0)
+        self.assertEqual(by_manager[23]["dimension_scores"]["expected_win_pct"], 0.0)
+        self.assertEqual(by_manager[22]["tier"], "Elite")
+        self.assertEqual(by_manager[23]["tier"], "Rebuilding")
+
+    def test_percentile_scores_are_tie_aware(self) -> None:
+        scores = _tie_aware_percentiles({1: 10.0, 2: 10.0, 3: 5.0})
+
+        self.assertEqual(scores[1], scores[2])
+        self.assertEqual(scores[1], 75.0)
+        self.assertEqual(scores[3], 0.0)
 
 
 if __name__ == "__main__":

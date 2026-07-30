@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import LoadingSpinner from '../cards/LoadingSpinner'
 import ErrorMessage from '../cards/ErrorMessage'
 import YearRangeFilter from '../cards/YearRangeFilter'
+import CareerTierRadarChart from '../charts/CareerTierRadarChart'
 import { useApi } from '../../hooks/useApi'
 import { useSortedTable } from '../../hooks/useSortedTable'
 import { statsApi } from '../../api/client'
 import type { ManagerTierRow, SeasonSummary } from '../../types'
 
-type SortKey = 'manager_name' | 'composite_score' | 'win_pct' | 'avg_ppg' | 'championships' | 'playoff_rate' | 'consistency_score' | 'seasons_played'
+type SortKey = 'manager_name' | 'composite_score' | 'win_pct' | 'avg_ppg' | 'expected_win_pct' | 'championships' | 'playoff_rate' | 'consistency_score' | 'seasons_played'
 
 const TIER_CONFIG: Record<string, { bg: string; border: string; header: string; badge: string }> = {
   Elite: {
@@ -45,16 +46,34 @@ interface Props {
 export default function ManagerTiersPanel({ seasons }: Props) {
   const [yearStart, setYearStart] = useState<number | undefined>(undefined)
   const [yearEnd, setYearEnd] = useState<number | undefined>(undefined)
+  const [selected, setSelected] = useState<Set<number>>(new Set())
   const { data, loading, error } = useApi<ManagerTierRow[]>(
     () => statsApi.managerTiers(yearStart, yearEnd),
     [yearStart, yearEnd],
   )
   const { sorted, th } = useSortedTable<ManagerTierRow, SortKey>(data, 'composite_score')
 
+  useEffect(() => {
+    setSelected(new Set((data ?? []).slice(0, 3).map(manager => manager.manager_id)))
+  }, [data])
+
   const tierGroups = TIER_ORDER.map(tier => ({
     tier,
     managers: (data ?? []).filter(manager => manager.tier === tier),
   })).filter(group => group.managers.length > 0)
+  const comparedManagers = (data ?? []).filter(manager => selected.has(manager.manager_id))
+
+  function toggleManager(managerId: number) {
+    setSelected(current => {
+      const next = new Set(current)
+      if (next.has(managerId)) {
+        next.delete(managerId)
+      } else if (next.size < 6) {
+        next.add(managerId)
+      }
+      return next
+    })
+  }
 
   return (
     <>
@@ -73,19 +92,23 @@ export default function ManagerTiersPanel({ seasons }: Props) {
 
       {data && data.length > 0 && (
         <>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
-            <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">Tier Formula</h2>
+          <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 md:p-5 mb-6">
+            <summary className="cursor-pointer text-sm font-semibold text-gray-300 uppercase tracking-wider">
+              Tier Formula
+              <span className="ml-2 text-[11px] normal-case font-normal text-gray-500">Weights and score bands</span>
+            </summary>
+            <div className="mt-4">
             <p className="text-xs text-gray-400 mb-4">
-              Each stat is percentile-ranked 0-100 across qualifying managers, then combined into a weighted score.
-              A minimum of three seasons is required.
+              Tied results receive equal percentile scores. Career tiers use fixed score bands, and a minimum of three
+              seasons is required unless the selected range is shorter.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
               {[
-                { label: 'Win %', weight: '25%', color: 'text-blue-400', desc: 'Career win percentage across regular season and playoff games.' },
-                { label: 'Avg PPG', weight: '25%', color: 'text-emerald-400', desc: 'Average points scored per game across all seasons played.' },
+                { label: 'Win %', weight: '25%', color: 'text-blue-400', desc: 'Career regular-season win percentage across the selected seasons.' },
+                { label: 'Avg PPG', weight: '20%', color: 'text-emerald-400', desc: 'Average points scored per game across all seasons played.' },
+                { label: 'Expected Wins', weight: '20%', color: 'text-purple-400', desc: 'How often each weekly score would have beaten the rest of the league.' },
                 { label: 'Championships', weight: '20%', color: 'text-yellow-400', desc: 'Total league championships won.' },
-                { label: 'Playoff Rate', weight: '15%', color: 'text-purple-400', desc: 'Percentage of seasons that ended in a playoff appearance.' },
-                { label: 'Consistency', weight: '15%', color: 'text-rose-400', desc: 'Stability of season finishes based on standings variance.' },
+                { label: 'Playoff Rate', weight: '15%', color: 'text-rose-400', desc: 'Percentage of seasons that ended in a playoff appearance.' },
               ].map(dimension => (
                 <div key={dimension.label} className="bg-gray-800 rounded-lg p-3">
                   <div className={`text-xs font-semibold uppercase tracking-wider mb-0.5 ${dimension.color}`}>{dimension.label}</div>
@@ -94,7 +117,14 @@ export default function ManagerTiersPanel({ seasons }: Props) {
                 </div>
               ))}
             </div>
-          </div>
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500">
+              <span>Elite: 75+</span>
+              <span>Contender: 55-74.9</span>
+              <span>Middle of the Pack: 35-54.9</span>
+              <span>Rebuilding: below 35</span>
+            </div>
+            </div>
+          </details>
 
           <div className="space-y-6 mb-8">
             {tierGroups.map(({ tier, managers }) => {
@@ -119,12 +149,16 @@ export default function ManagerTiersPanel({ seasons }: Props) {
                           <div className="text-right text-gray-300">{(manager.win_pct * 100).toFixed(1)}%</div>
                           <div className="text-gray-500">Avg PPG</div>
                           <div className="text-right text-gray-300">{manager.avg_ppg.toFixed(1)}</div>
+                          <div className="text-gray-500">Expected Win %</div>
+                          <div className="text-right text-gray-300">{(manager.expected_win_pct * 100).toFixed(1)}%</div>
                           <div className="text-gray-500">Championships</div>
                           <div className="text-right text-gray-300">{manager.championships}</div>
                           <div className="text-gray-500">Playoff Rate</div>
                           <div className="text-right text-gray-300">{(manager.playoff_rate * 100).toFixed(0)}%</div>
                           <div className="text-gray-500">Seasons</div>
                           <div className="text-right text-gray-300">{manager.seasons_played}</div>
+                          <div className="text-gray-500">Finish Stability</div>
+                          <div className="text-right text-gray-300">{manager.consistency_score.toFixed(0)}</div>
                         </div>
                       </div>
                     ))}
@@ -133,6 +167,41 @@ export default function ManagerTiersPanel({ seasons }: Props) {
               )
             })}
           </div>
+
+          <section className="bg-gray-900 border border-gray-800 rounded-lg p-4 md:p-5 mb-6" aria-labelledby="career-comparison-heading">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 id="career-comparison-heading" className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
+                Career Profile Comparison
+              </h2>
+              <span className="text-xs text-gray-500">{selected.size}/6</span>
+            </div>
+            <fieldset className="flex flex-wrap gap-2 mb-2">
+              <legend className="sr-only">Managers included in the career profile comparison</legend>
+              {(data ?? []).map(manager => {
+                const checked = selected.has(manager.manager_id)
+                return (
+                  <label
+                    key={manager.manager_id}
+                    className={`flex items-center gap-2 border rounded-lg px-2.5 py-1.5 text-xs cursor-pointer transition-colors ${
+                      checked
+                        ? 'bg-gray-800 border-brand-500 text-white'
+                        : 'border-gray-700 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={!checked && selected.size >= 6}
+                      onChange={() => toggleManager(manager.manager_id)}
+                      className="accent-blue-500"
+                    />
+                    {manager.manager_name}
+                  </label>
+                )
+              })}
+            </fieldset>
+            {comparedManagers.length > 0 && <CareerTierRadarChart managers={comparedManagers} />}
+          </section>
 
           <div className="overflow-x-auto rounded-xl border border-gray-800">
             <table className="w-full text-sm">
@@ -144,9 +213,10 @@ export default function ManagerTiersPanel({ seasons }: Props) {
                   {th('Score', 'composite_score')}
                   {th('Win %', 'win_pct')}
                   {th('Avg PPG', 'avg_ppg')}
+                  {th('Expected Win %', 'expected_win_pct')}
                   {th('Champs', 'championships')}
                   {th('Playoff %', 'playoff_rate')}
-                  {th('Consistency', 'consistency_score')}
+                  {th('Finish Stability', 'consistency_score')}
                   {th('Seasons', 'seasons_played')}
                 </tr>
               </thead>
@@ -163,6 +233,7 @@ export default function ManagerTiersPanel({ seasons }: Props) {
                       <td className="px-4 py-3 text-right font-bold text-brand-400">{row.composite_score.toFixed(1)}</td>
                       <td className="px-4 py-3 text-right text-gray-300">{(row.win_pct * 100).toFixed(1)}%</td>
                       <td className="px-4 py-3 text-right text-gray-300">{row.avg_ppg.toFixed(1)}</td>
+                      <td className="px-4 py-3 text-right text-gray-300">{(row.expected_win_pct * 100).toFixed(1)}%</td>
                       <td className="px-4 py-3 text-right text-gray-300">{row.championships}</td>
                       <td className="px-4 py-3 text-right text-gray-300">{(row.playoff_rate * 100).toFixed(0)}%</td>
                       <td className="px-4 py-3 text-right text-gray-300">{row.consistency_score.toFixed(0)}</td>

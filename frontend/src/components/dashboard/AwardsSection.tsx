@@ -14,10 +14,10 @@ export default function AwardsSection({ seasons }: Props) {
   const { data, loading, error } = useApi<SeasonAwards>(() => statsApi.awards(year), [year])
 
   return (
-    <section className="mt-8" aria-labelledby="awards-heading">
+    <div aria-labelledby="awards-heading">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
         <div>
-          <h2 id="awards-heading" className="text-lg font-semibold text-white">League Superlatives</h2>
+          <h3 id="awards-heading" className="text-lg font-semibold text-white">League Superlatives</h3>
           <p className="text-xs text-gray-400 mt-1">The best, worst, and hardest-to-explain performances.</p>
         </div>
         <label className="flex items-center gap-2 text-gray-400 text-sm">
@@ -62,6 +62,6 @@ export default function AwardsSection({ seasons }: Props) {
       {data && data.awards.length === 0 && (
         <p className="text-gray-500">No award data available for this selection.</p>
       )}
-    </section>
+    </div>
   )
 }

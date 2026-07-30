@@ -22,9 +22,9 @@ export default function ChampionshipHistory() {
   }
 
   return (
-    <section className="mt-8" aria-labelledby="championship-history-heading">
+    <div aria-labelledby="championship-history-heading">
       <div className="mb-4">
-        <h2 id="championship-history-heading" className="text-lg font-semibold text-white">Championship Timeline</h2>
+        <h3 id="championship-history-heading" className="text-lg font-semibold text-white">Championship Timeline</h3>
         <p className="text-xs text-gray-400 mt-1">Who held the belt each season.</p>
       </div>
 
@@ -34,7 +34,7 @@ export default function ChampionshipHistory() {
       {data && (
         <>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-            <div className="flex gap-1 overflow-x-auto pb-2">
+            <div className="flex gap-1 overflow-x-auto no-scrollbar pb-2">
               {data.timeline.map(entry => {
                 const backgroundColor = entry.champion_name ? colorMap[entry.champion_name] : '#374151'
                 return (
@@ -89,6 +89,6 @@ export default function ChampionshipHistory() {
           </div>
         </>
       )}
-    </section>
+    </div>
   )
 }

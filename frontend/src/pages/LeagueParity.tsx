@@ -5,15 +5,27 @@ import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import ExplainerCard from '../components/cards/ExplainerCard'
+import InflationChart from '../components/charts/InflationChart'
+import ScoringOverTimeChart from '../components/charts/ScoringOverTimeChart'
 import { useApi } from '../hooks/useApi'
 import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi } from '../api/client'
-import type { LeagueParityRow } from '../types'
+import type { InflationPoint, LeagueParityRow, SeasonScoringData } from '../types'
 
 type SortKey = 'year' | 'scoring_std_dev' | 'scoring_range' | 'record_spread' | 'avg_points_per_game' | 'closest_standings_gap' | 'gini_coefficient' | 'num_teams'
 
 export default function LeagueParity() {
   const { data, loading, error } = useApi<LeagueParityRow[]>(() => statsApi.leagueParity(), [])
+  const {
+    data: inflation,
+    loading: inflationLoading,
+    error: inflationError,
+  } = useApi<InflationPoint[]>(() => statsApi.pointsInflation(), [])
+  const {
+    data: scoring,
+    loading: scoringLoading,
+    error: scoringError,
+  } = useApi<SeasonScoringData>(() => statsApi.seasonScoring(), [])
   const { sorted, th } = useSortedTable<LeagueParityRow, SortKey>(data, 'year', 1)
 
   // Determine most/least competitive seasons by scoring std dev (lower = more parity)
@@ -36,7 +48,29 @@ export default function LeagueParity() {
       subtitle="How scoring and competitive balance have changed from era to era."
       dataScope="regular"
     >
-      <ExplainerCard>
+      <section aria-labelledby="scoring-history-heading" className="mb-8">
+        <div className="mb-4">
+          <h3 id="scoring-history-heading" className="text-lg font-semibold text-white">Scoring History</h3>
+          <p className="text-xs text-gray-400 mt-1">League-wide scoring shifts and each manager's path through them.</p>
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 md:p-5 mb-4">
+          <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">Scoring by Era</h4>
+          {inflationLoading && <LoadingSpinner />}
+          {inflationError && <ErrorMessage message={inflationError} />}
+          {inflation && <InflationChart data={inflation} />}
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 md:p-5">
+          <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">Manager Scoring Trends</h4>
+          {(scoringLoading || inflationLoading) && <LoadingSpinner />}
+          {scoringError && <ErrorMessage message={scoringError} />}
+          {scoring && inflation && <ScoringOverTimeChart scoring={scoring} inflation={inflation} />}
+        </div>
+      </section>
+
+      <h3 className="text-lg font-semibold text-white mb-4">Competitive Balance</h3>
+      <ExplainerCard title="Parity model">
         We measure parity by looking at the spread in scoring and records across all managers each season. A low scoring standard deviation means everyone scored similarly. A small record spread means wins were evenly distributed. The Gini coefficient (0 = perfect equality, 1 = total inequality) captures overall scoring balance.
       </ExplainerCard>
 

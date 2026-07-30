@@ -293,10 +293,12 @@ class ManagerTierRow(BaseModel):
     composite_score: float
     win_pct: float
     avg_ppg: float
+    expected_win_pct: float
     championships: int
     playoff_rate: float
     consistency_score: float
     seasons_played: int
+    dimension_scores: dict[str, float]
 
 
 # ---------------------------------------------------------------------------

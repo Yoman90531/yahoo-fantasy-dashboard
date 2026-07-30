@@ -33,7 +33,6 @@ export const statsApi = {
   projectionPerformance: (year?: number) => api.get('/stats/projection-performance', { params: year ? { year } : {} }).then(r => r.data),
   throneTracker: () => api.get('/stats/throne-tracker').then(r => r.data),
   awards: (year?: number) => api.get('/stats/awards', { params: year ? { year } : {} }).then(r => r.data),
-  powerRankings: (year?: number) => api.get('/stats/power-rankings', { params: year ? { year } : {} }).then(r => r.data),
   rivalry: (aId: number, bId: number) => api.get('/stats/rivalry', { params: { manager_a: aId, manager_b: bId } }).then(r => r.data),
   playoffPerformance: (year?: number) => api.get('/stats/playoff-performance', { params: year ? { year } : {} }).then(r => r.data),
   leagueParity: () => api.get('/stats/league-parity').then(r => r.data),

@@ -107,6 +107,40 @@ def _get_season_by_year(db: Session, year: int):
     return db.query(Season).filter(Season.year == year).first()
 
 
+def _tie_aware_percentiles(
+    values: dict[int, float],
+    *,
+    higher_is_better: bool = True,
+) -> dict[int, float]:
+    """Rank values from 0-100 while awarding tied values the same score."""
+    if not values:
+        return {}
+    if len(values) == 1:
+        return {next(iter(values)): 100.0}
+
+    ordered = sorted(
+        values.items(),
+        key=lambda item: item[1],
+        reverse=higher_is_better,
+    )
+    scores: dict[int, float] = {}
+    index = 0
+    last_rank = len(ordered) - 1
+
+    while index < len(ordered):
+        end = index + 1
+        while end < len(ordered) and ordered[end][1] == ordered[index][1]:
+            end += 1
+
+        average_rank = (index + end - 1) / 2
+        percentile = round((last_rank - average_rank) / last_rank * 100, 1)
+        for manager_id, _ in ordered[index:end]:
+            scores[manager_id] = percentile
+        index = end
+
+    return scores
+
+
 # ---------------------------------------------------------------------------
 # All-time records
 # ---------------------------------------------------------------------------
@@ -1930,9 +1964,8 @@ def compute_consolation_bracket(db: Session, year: int | None = None) -> list[di
 
 def compute_manager_tiers(db: Session, year_start: int | None = None, year_end: int | None = None) -> list[dict]:
     """
-    Clusters managers into performance tiers based on a composite score
-    computed from: win%, avg PPG, championships, playoff appearance rate,
-    and consistency (low std dev of season finishes).
+    Groups managers into career tiers using win%, avg PPG, expected-win rate,
+    championships, and playoff appearance rate.
     Only managers with 3+ seasons are included (or 1+ if year range is narrow).
     """
     managers = _get_active_managers(db)
@@ -1956,7 +1989,37 @@ def compute_manager_tiers(db: Session, year_start: int | None = None, year_end: 
         range_size = 5
     min_seasons = min(3, range_size)
 
-    # Gather per-manager career data
+    # Expected-win rate measures how often a manager's score would have beaten
+    # every other team that week, independent of the scheduled opponent.
+    all_teams = _all_teams(db)
+    team_to_manager = _team_to_manager(all_teams)
+    matchup_q = db.query(Matchup).filter(
+        Matchup.is_playoff == False,
+        Matchup.is_consolation == False,
+    )
+    if season_ids is not None:
+        matchup_q = matchup_q.filter(Matchup.season_id.in_(season_ids))
+
+    week_scores: dict[tuple[int, int], list[tuple[int, float]]] = defaultdict(list)
+    for matchup in matchup_q.all():
+        key = (matchup.season_id, matchup.week)
+        week_scores[key].append((matchup.team1_id, matchup.team1_points))
+        week_scores[key].append((matchup.team2_id, matchup.team2_points))
+
+    expected_wins: dict[int, float] = defaultdict(float)
+    expected_games: dict[int, int] = defaultdict(int)
+    for scores in week_scores.values():
+        for team_id, points in scores:
+            manager_id = team_to_manager.get(team_id)
+            if manager_id is None:
+                continue
+            other_scores = [score for other_team_id, score in scores if other_team_id != team_id]
+            if not other_scores:
+                continue
+            expected_wins[manager_id] += sum(points > score for score in other_scores) / len(other_scores)
+            expected_games[manager_id] += 1
+
+    # Gather per-manager career data.
     raw: list[dict] = []
     for mgr in managers:
         tq = db.query(Team).filter(Team.manager_id == mgr.id)
@@ -1978,6 +2041,11 @@ def compute_manager_tiers(db: Session, year_start: int | None = None, year_end: 
         championships = sum(1 for t in teams if t.is_champion)
         playoff_apps = sum(1 for t in teams if t.made_playoffs)
         playoff_rate = playoff_apps / len(teams) if teams else 0.0
+        expected_win_pct = (
+            expected_wins[mgr.id] / expected_games[mgr.id]
+            if expected_games[mgr.id]
+            else 0.0
+        )
 
         # Consistency of season finishes (lower std dev = more consistent)
         finishes = [t.final_rank for t in teams if t.final_rank is not None]
@@ -1993,6 +2061,7 @@ def compute_manager_tiers(db: Session, year_start: int | None = None, year_end: 
             "manager_name": mgr.display_name,
             "win_pct": round(win_pct, 4),
             "avg_ppg": round(avg_ppg, 2),
+            "expected_win_pct": round(expected_win_pct, 4),
             "championships": championships,
             "playoff_rate": round(playoff_rate, 4),
             "finish_std": finish_std,
@@ -2002,30 +2071,27 @@ def compute_manager_tiers(db: Session, year_start: int | None = None, year_end: 
     if not raw:
         return []
 
-    # Percentile-rank each dimension 0-100
-    def pct_rank(items: list[dict], key: str, invert: bool = False) -> dict[int, float]:
-        vals = sorted(items, key=lambda x: x[key], reverse=not invert)
-        n = len(vals)
-        return {
-            v["manager_id"]: round((n - 1 - rank) / max(n - 1, 1) * 100, 1)
-            for rank, v in enumerate(vals)
-        }
+    # Percentile-rank each dimension 0-100 with equal scores for ties.
+    def dimension_scores(key: str, *, higher_is_better: bool = True) -> dict[int, float]:
+        return _tie_aware_percentiles(
+            {item["manager_id"]: item[key] for item in raw},
+            higher_is_better=higher_is_better,
+        )
 
-    pct_win = pct_rank(raw, "win_pct")
-    pct_ppg = pct_rank(raw, "avg_ppg")
-    pct_champ = pct_rank(raw, "championships")
-    pct_playoff = pct_rank(raw, "playoff_rate")
-    pct_consistency = pct_rank(raw, "finish_std", invert=True)  # lower std = better
+    pct_win = dimension_scores("win_pct")
+    pct_ppg = dimension_scores("avg_ppg")
+    pct_expected = dimension_scores("expected_win_pct")
+    pct_champ = dimension_scores("championships")
+    pct_playoff = dimension_scores("playoff_rate")
+    pct_consistency = dimension_scores("finish_std", higher_is_better=False)
 
     # Composite score: weighted average
-    # Win% and PPG are strongest signals; championships and playoffs reward success;
-    # consistency adds a stability dimension.
     weights = {
         "win_pct": 0.25,
-        "avg_ppg": 0.25,
+        "avg_ppg": 0.20,
+        "expected_win_pct": 0.20,
         "championships": 0.20,
         "playoff_rate": 0.15,
-        "consistency": 0.15,
     }
 
     results = []
@@ -2034,28 +2100,33 @@ def compute_manager_tiers(db: Session, year_start: int | None = None, year_end: 
         composite = (
             pct_win[mid] * weights["win_pct"]
             + pct_ppg[mid] * weights["avg_ppg"]
+            + pct_expected[mid] * weights["expected_win_pct"]
             + pct_champ[mid] * weights["championships"]
             + pct_playoff[mid] * weights["playoff_rate"]
-            + pct_consistency[mid] * weights["consistency"]
         )
         results.append({
             **r,
             "composite_score": round(composite, 1),
             "consistency_score": round(pct_consistency[mid], 1),
+            "dimension_scores": {
+                "win_pct": pct_win[mid],
+                "avg_ppg": pct_ppg[mid],
+                "expected_win_pct": pct_expected[mid],
+                "championships": pct_champ[mid],
+                "playoff_rate": pct_playoff[mid],
+            },
         })
 
     # Sort by composite score descending
     results.sort(key=lambda x: -x["composite_score"])
 
-    # Assign tiers based on percentile position in the sorted list
-    n = len(results)
-    for i, r in enumerate(results):
-        pct_position = i / n  # 0 = top, 1 = bottom
-        if pct_position < 0.20:
+    # Score bands preserve the meaning of a tier instead of forcing quotas.
+    for r in results:
+        if r["composite_score"] >= 75:
             r["tier"] = "Elite"
-        elif pct_position < 0.50:
+        elif r["composite_score"] >= 55:
             r["tier"] = "Contender"
-        elif pct_position < 0.80:
+        elif r["composite_score"] >= 35:
             r["tier"] = "Middle of the Pack"
         else:
             r["tier"] = "Rebuilding"

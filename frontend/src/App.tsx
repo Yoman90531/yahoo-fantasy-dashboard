@@ -14,7 +14,7 @@ import ManagerProfile from './pages/ManagerProfile'
 import HeadToHead from './pages/HeadToHead'
 import WeeklyRecords from './pages/WeeklyRecords'
 import LuckIndex from './pages/LuckIndex'
-import PowerRankings from './pages/PowerRankings'
+import CareerTiers from './pages/CareerTiers'
 import Rivalry from './pages/Rivalry'
 import ScoringDistribution from './pages/ScoringDistribution'
 import WeeklyFinishDistribution from './pages/WeeklyFinishDistribution'
@@ -36,7 +36,6 @@ const seasonTabs: HubTab[] = [
 
 const managerTabs: HubTab[] = [
   { label: 'All-Time Standings', to: '/managers/all-time' },
-  { label: 'Power Index', to: '/managers/power' },
   { label: 'Career Tiers', to: '/managers/tiers' },
 ]
 
@@ -87,12 +86,12 @@ function AppRoutes() {
 
           <Route
             path="/managers"
-            element={<HubLayout title="Manager Rankings" subtitle="Career resumes, current power, and the league pecking order." tabs={managerTabs} />}
+            element={<HubLayout title="Manager Rankings" subtitle="Career resumes and the league pecking order." tabs={managerTabs} />}
           >
             <Route index element={<Navigate to="all-time" replace />} />
             <Route path="all-time" element={<AllTimeStats />} />
-            <Route path="power" element={<PowerRankings view="rankings" />} />
-            <Route path="tiers" element={<PowerRankings view="tiers" />} />
+            <Route path="power" element={<LegacyRedirect to="/managers/tiers" />} />
+            <Route path="tiers" element={<CareerTiers />} />
           </Route>
           <Route path="/managers/:id" element={<ManagerProfile />} />
 
@@ -142,7 +141,8 @@ function AppRoutes() {
           <Route path="/sync" element={<SyncStatus />} />
 
           <Route path="/alltime" element={<LegacyRedirect to="/managers/all-time" />} />
-          <Route path="/power-rankings" element={<LegacyRedirect to="/managers/power" />} />
+          <Route path="/power-rankings" element={<LegacyRedirect to="/managers/tiers" />} />
+          <Route path="/manager-tiers" element={<LegacyRedirect to="/managers/tiers" />} />
           <Route path="/headtohead" element={<LegacyRedirect to="/rivalries" />} />
           <Route path="/rivalry" element={<LegacyRedirect to="/rivalries/matchup" />} />
           <Route path="/weekly-records" element={<LegacyRedirect to="/record-book/weekly" />} />
