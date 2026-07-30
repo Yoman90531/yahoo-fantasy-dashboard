@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function KeyInsights({ insightKey }: Props) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
   const insights = KEY_INSIGHTS[insightKey]
 
   return (

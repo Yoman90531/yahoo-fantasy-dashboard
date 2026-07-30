@@ -91,6 +91,27 @@ test('season archive loads the latest season', async ({ page }) => {
   await expect(page.getByText('10 teams')).toBeVisible()
 })
 
+test('mobile key insights open by default and remain collapsible', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/fantasy/')
+
+  const toggle = page.getByRole('button', { name: 'Key Insights 2012–2025' })
+  const firstInsight = page.getByText(
+    'Fourteen seasons produced nine different champions—and no back-to-back winner.',
+  )
+
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  await expect(firstInsight).toBeVisible()
+
+  await toggle.click()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  await expect(firstInsight).toBeHidden()
+
+  await toggle.click()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  await expect(firstInsight).toBeVisible()
+})
+
 test('mobile navigation reaches rivalries', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/fantasy/')
