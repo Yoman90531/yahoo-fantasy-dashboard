@@ -23,7 +23,7 @@ jobs:
             docker compose build app
             docker compose pull caddy
             docker compose up -d --remove-orphans
-            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+            docker compose up -d --force-recreate --no-deps caddy
             docker compose ps
 
             healthy=0

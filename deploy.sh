@@ -13,7 +13,7 @@ fi
 
 echo "==> Rebuilding the dashboard and site router..."
 docker compose up -d --build --remove-orphans
-docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+docker compose up -d --force-recreate --no-deps caddy
 
 echo "==> Waiting for the dashboard health check..."
 for attempt in $(seq 1 30); do
