@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     league_id: str = ""
     league_start_year: int = 2014
     database_url: str = DEFAULT_DATABASE_URL
+    backup_s3_bucket: str = ""
+    backup_s3_prefix: str = "fantasy-dashboard"
+    backup_s3_endpoint_url: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

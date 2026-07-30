@@ -19,8 +19,8 @@ class MatchupOut(BaseModel):
     is_playoff: bool
     is_championship: bool
     margin: float
-    league_id: str | None = None
-    team1_yahoo_id: int | None = None
-    team2_yahoo_id: int | None = None
+    league_id: str | None
+    team1_yahoo_id: int | None
+    team2_yahoo_id: int | None
 
     model_config = {"from_attributes": True}

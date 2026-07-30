@@ -21,4 +21,10 @@ into an interactive record book with stat-backed insights.
 - Frontend: React, TypeScript, Vite, TanStack Query, Recharts, Tailwind CSS
 - Production: Docker Compose, Caddy, GitHub Actions
 
+Analytics are organized by domain under `backend/app/services/stats/`.
+Shared query context plus draft, scoring-distribution, and margin analytics
+live there now; `stats_engine.py` keeps the remaining domains and compatibility
+exports. The frontend API boundary is generated from the checked-in OpenAPI
+contract to catch backend/frontend drift in CI.
+
 See [SETUP.md](SETUP.md) for local development and production instructions.

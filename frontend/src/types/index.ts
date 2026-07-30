@@ -133,10 +133,10 @@ export interface WeeklyRecordEntry {
   points: number
   opponent_points: number | null
   opponent_manager_name: string | null
-  margin?: number
-  league_id: string | null
-  yahoo_team_id: number | null
-  opponent_yahoo_team_id: number | null
+  margin?: number | null
+  league_id?: string | null
+  yahoo_team_id?: number | null
+  opponent_yahoo_team_id?: number | null
 }
 
 export interface WeeklyRecords {

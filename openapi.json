@@ -1,0 +1,4272 @@
+{
+  "components": {
+    "schemas": {
+      "Award": {
+        "properties": {
+          "award_name": {
+            "title": "Award Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "award_name",
+          "icon",
+          "manager_id",
+          "manager_name",
+          "value",
+          "description"
+        ],
+        "title": "Award",
+        "type": "object"
+      },
+      "BestWorstPick": {
+        "properties": {
+          "fantasy_points": {
+            "title": "Fantasy Points",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "pick": {
+            "title": "Pick",
+            "type": "integer"
+          },
+          "pick_value": {
+            "title": "Pick Value",
+            "type": "number"
+          },
+          "player_name": {
+            "title": "Player Name",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "string"
+          },
+          "roi": {
+            "title": "Roi",
+            "type": "number"
+          },
+          "round": {
+            "title": "Round",
+            "type": "integer"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "year",
+          "round",
+          "pick",
+          "player_name",
+          "position",
+          "fantasy_points",
+          "pick_value",
+          "roi"
+        ],
+        "title": "BestWorstPick",
+        "type": "object"
+      },
+      "ConsistencyRow": {
+        "properties": {
+          "avg_score": {
+            "title": "Avg Score",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "max_score": {
+            "title": "Max Score",
+            "type": "number"
+          },
+          "min_score": {
+            "title": "Min Score",
+            "type": "number"
+          },
+          "std_dev": {
+            "title": "Std Dev",
+            "type": "number"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "year",
+          "avg_score",
+          "std_dev",
+          "min_score",
+          "max_score"
+        ],
+        "title": "ConsistencyRow",
+        "type": "object"
+      },
+      "ConsolationRow": {
+        "properties": {
+          "consolation_avg_points": {
+            "title": "Consolation Avg Points",
+            "type": "number"
+          },
+          "consolation_games": {
+            "title": "Consolation Games",
+            "type": "integer"
+          },
+          "consolation_losses": {
+            "title": "Consolation Losses",
+            "type": "integer"
+          },
+          "consolation_win_pct": {
+            "title": "Consolation Win Pct",
+            "type": "number"
+          },
+          "consolation_wins": {
+            "title": "Consolation Wins",
+            "type": "integer"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "times_missed_playoffs": {
+            "title": "Times Missed Playoffs",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "times_missed_playoffs",
+          "consolation_games",
+          "consolation_wins",
+          "consolation_losses",
+          "consolation_win_pct",
+          "consolation_avg_points"
+        ],
+        "title": "ConsolationRow",
+        "type": "object"
+      },
+      "DraftAnalysis": {
+        "properties": {
+          "best_picks": {
+            "items": {
+              "$ref": "#/components/schemas/BestWorstPick"
+            },
+            "title": "Best Picks",
+            "type": "array"
+          },
+          "grades": {
+            "items": {
+              "$ref": "#/components/schemas/DraftGradeRow"
+            },
+            "title": "Grades",
+            "type": "array"
+          },
+          "position_capital": {
+            "items": {
+              "$ref": "#/components/schemas/PositionCapitalRow"
+            },
+            "title": "Position Capital",
+            "type": "array"
+          },
+          "tendencies": {
+            "items": {
+              "$ref": "#/components/schemas/DraftTendencyRow"
+            },
+            "title": "Tendencies",
+            "type": "array"
+          },
+          "worst_picks": {
+            "items": {
+              "$ref": "#/components/schemas/BestWorstPick"
+            },
+            "title": "Worst Picks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "position_capital",
+          "tendencies",
+          "grades",
+          "best_picks",
+          "worst_picks"
+        ],
+        "title": "DraftAnalysis",
+        "type": "object"
+      },
+      "DraftGradeRow": {
+        "properties": {
+          "avg_roi": {
+            "title": "Avg Roi",
+            "type": "number"
+          },
+          "composite_score": {
+            "title": "Composite Score",
+            "type": "number"
+          },
+          "grade": {
+            "title": "Grade",
+            "type": "string"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "total_picks": {
+            "title": "Total Picks",
+            "type": "integer"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "year",
+          "grade",
+          "composite_score",
+          "total_picks",
+          "avg_roi"
+        ],
+        "title": "DraftGradeRow",
+        "type": "object"
+      },
+      "DraftTendencyRow": {
+        "properties": {
+          "early_round_pct": {
+            "title": "Early Round Pct",
+            "type": "number"
+          },
+          "late_round_pct": {
+            "title": "Late Round Pct",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "mid_round_pct": {
+            "title": "Mid Round Pct",
+            "type": "number"
+          },
+          "position": {
+            "title": "Position",
+            "type": "string"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "position",
+          "early_round_pct",
+          "mid_round_pct",
+          "late_round_pct"
+        ],
+        "title": "DraftTendencyRow",
+        "type": "object"
+      },
+      "DroughtRow": {
+        "properties": {
+          "last_championship_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Championship Year"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "seasons_since": {
+            "title": "Seasons Since",
+            "type": "integer"
+          },
+          "total_championships": {
+            "title": "Total Championships",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "last_championship_year",
+          "seasons_since",
+          "total_championships"
+        ],
+        "title": "DroughtRow",
+        "type": "object"
+      },
+      "Dynasty": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "years": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Years",
+            "type": "array"
+          }
+        },
+        "required": [
+          "manager_name",
+          "years",
+          "count"
+        ],
+        "title": "Dynasty",
+        "type": "object"
+      },
+      "FeedbackCreate": {
+        "properties": {
+          "author_name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Author Name",
+            "type": "string"
+          },
+          "message": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "author_name",
+          "message"
+        ],
+        "title": "FeedbackCreate",
+        "type": "object"
+      },
+      "FeedbackResponse": {
+        "properties": {
+          "author_name": {
+            "title": "Author Name",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "author_name",
+          "message",
+          "created_at"
+        ],
+        "title": "FeedbackResponse",
+        "type": "object"
+      },
+      "H2HManager": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "H2HManager",
+        "type": "object"
+      },
+      "H2HMatrix": {
+        "properties": {
+          "managers": {
+            "items": {
+              "$ref": "#/components/schemas/H2HManager"
+            },
+            "title": "Managers",
+            "type": "array"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/H2HRecord"
+            },
+            "title": "Records",
+            "type": "array"
+          }
+        },
+        "required": [
+          "managers",
+          "records"
+        ],
+        "title": "H2HMatrix",
+        "type": "object"
+      },
+      "H2HRecord": {
+        "properties": {
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "manager_a_id": {
+            "title": "Manager A Id",
+            "type": "integer"
+          },
+          "manager_a_name": {
+            "title": "Manager A Name",
+            "type": "string"
+          },
+          "manager_b_id": {
+            "title": "Manager B Id",
+            "type": "integer"
+          },
+          "manager_b_name": {
+            "title": "Manager B Name",
+            "type": "string"
+          },
+          "points_against": {
+            "title": "Points Against",
+            "type": "number"
+          },
+          "points_for": {
+            "title": "Points For",
+            "type": "number"
+          },
+          "ties": {
+            "title": "Ties",
+            "type": "integer"
+          },
+          "win_pct": {
+            "title": "Win Pct",
+            "type": "number"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_a_id",
+          "manager_a_name",
+          "manager_b_id",
+          "manager_b_name",
+          "wins",
+          "losses",
+          "ties",
+          "win_pct",
+          "points_for",
+          "points_against"
+        ],
+        "title": "H2HRecord",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HealthResponse": {
+        "properties": {
+          "database": {
+            "const": "ok",
+            "title": "Database",
+            "type": "string"
+          },
+          "status": {
+            "const": "ok",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "database"
+        ],
+        "title": "HealthResponse",
+        "type": "object"
+      },
+      "InflationPoint": {
+        "properties": {
+          "avg_weekly_score": {
+            "title": "Avg Weekly Score",
+            "type": "number"
+          },
+          "max_weekly_score": {
+            "title": "Max Weekly Score",
+            "type": "number"
+          },
+          "min_weekly_score": {
+            "title": "Min Weekly Score",
+            "type": "number"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "year",
+          "avg_weekly_score",
+          "max_weekly_score",
+          "min_weekly_score"
+        ],
+        "title": "InflationPoint",
+        "type": "object"
+      },
+      "LeagueParityRow": {
+        "properties": {
+          "avg_points_per_game": {
+            "title": "Avg Points Per Game",
+            "type": "number"
+          },
+          "closest_standings_gap": {
+            "title": "Closest Standings Gap",
+            "type": "integer"
+          },
+          "gini_coefficient": {
+            "title": "Gini Coefficient",
+            "type": "number"
+          },
+          "num_teams": {
+            "title": "Num Teams",
+            "type": "integer"
+          },
+          "record_spread": {
+            "title": "Record Spread",
+            "type": "integer"
+          },
+          "scoring_range": {
+            "title": "Scoring Range",
+            "type": "number"
+          },
+          "scoring_std_dev": {
+            "title": "Scoring Std Dev",
+            "type": "number"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "year",
+          "num_teams",
+          "scoring_std_dev",
+          "scoring_range",
+          "record_spread",
+          "avg_points_per_game",
+          "closest_standings_gap",
+          "gini_coefficient"
+        ],
+        "title": "LeagueParityRow",
+        "type": "object"
+      },
+      "LuckIndexRow": {
+        "properties": {
+          "actual_wins": {
+            "title": "Actual Wins",
+            "type": "integer"
+          },
+          "expected_wins": {
+            "title": "Expected Wins",
+            "type": "number"
+          },
+          "luck_score": {
+            "title": "Luck Score",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "year",
+          "actual_wins",
+          "expected_wins",
+          "luck_score"
+        ],
+        "title": "LuckIndexRow",
+        "type": "object"
+      },
+      "ManagerOut": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "nickname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nickname"
+          },
+          "yahoo_guid": {
+            "title": "Yahoo Guid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "yahoo_guid",
+          "display_name",
+          "nickname",
+          "id"
+        ],
+        "title": "ManagerOut",
+        "type": "object"
+      },
+      "ManagerProfile": {
+        "properties": {
+          "manager": {
+            "$ref": "#/components/schemas/ManagerOut"
+          },
+          "season_history": {
+            "items": {
+              "$ref": "#/components/schemas/ManagerSeasonRow"
+            },
+            "title": "Season History",
+            "type": "array"
+          }
+        },
+        "required": [
+          "manager",
+          "season_history"
+        ],
+        "title": "ManagerProfile",
+        "type": "object"
+      },
+      "ManagerSeasonRow": {
+        "properties": {
+          "final_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Final Rank"
+          },
+          "is_champion": {
+            "title": "Is Champion",
+            "type": "boolean"
+          },
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "made_playoffs": {
+            "title": "Made Playoffs",
+            "type": "boolean"
+          },
+          "playoff_finish": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Playoff Finish"
+          },
+          "points_against": {
+            "title": "Points Against",
+            "type": "number"
+          },
+          "points_for": {
+            "title": "Points For",
+            "type": "number"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name"
+          },
+          "ties": {
+            "title": "Ties",
+            "type": "integer"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "year",
+          "team_name",
+          "wins",
+          "losses",
+          "ties",
+          "points_for",
+          "points_against",
+          "final_rank",
+          "made_playoffs",
+          "is_champion",
+          "playoff_finish"
+        ],
+        "title": "ManagerSeasonRow",
+        "type": "object"
+      },
+      "ManagerStats": {
+        "properties": {
+          "best_finish": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Finish"
+          },
+          "championships": {
+            "title": "Championships",
+            "type": "integer"
+          },
+          "current_drought": {
+            "title": "Current Drought",
+            "type": "integer"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "nickname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nickname"
+          },
+          "pf_pa_ratio": {
+            "title": "Pf Pa Ratio",
+            "type": "number"
+          },
+          "playoff_appearances": {
+            "title": "Playoff Appearances",
+            "type": "integer"
+          },
+          "runner_ups": {
+            "title": "Runner Ups",
+            "type": "integer"
+          },
+          "seasons_played": {
+            "title": "Seasons Played",
+            "type": "integer"
+          },
+          "total_losses": {
+            "title": "Total Losses",
+            "type": "integer"
+          },
+          "total_points_against": {
+            "title": "Total Points Against",
+            "type": "number"
+          },
+          "total_points_for": {
+            "title": "Total Points For",
+            "type": "number"
+          },
+          "total_ties": {
+            "title": "Total Ties",
+            "type": "integer"
+          },
+          "total_wins": {
+            "title": "Total Wins",
+            "type": "integer"
+          },
+          "win_pct": {
+            "title": "Win Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "nickname",
+          "seasons_played",
+          "total_wins",
+          "total_losses",
+          "total_ties",
+          "win_pct",
+          "total_points_for",
+          "total_points_against",
+          "pf_pa_ratio",
+          "championships",
+          "runner_ups",
+          "playoff_appearances",
+          "best_finish",
+          "current_drought"
+        ],
+        "title": "ManagerStats",
+        "type": "object"
+      },
+      "ManagerStreak": {
+        "properties": {
+          "best_loss_streak": {
+            "title": "Best Loss Streak",
+            "type": "integer"
+          },
+          "best_win_streak": {
+            "title": "Best Win Streak",
+            "type": "integer"
+          },
+          "current_streak_length": {
+            "title": "Current Streak Length",
+            "type": "integer"
+          },
+          "current_streak_type": {
+            "title": "Current Streak Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "best_win_streak",
+          "best_loss_streak",
+          "current_streak_type",
+          "current_streak_length"
+        ],
+        "title": "ManagerStreak",
+        "type": "object"
+      },
+      "ManagerTierDimensions": {
+        "properties": {
+          "avg_ppg": {
+            "title": "Avg Ppg",
+            "type": "number"
+          },
+          "championships": {
+            "title": "Championships",
+            "type": "number"
+          },
+          "expected_win_pct": {
+            "title": "Expected Win Pct",
+            "type": "number"
+          },
+          "playoff_rate": {
+            "title": "Playoff Rate",
+            "type": "number"
+          },
+          "win_pct": {
+            "title": "Win Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "win_pct",
+          "avg_ppg",
+          "expected_win_pct",
+          "championships",
+          "playoff_rate"
+        ],
+        "title": "ManagerTierDimensions",
+        "type": "object"
+      },
+      "ManagerTierRow": {
+        "properties": {
+          "avg_ppg": {
+            "title": "Avg Ppg",
+            "type": "number"
+          },
+          "championships": {
+            "title": "Championships",
+            "type": "integer"
+          },
+          "composite_score": {
+            "title": "Composite Score",
+            "type": "number"
+          },
+          "consistency_score": {
+            "title": "Consistency Score",
+            "type": "number"
+          },
+          "dimension_scores": {
+            "$ref": "#/components/schemas/ManagerTierDimensions"
+          },
+          "expected_win_pct": {
+            "title": "Expected Win Pct",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "playoff_rate": {
+            "title": "Playoff Rate",
+            "type": "number"
+          },
+          "seasons_played": {
+            "title": "Seasons Played",
+            "type": "integer"
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "string"
+          },
+          "win_pct": {
+            "title": "Win Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "tier",
+          "composite_score",
+          "win_pct",
+          "avg_ppg",
+          "expected_win_pct",
+          "championships",
+          "playoff_rate",
+          "consistency_score",
+          "seasons_played",
+          "dimension_scores"
+        ],
+        "title": "ManagerTierRow",
+        "type": "object"
+      },
+      "MatchupOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_championship": {
+            "title": "Is Championship",
+            "type": "boolean"
+          },
+          "is_playoff": {
+            "title": "Is Playoff",
+            "type": "boolean"
+          },
+          "league_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League Id"
+          },
+          "margin": {
+            "title": "Margin",
+            "type": "number"
+          },
+          "season_year": {
+            "title": "Season Year",
+            "type": "integer"
+          },
+          "team1_manager_id": {
+            "title": "Team1 Manager Id",
+            "type": "integer"
+          },
+          "team1_manager_name": {
+            "title": "Team1 Manager Name",
+            "type": "string"
+          },
+          "team1_points": {
+            "title": "Team1 Points",
+            "type": "number"
+          },
+          "team1_projected": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team1 Projected"
+          },
+          "team1_team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team1 Team Name"
+          },
+          "team1_yahoo_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team1 Yahoo Id"
+          },
+          "team2_manager_id": {
+            "title": "Team2 Manager Id",
+            "type": "integer"
+          },
+          "team2_manager_name": {
+            "title": "Team2 Manager Name",
+            "type": "string"
+          },
+          "team2_points": {
+            "title": "Team2 Points",
+            "type": "number"
+          },
+          "team2_projected": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team2 Projected"
+          },
+          "team2_team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team2 Team Name"
+          },
+          "team2_yahoo_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team2 Yahoo Id"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          },
+          "winner_manager_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner Manager Id"
+          }
+        },
+        "required": [
+          "id",
+          "season_year",
+          "week",
+          "team1_manager_id",
+          "team1_manager_name",
+          "team1_team_name",
+          "team1_points",
+          "team1_projected",
+          "team2_manager_id",
+          "team2_manager_name",
+          "team2_team_name",
+          "team2_points",
+          "team2_projected",
+          "winner_manager_id",
+          "is_playoff",
+          "is_championship",
+          "margin",
+          "league_id",
+          "team1_yahoo_id",
+          "team2_yahoo_id"
+        ],
+        "title": "MatchupOut",
+        "type": "object"
+      },
+      "PlayoffPerformanceRow": {
+        "properties": {
+          "delta_avg_pts": {
+            "title": "Delta Avg Pts",
+            "type": "number"
+          },
+          "delta_win_pct": {
+            "title": "Delta Win Pct",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "playoff_avg_pts": {
+            "title": "Playoff Avg Pts",
+            "type": "number"
+          },
+          "playoff_games": {
+            "title": "Playoff Games",
+            "type": "integer"
+          },
+          "playoff_losses": {
+            "title": "Playoff Losses",
+            "type": "integer"
+          },
+          "playoff_win_pct": {
+            "title": "Playoff Win Pct",
+            "type": "number"
+          },
+          "playoff_wins": {
+            "title": "Playoff Wins",
+            "type": "integer"
+          },
+          "reg_avg_pts": {
+            "title": "Reg Avg Pts",
+            "type": "number"
+          },
+          "reg_games": {
+            "title": "Reg Games",
+            "type": "integer"
+          },
+          "reg_losses": {
+            "title": "Reg Losses",
+            "type": "integer"
+          },
+          "reg_win_pct": {
+            "title": "Reg Win Pct",
+            "type": "number"
+          },
+          "reg_wins": {
+            "title": "Reg Wins",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "reg_wins",
+          "reg_losses",
+          "reg_win_pct",
+          "reg_avg_pts",
+          "reg_games",
+          "playoff_wins",
+          "playoff_losses",
+          "playoff_win_pct",
+          "playoff_avg_pts",
+          "playoff_games",
+          "delta_win_pct",
+          "delta_avg_pts"
+        ],
+        "title": "PlayoffPerformanceRow",
+        "type": "object"
+      },
+      "PositionCapitalRow": {
+        "properties": {
+          "avg_pick": {
+            "title": "Avg Pick",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "picks_spent": {
+            "title": "Picks Spent",
+            "type": "integer"
+          },
+          "position": {
+            "title": "Position",
+            "type": "string"
+          },
+          "total_capital": {
+            "title": "Total Capital",
+            "type": "number"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "position",
+          "picks_spent",
+          "avg_pick",
+          "total_capital"
+        ],
+        "title": "PositionCapitalRow",
+        "type": "object"
+      },
+      "PowerDimensions": {
+        "properties": {
+          "consistency": {
+            "title": "Consistency",
+            "type": "number"
+          },
+          "luck_adjusted": {
+            "title": "Luck Adjusted",
+            "type": "number"
+          },
+          "playoff_success": {
+            "title": "Playoff Success",
+            "type": "number"
+          },
+          "scoring": {
+            "title": "Scoring",
+            "type": "number"
+          },
+          "win_rate": {
+            "title": "Win Rate",
+            "type": "number"
+          }
+        },
+        "required": [
+          "win_rate",
+          "scoring",
+          "consistency",
+          "luck_adjusted",
+          "playoff_success"
+        ],
+        "title": "PowerDimensions",
+        "type": "object"
+      },
+      "PowerRankingRow": {
+        "properties": {
+          "dimensions": {
+            "$ref": "#/components/schemas/PowerDimensions"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "overall_score": {
+            "title": "Overall Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "overall_score",
+          "dimensions"
+        ],
+        "title": "PowerRankingRow",
+        "type": "object"
+      },
+      "ProjectionRow": {
+        "properties": {
+          "avg_actual": {
+            "title": "Avg Actual",
+            "type": "number"
+          },
+          "avg_diff": {
+            "title": "Avg Diff",
+            "type": "number"
+          },
+          "avg_projected": {
+            "title": "Avg Projected",
+            "type": "number"
+          },
+          "beat_projection_pct": {
+            "title": "Beat Projection Pct",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "std_dev_diff": {
+            "title": "Std Dev Diff",
+            "type": "number"
+          },
+          "total_over": {
+            "title": "Total Over",
+            "type": "number"
+          },
+          "weeks": {
+            "title": "Weeks",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "weeks",
+          "avg_actual",
+          "avg_projected",
+          "avg_diff",
+          "beat_projection_pct",
+          "std_dev_diff",
+          "total_over"
+        ],
+        "title": "ProjectionRow",
+        "type": "object"
+      },
+      "RivalryDetail": {
+        "properties": {
+          "biggest_blowout": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RivalryMatchup"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "closest_game": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RivalryMatchup"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "current_streak": {
+            "$ref": "#/components/schemas/RivalryStreak"
+          },
+          "longest_streak": {
+            "$ref": "#/components/schemas/RivalryStreak"
+          },
+          "manager_a_id": {
+            "title": "Manager A Id",
+            "type": "integer"
+          },
+          "manager_a_name": {
+            "title": "Manager A Name",
+            "type": "string"
+          },
+          "manager_b_id": {
+            "title": "Manager B Id",
+            "type": "integer"
+          },
+          "manager_b_name": {
+            "title": "Manager B Name",
+            "type": "string"
+          },
+          "matchups": {
+            "items": {
+              "$ref": "#/components/schemas/RivalryMatchup"
+            },
+            "title": "Matchups",
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/RivalrySummary"
+          },
+          "trends": {
+            "items": {
+              "$ref": "#/components/schemas/RivalryTrend"
+            },
+            "title": "Trends",
+            "type": "array"
+          }
+        },
+        "required": [
+          "manager_a_id",
+          "manager_a_name",
+          "manager_b_id",
+          "manager_b_name",
+          "summary",
+          "matchups",
+          "trends",
+          "current_streak",
+          "longest_streak",
+          "biggest_blowout",
+          "closest_game"
+        ],
+        "title": "RivalryDetail",
+        "type": "object"
+      },
+      "RivalryMatchup": {
+        "properties": {
+          "a_points": {
+            "title": "A Points",
+            "type": "number"
+          },
+          "b_points": {
+            "title": "B Points",
+            "type": "number"
+          },
+          "game_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Game Id"
+          },
+          "is_playoff": {
+            "title": "Is Playoff",
+            "type": "boolean"
+          },
+          "league_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League Id"
+          },
+          "margin": {
+            "title": "Margin",
+            "type": "number"
+          },
+          "team_a_yahoo_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team A Yahoo Id"
+          },
+          "team_b_yahoo_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team B Yahoo Id"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          },
+          "winner": {
+            "enum": [
+              "a",
+              "b",
+              "tie"
+            ],
+            "title": "Winner",
+            "type": "string"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "year",
+          "week",
+          "a_points",
+          "b_points",
+          "winner",
+          "margin",
+          "is_playoff",
+          "game_id",
+          "league_id",
+          "team_a_yahoo_id",
+          "team_b_yahoo_id"
+        ],
+        "title": "RivalryMatchup",
+        "type": "object"
+      },
+      "RivalryStreak": {
+        "properties": {
+          "holder": {
+            "enum": [
+              "a",
+              "b"
+            ],
+            "title": "Holder",
+            "type": "string"
+          },
+          "length": {
+            "title": "Length",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "holder",
+          "length"
+        ],
+        "title": "RivalryStreak",
+        "type": "object"
+      },
+      "RivalrySummary": {
+        "properties": {
+          "a_pf": {
+            "title": "A Pf",
+            "type": "number"
+          },
+          "a_wins": {
+            "title": "A Wins",
+            "type": "integer"
+          },
+          "b_pf": {
+            "title": "B Pf",
+            "type": "number"
+          },
+          "b_wins": {
+            "title": "B Wins",
+            "type": "integer"
+          },
+          "ties": {
+            "title": "Ties",
+            "type": "integer"
+          },
+          "win_pct": {
+            "title": "Win Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "a_wins",
+          "b_wins",
+          "ties",
+          "a_pf",
+          "b_pf",
+          "win_pct"
+        ],
+        "title": "RivalrySummary",
+        "type": "object"
+      },
+      "RivalryTrend": {
+        "properties": {
+          "a_pf": {
+            "title": "A Pf",
+            "type": "number"
+          },
+          "a_wins": {
+            "title": "A Wins",
+            "type": "integer"
+          },
+          "b_pf": {
+            "title": "B Pf",
+            "type": "number"
+          },
+          "b_wins": {
+            "title": "B Wins",
+            "type": "integer"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "year",
+          "a_wins",
+          "b_wins",
+          "a_pf",
+          "b_pf"
+        ],
+        "title": "RivalryTrend",
+        "type": "object"
+      },
+      "ScoreDistributionRow": {
+        "properties": {
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "max": {
+            "title": "Max",
+            "type": "number"
+          },
+          "mean": {
+            "title": "Mean",
+            "type": "number"
+          },
+          "median": {
+            "title": "Median",
+            "type": "number"
+          },
+          "min": {
+            "title": "Min",
+            "type": "number"
+          },
+          "n": {
+            "title": "N",
+            "type": "integer"
+          },
+          "outliers": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Outliers",
+            "type": "array"
+          },
+          "q1": {
+            "title": "Q1",
+            "type": "number"
+          },
+          "q3": {
+            "title": "Q3",
+            "type": "number"
+          },
+          "std_dev": {
+            "title": "Std Dev",
+            "type": "number"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "n",
+          "min",
+          "q1",
+          "median",
+          "q3",
+          "max",
+          "mean",
+          "std_dev",
+          "outliers"
+        ],
+        "title": "ScoreDistributionRow",
+        "type": "object"
+      },
+      "SeasonAwards": {
+        "properties": {
+          "awards": {
+            "items": {
+              "$ref": "#/components/schemas/Award"
+            },
+            "title": "Awards",
+            "type": "array"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "required": [
+          "year",
+          "awards"
+        ],
+        "title": "SeasonAwards",
+        "type": "object"
+      },
+      "SeasonDetail": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "league_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League Name"
+          },
+          "num_playoff_teams": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Playoff Teams"
+          },
+          "num_regular_season_weeks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Regular Season Weeks"
+          },
+          "num_teams": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Teams"
+          },
+          "standings": {
+            "items": {
+              "$ref": "#/components/schemas/StandingsRow"
+            },
+            "title": "Standings",
+            "type": "array"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "year",
+          "league_name",
+          "num_teams",
+          "num_playoff_teams",
+          "num_regular_season_weeks",
+          "standings"
+        ],
+        "title": "SeasonDetail",
+        "type": "object"
+      },
+      "SeasonScoringData": {
+        "properties": {
+          "managers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Managers",
+            "type": "array"
+          },
+          "seasons": {
+            "items": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "title": "Seasons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "managers",
+          "seasons"
+        ],
+        "title": "SeasonScoringData",
+        "type": "object"
+      },
+      "SeasonSummary": {
+        "properties": {
+          "champion_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Champion Name"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "league_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League Name"
+          },
+          "num_teams": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Teams"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "year",
+          "league_name",
+          "num_teams",
+          "champion_name"
+        ],
+        "title": "SeasonSummary",
+        "type": "object"
+      },
+      "StandingsRow": {
+        "properties": {
+          "final_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Final Rank"
+          },
+          "is_champion": {
+            "title": "Is Champion",
+            "type": "boolean"
+          },
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "made_playoffs": {
+            "title": "Made Playoffs",
+            "type": "boolean"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "playoff_finish": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Playoff Finish"
+          },
+          "points_against": {
+            "title": "Points Against",
+            "type": "number"
+          },
+          "points_for": {
+            "title": "Points For",
+            "type": "number"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name"
+          },
+          "ties": {
+            "title": "Ties",
+            "type": "integer"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "final_rank",
+          "team_name",
+          "manager_id",
+          "manager_name",
+          "wins",
+          "losses",
+          "ties",
+          "points_for",
+          "points_against",
+          "made_playoffs",
+          "is_champion",
+          "playoff_finish"
+        ],
+        "title": "StandingsRow",
+        "type": "object"
+      },
+      "StreakRow": {
+        "properties": {
+          "current_streak_length": {
+            "title": "Current Streak Length",
+            "type": "integer"
+          },
+          "current_streak_type": {
+            "title": "Current Streak Type",
+            "type": "string"
+          },
+          "longest_loss_end_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest Loss End Week"
+          },
+          "longest_loss_end_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest Loss End Year"
+          },
+          "longest_loss_start_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest Loss Start Week"
+          },
+          "longest_loss_start_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest Loss Start Year"
+          },
+          "longest_loss_streak": {
+            "title": "Longest Loss Streak",
+            "type": "integer"
+          },
+          "longest_win_end_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest Win End Week"
+          },
+          "longest_win_end_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest Win End Year"
+          },
+          "longest_win_start_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest Win Start Week"
+          },
+          "longest_win_start_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest Win Start Year"
+          },
+          "longest_win_streak": {
+            "title": "Longest Win Streak",
+            "type": "integer"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "current_streak_type",
+          "current_streak_length",
+          "longest_win_streak",
+          "longest_win_start_year",
+          "longest_win_start_week",
+          "longest_win_end_year",
+          "longest_win_end_week",
+          "longest_loss_streak",
+          "longest_loss_start_year",
+          "longest_loss_start_week",
+          "longest_loss_end_year",
+          "longest_loss_end_week"
+        ],
+        "title": "StreakRow",
+        "type": "object"
+      },
+      "StrengthOfScheduleRow": {
+        "properties": {
+          "actual_win_pct": {
+            "title": "Actual Win Pct",
+            "type": "number"
+          },
+          "adjusted_win_pct": {
+            "title": "Adjusted Win Pct",
+            "type": "number"
+          },
+          "avg_opp_pf": {
+            "title": "Avg Opp Pf",
+            "type": "number"
+          },
+          "avg_opp_win_pct": {
+            "title": "Avg Opp Win Pct",
+            "type": "number"
+          },
+          "games": {
+            "title": "Games",
+            "type": "integer"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "sos_rank": {
+            "title": "Sos Rank",
+            "type": "integer"
+          },
+          "wins_above_expected": {
+            "title": "Wins Above Expected",
+            "type": "number"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "year",
+          "games",
+          "actual_win_pct",
+          "avg_opp_win_pct",
+          "avg_opp_pf",
+          "sos_rank",
+          "adjusted_win_pct",
+          "wins_above_expected"
+        ],
+        "title": "StrengthOfScheduleRow",
+        "type": "object"
+      },
+      "SyncLogResponse": {
+        "properties": {
+          "error_msg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Msg"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "season_year": {
+            "title": "Season Year",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "synced_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Synced At"
+          },
+          "week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Week"
+          }
+        },
+        "required": [
+          "season_year",
+          "status",
+          "synced_at",
+          "error_msg",
+          "id",
+          "week"
+        ],
+        "title": "SyncLogResponse",
+        "type": "object"
+      },
+      "SyncStatusResponse": {
+        "properties": {
+          "error_msg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Msg"
+          },
+          "season_year": {
+            "title": "Season Year",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "synced_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Synced At"
+          }
+        },
+        "required": [
+          "season_year",
+          "status",
+          "synced_at",
+          "error_msg"
+        ],
+        "title": "SyncStatusResponse",
+        "type": "object"
+      },
+      "ThroneEntry": {
+        "properties": {
+          "champion_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Champion Id"
+          },
+          "champion_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Champion Name"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "year",
+          "champion_id",
+          "champion_name"
+        ],
+        "title": "ThroneEntry",
+        "type": "object"
+      },
+      "ThroneTracker": {
+        "properties": {
+          "active_champion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Champion"
+          },
+          "dynasties": {
+            "items": {
+              "$ref": "#/components/schemas/Dynasty"
+            },
+            "title": "Dynasties",
+            "type": "array"
+          },
+          "most_titles": {
+            "$ref": "#/components/schemas/TitleCount"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/ThroneEntry"
+            },
+            "title": "Timeline",
+            "type": "array"
+          }
+        },
+        "required": [
+          "timeline",
+          "dynasties",
+          "most_titles",
+          "active_champion"
+        ],
+        "title": "ThroneTracker",
+        "type": "object"
+      },
+      "TitleCount": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "manager_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Name"
+          }
+        },
+        "required": [
+          "manager_name",
+          "count"
+        ],
+        "title": "TitleCount",
+        "type": "object"
+      },
+      "TrophyCase": {
+        "properties": {
+          "best_regular_season": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Regular Season"
+          },
+          "championships": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Championships",
+            "type": "array"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "playoff_appearances": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Playoff Appearances",
+            "type": "array"
+          },
+          "runner_ups": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Runner Ups",
+            "type": "array"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "championships",
+          "runner_ups",
+          "playoff_appearances",
+          "best_regular_season"
+        ],
+        "title": "TrophyCase",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "WeeklyFinishRow": {
+        "properties": {
+          "bottom_half": {
+            "title": "Bottom Half",
+            "type": "integer"
+          },
+          "bottom_three": {
+            "title": "Bottom Three",
+            "type": "integer"
+          },
+          "first": {
+            "title": "First",
+            "type": "integer"
+          },
+          "last": {
+            "title": "Last",
+            "type": "integer"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "pct_bottom_three": {
+            "title": "Pct Bottom Three",
+            "type": "number"
+          },
+          "pct_first": {
+            "title": "Pct First",
+            "type": "number"
+          },
+          "pct_last": {
+            "title": "Pct Last",
+            "type": "number"
+          },
+          "pct_top_half": {
+            "title": "Pct Top Half",
+            "type": "number"
+          },
+          "pct_top_three": {
+            "title": "Pct Top Three",
+            "type": "number"
+          },
+          "top_half": {
+            "title": "Top Half",
+            "type": "integer"
+          },
+          "top_three": {
+            "title": "Top Three",
+            "type": "integer"
+          },
+          "total_weeks": {
+            "title": "Total Weeks",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "total_weeks",
+          "first",
+          "top_three",
+          "top_half",
+          "bottom_half",
+          "bottom_three",
+          "last",
+          "pct_first",
+          "pct_top_three",
+          "pct_top_half",
+          "pct_last",
+          "pct_bottom_three"
+        ],
+        "title": "WeeklyFinishRow",
+        "type": "object"
+      },
+      "WeeklyRecordEntry": {
+        "properties": {
+          "league_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League Id"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin"
+          },
+          "opponent_manager_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opponent Manager Name"
+          },
+          "opponent_points": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opponent Points"
+          },
+          "opponent_yahoo_team_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opponent Yahoo Team Id"
+          },
+          "points": {
+            "title": "Points",
+            "type": "number"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          },
+          "yahoo_team_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Yahoo Team Id"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "team_name",
+          "year",
+          "week",
+          "points",
+          "opponent_points",
+          "opponent_manager_name"
+        ],
+        "title": "WeeklyRecordEntry",
+        "type": "object"
+      },
+      "WeeklyRecords": {
+        "properties": {
+          "biggest_blowout": {
+            "items": {
+              "$ref": "#/components/schemas/WeeklyRecordEntry"
+            },
+            "title": "Biggest Blowout",
+            "type": "array"
+          },
+          "closest_games": {
+            "items": {
+              "$ref": "#/components/schemas/WeeklyRecordEntry"
+            },
+            "title": "Closest Games",
+            "type": "array"
+          },
+          "highest_losing_score": {
+            "items": {
+              "$ref": "#/components/schemas/WeeklyRecordEntry"
+            },
+            "title": "Highest Losing Score",
+            "type": "array"
+          },
+          "highest_score": {
+            "items": {
+              "$ref": "#/components/schemas/WeeklyRecordEntry"
+            },
+            "title": "Highest Score",
+            "type": "array"
+          },
+          "lowest_score": {
+            "items": {
+              "$ref": "#/components/schemas/WeeklyRecordEntry"
+            },
+            "title": "Lowest Score",
+            "type": "array"
+          },
+          "lowest_winning_score": {
+            "items": {
+              "$ref": "#/components/schemas/WeeklyRecordEntry"
+            },
+            "title": "Lowest Winning Score",
+            "type": "array"
+          }
+        },
+        "required": [
+          "highest_score",
+          "lowest_score",
+          "lowest_winning_score",
+          "highest_losing_score",
+          "biggest_blowout",
+          "closest_games"
+        ],
+        "title": "WeeklyRecords",
+        "type": "object"
+      },
+      "WinMarginRow": {
+        "properties": {
+          "avg_loss_margin": {
+            "title": "Avg Loss Margin",
+            "type": "number"
+          },
+          "avg_win_margin": {
+            "title": "Avg Win Margin",
+            "type": "number"
+          },
+          "biggest_loss": {
+            "title": "Biggest Loss",
+            "type": "number"
+          },
+          "biggest_win": {
+            "title": "Biggest Win",
+            "type": "number"
+          },
+          "blowout_losses": {
+            "title": "Blowout Losses",
+            "type": "integer"
+          },
+          "blowout_wins": {
+            "title": "Blowout Wins",
+            "type": "integer"
+          },
+          "close_losses": {
+            "title": "Close Losses",
+            "type": "integer"
+          },
+          "close_wins": {
+            "title": "Close Wins",
+            "type": "integer"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "avg_win_margin",
+          "avg_loss_margin",
+          "blowout_wins",
+          "close_wins",
+          "blowout_losses",
+          "close_losses",
+          "biggest_win",
+          "biggest_loss"
+        ],
+        "title": "WinMarginRow",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Fantasy Football Dashboard API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/draft/analysis": {
+      "get": {
+        "operationId": "draft_analysis_api_draft_analysis_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftAnalysis"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Draft Analysis",
+        "tags": [
+          "draft"
+        ]
+      }
+    },
+    "/api/feedback": {
+      "get": {
+        "operationId": "list_feedback_api_feedback_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FeedbackResponse"
+                  },
+                  "title": "Response List Feedback Api Feedback Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Feedback",
+        "tags": [
+          "feedback"
+        ]
+      },
+      "post": {
+        "operationId": "create_feedback_api_feedback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Feedback",
+        "tags": [
+          "feedback"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/api/managers": {
+      "get": {
+        "operationId": "list_managers_api_managers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ManagerStats"
+                  },
+                  "title": "Response List Managers Api Managers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Managers",
+        "tags": [
+          "managers"
+        ]
+      }
+    },
+    "/api/managers/{manager_id}": {
+      "get": {
+        "operationId": "get_manager_api_managers__manager_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "manager_id",
+            "required": true,
+            "schema": {
+              "title": "Manager Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagerProfile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Manager",
+        "tags": [
+          "managers"
+        ]
+      }
+    },
+    "/api/managers/{manager_id}/streak": {
+      "get": {
+        "operationId": "get_manager_streak_api_managers__manager_id__streak_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "manager_id",
+            "required": true,
+            "schema": {
+              "title": "Manager Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagerStreak"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Manager Streak",
+        "tags": [
+          "managers"
+        ]
+      }
+    },
+    "/api/seasons": {
+      "get": {
+        "operationId": "list_seasons_api_seasons_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SeasonSummary"
+                  },
+                  "title": "Response List Seasons Api Seasons Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Seasons",
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/seasons/{year}": {
+      "get": {
+        "operationId": "get_season_api_seasons__year__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "year",
+            "required": true,
+            "schema": {
+              "title": "Year",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Season",
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/seasons/{year}/matchups": {
+      "get": {
+        "operationId": "get_season_matchups_api_seasons__year__matchups_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "year",
+            "required": true,
+            "schema": {
+              "title": "Year",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "week",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Week"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MatchupOut"
+                  },
+                  "title": "Response Get Season Matchups Api Seasons  Year  Matchups Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Season Matchups",
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/stats/alltime": {
+      "get": {
+        "operationId": "all_time_stats_api_stats_alltime_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ManagerStats"
+                  },
+                  "title": "Response All Time Stats Api Stats Alltime Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "All Time Stats",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/awards": {
+      "get": {
+        "operationId": "awards_api_stats_awards_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonAwards"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Awards",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/consistency": {
+      "get": {
+        "operationId": "consistency_api_stats_consistency_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConsistencyRow"
+                  },
+                  "title": "Response Consistency Api Stats Consistency Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Consistency",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/consolation": {
+      "get": {
+        "operationId": "consolation_bracket_api_stats_consolation_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConsolationRow"
+                  },
+                  "title": "Response Consolation Bracket Api Stats Consolation Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Consolation Bracket",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/droughts": {
+      "get": {
+        "operationId": "droughts_api_stats_droughts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DroughtRow"
+                  },
+                  "title": "Response Droughts Api Stats Droughts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Droughts",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/headtohead": {
+      "get": {
+        "operationId": "head_to_head_api_stats_headtohead_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/H2HMatrix"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Head To Head",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/league-parity": {
+      "get": {
+        "operationId": "league_parity_api_stats_league_parity_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LeagueParityRow"
+                  },
+                  "title": "Response League Parity Api Stats League Parity Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "League Parity",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/luck-index": {
+      "get": {
+        "operationId": "luck_index_api_stats_luck_index_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LuckIndexRow"
+                  },
+                  "title": "Response Luck Index Api Stats Luck Index Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Luck Index",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/manager-tiers": {
+      "get": {
+        "operationId": "manager_tiers_api_stats_manager_tiers_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year_start",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year Start"
+            }
+          },
+          {
+            "in": "query",
+            "name": "year_end",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ManagerTierRow"
+                  },
+                  "title": "Response Manager Tiers Api Stats Manager Tiers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Manager Tiers",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/playoff-performance": {
+      "get": {
+        "operationId": "playoff_performance_api_stats_playoff_performance_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlayoffPerformanceRow"
+                  },
+                  "title": "Response Playoff Performance Api Stats Playoff Performance Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Playoff Performance",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/points-inflation": {
+      "get": {
+        "operationId": "points_inflation_api_stats_points_inflation_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InflationPoint"
+                  },
+                  "title": "Response Points Inflation Api Stats Points Inflation Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Points Inflation",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/power-rankings": {
+      "get": {
+        "operationId": "power_rankings_api_stats_power_rankings_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PowerRankingRow"
+                  },
+                  "title": "Response Power Rankings Api Stats Power Rankings Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Power Rankings",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/projection-performance": {
+      "get": {
+        "operationId": "projection_performance_api_stats_projection_performance_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectionRow"
+                  },
+                  "title": "Response Projection Performance Api Stats Projection Performance Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Projection Performance",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/rivalry": {
+      "get": {
+        "operationId": "rivalry_api_stats_rivalry_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "manager_a",
+            "required": true,
+            "schema": {
+              "title": "Manager A",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "manager_b",
+            "required": true,
+            "schema": {
+              "title": "Manager B",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RivalryDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rivalry",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/score-distribution": {
+      "get": {
+        "operationId": "score_distribution_api_stats_score_distribution_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ScoreDistributionRow"
+                  },
+                  "title": "Response Score Distribution Api Stats Score Distribution Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Score Distribution",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/season-scoring": {
+      "get": {
+        "operationId": "season_scoring_api_stats_season_scoring_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonScoringData"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Season Scoring",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/streaks": {
+      "get": {
+        "operationId": "streaks_api_stats_streaks_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StreakRow"
+                  },
+                  "title": "Response Streaks Api Stats Streaks Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Streaks",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/strength-of-schedule": {
+      "get": {
+        "operationId": "strength_of_schedule_api_stats_strength_of_schedule_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StrengthOfScheduleRow"
+                  },
+                  "title": "Response Strength Of Schedule Api Stats Strength Of Schedule Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Strength Of Schedule",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/throne-tracker": {
+      "get": {
+        "operationId": "throne_tracker_api_stats_throne_tracker_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThroneTracker"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Throne Tracker",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/trophy-case/{manager_id}": {
+      "get": {
+        "operationId": "trophy_case_api_stats_trophy_case__manager_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "manager_id",
+            "required": true,
+            "schema": {
+              "title": "Manager Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrophyCase"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Trophy Case",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/weekly-finish-distribution": {
+      "get": {
+        "operationId": "weekly_finish_distribution_api_stats_weekly_finish_distribution_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeeklyFinishRow"
+                  },
+                  "title": "Response Weekly Finish Distribution Api Stats Weekly Finish Distribution Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Weekly Finish Distribution",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/weekly-records": {
+      "get": {
+        "operationId": "weekly_records_api_stats_weekly_records_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "top_n",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Top N",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeeklyRecords"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Weekly Records",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/win-margins": {
+      "get": {
+        "operationId": "win_margins_api_stats_win_margins_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WinMarginRow"
+                  },
+                  "title": "Response Win Margins Api Stats Win Margins Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Win Margins",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/sync/log": {
+      "get": {
+        "operationId": "sync_log_api_sync_log_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncLogResponse"
+                  },
+                  "title": "Response Sync Log Api Sync Log Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sync Log",
+        "tags": [
+          "sync"
+        ]
+      }
+    },
+    "/api/sync/status": {
+      "get": {
+        "operationId": "sync_status_api_sync_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncStatusResponse"
+                  },
+                  "title": "Response Sync Status Api Sync Status Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Sync Status",
+        "tags": [
+          "sync"
+        ]
+      }
+    }
+  }
+}

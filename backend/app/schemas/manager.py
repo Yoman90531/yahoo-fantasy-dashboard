@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class ManagerBase(BaseModel):
     yahoo_guid: str
     display_name: str
-    nickname: str | None = None
+    nickname: str | None
 
 
 class ManagerOut(ManagerBase):

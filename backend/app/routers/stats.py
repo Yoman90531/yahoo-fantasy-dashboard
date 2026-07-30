@@ -4,6 +4,11 @@ from app.database import get_db
 from app.schemas import stats as schemas
 from app.schemas.manager import ManagerStats
 from app.services import stats_engine
+from app.services.stats.distributions import (
+    compute_score_distribution,
+    compute_weekly_finish_distribution,
+)
+from app.services.stats.margins import compute_win_margins
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
@@ -59,12 +64,12 @@ def season_scoring(db: Session = Depends(get_db)):
 
 @router.get("/score-distribution", response_model=list[schemas.ScoreDistributionRow])
 def score_distribution(db: Session = Depends(get_db)):
-    return stats_engine.compute_score_distribution(db)
+    return compute_score_distribution(db)
 
 
 @router.get("/weekly-finish-distribution", response_model=list[schemas.WeeklyFinishRow])
 def weekly_finish_distribution(db: Session = Depends(get_db)):
-    return stats_engine.compute_weekly_finish_distribution(db)
+    return compute_weekly_finish_distribution(db)
 
 
 @router.get("/throne-tracker", response_model=schemas.ThroneTracker)
@@ -89,7 +94,7 @@ def projection_performance(year: int | None = Query(None), db: Session = Depends
 
 @router.get("/win-margins", response_model=list[schemas.WinMarginRow])
 def win_margins(year: int | None = Query(None), db: Session = Depends(get_db)):
-    return stats_engine.compute_win_margins(db, year=year)
+    return compute_win_margins(db, year=year)
 
 
 @router.get("/playoff-performance", response_model=list[schemas.PlayoffPerformanceRow])

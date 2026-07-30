@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.feedback import Feedback
 from app.schemas.feedback import FeedbackCreate, FeedbackResponse
+from app.services.rate_limit import enforce_feedback_rate_limit
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
@@ -29,6 +30,7 @@ def list_feedback(
 def create_feedback(
     payload: FeedbackCreate,
     db: Session = Depends(get_db),
+    _rate_limit: None = Depends(enforce_feedback_rate_limit),
 ):
     post = Feedback(
         author_name=payload.author_name,

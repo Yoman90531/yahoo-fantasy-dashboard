@@ -5,7 +5,7 @@ from app.models.season import Season
 from app.models.team import Team
 from app.schemas.season import SeasonSummary, SeasonDetail, StandingsRow
 from app.schemas.matchup import MatchupOut
-from app.services.stats_engine import _get_active_managers
+from app.services.stats.context import _get_active_managers
 from app import crud
 
 router = APIRouter(prefix="/seasons", tags=["seasons"])

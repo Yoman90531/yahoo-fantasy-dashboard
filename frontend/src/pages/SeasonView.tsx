@@ -45,8 +45,9 @@ export default function SeasonView() {
       <KeyInsights insightKey="seasonArchive" />
       {/* Year selector */}
       <div className="flex items-center gap-3 mb-6">
-        <label className="text-gray-400 text-sm">Season:</label>
+        <label htmlFor="season-year" className="text-gray-400 text-sm">Season:</label>
         <select
+          id="season-year"
           value={year ?? ''}
           onChange={e => {
             const nextYear = Number(e.target.value)

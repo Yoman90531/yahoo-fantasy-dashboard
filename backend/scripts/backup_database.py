@@ -74,6 +74,35 @@ def create_backup(
     return destination
 
 
+def upload_backup(
+    backup_path: Path,
+    *,
+    bucket: str,
+    prefix: str = "fantasy-dashboard",
+    endpoint_url: str = "",
+) -> str:
+    """Upload a verified backup to opt-in S3-compatible object storage."""
+    if not bucket:
+        raise ValueError("An S3 bucket is required")
+
+    with closing(sqlite3.connect(f"file:{backup_path.resolve().as_posix()}?mode=ro", uri=True)) as db:
+        result = db.execute("PRAGMA integrity_check").fetchone()
+    if result is None or result[0] != "ok":
+        raise RuntimeError(f"Backup integrity check failed before upload: {result}")
+
+    import boto3
+
+    object_key = "/".join(
+        part.strip("/")
+        for part in (prefix, backup_path.name)
+        if part.strip("/")
+    )
+    client = boto3.client("s3", endpoint_url=endpoint_url or None)
+    client.upload_file(str(backup_path), bucket, object_key)
+    logger.info("Database backup uploaded to s3://%s/%s", bucket, object_key)
+    return object_key
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--keep", type=int, default=14, help="Number of backups to retain")
@@ -81,7 +110,14 @@ def main() -> None:
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    create_backup(backup_dir=args.output_dir, keep=args.keep)
+    backup = create_backup(backup_dir=args.output_dir, keep=args.keep)
+    if backup is not None and settings.backup_s3_bucket:
+        upload_backup(
+            backup,
+            bucket=settings.backup_s3_bucket,
+            prefix=settings.backup_s3_prefix,
+            endpoint_url=settings.backup_s3_endpoint_url,
+        )
 
 
 if __name__ == "__main__":

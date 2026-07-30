@@ -21,7 +21,7 @@ from app.models.player_season import PlayerSeason
 from app.models.season import Season
 from app.models.team import Team
 from app.services.manager_names import MANAGER_RENAMES
-from app.services.stats_engine import _get_active_managers
+from app.services.stats.context import _get_active_managers
 
 
 class Audit:

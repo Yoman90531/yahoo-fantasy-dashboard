@@ -20,12 +20,21 @@ from app.routers.seasons import get_season_matchups
 from app.schemas.stats import (
     H2HMatrix,
     LeagueParityRow,
+    ScoreDistributionRow,
     SeasonAwards,
     StreakRow,
     StrengthOfScheduleRow,
+    WeeklyFinishRow,
     WeeklyRecords,
     WinMarginRow,
 )
+from app.schemas.draft import DraftAnalysis
+from app.services.stats.distributions import (
+    compute_score_distribution,
+    compute_weekly_finish_distribution,
+)
+from app.services.stats.draft import compute_draft_analysis
+from app.services.stats.margins import compute_win_margins
 from app.services.stats_engine import (
     _get_active_managers,
     _tie_aware_percentiles,
@@ -37,7 +46,6 @@ from app.services.stats_engine import (
     compute_streaks_all,
     compute_strength_of_schedule,
     compute_trophy_case,
-    compute_win_margins,
     compute_weekly_records,
 )
 from scripts.audit_data import audit_database
@@ -226,6 +234,11 @@ class ManagerResolutionTest(unittest.TestCase):
             LeagueParityRow.model_validate(row)
         for row in compute_strength_of_schedule(self.db, year=2017):
             StrengthOfScheduleRow.model_validate(row)
+        for row in compute_score_distribution(self.db):
+            ScoreDistributionRow.model_validate(row)
+        for row in compute_weekly_finish_distribution(self.db):
+            WeeklyFinishRow.model_validate(row)
+        DraftAnalysis.model_validate(compute_draft_analysis(self.db, year=2017))
 
 
 if __name__ == "__main__":

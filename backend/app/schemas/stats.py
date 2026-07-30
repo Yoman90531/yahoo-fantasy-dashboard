@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
@@ -14,8 +16,13 @@ class H2HRecord(BaseModel):
     points_against: float
 
 
+class H2HManager(BaseModel):
+    id: int
+    name: str
+
+
 class H2HMatrix(BaseModel):
-    managers: list[dict]  # [{id, name}]
+    managers: list[H2HManager]
     records: list[H2HRecord]
 
 
@@ -155,10 +162,16 @@ class Dynasty(BaseModel):
     years: list[int]
     count: int
 
+
+class TitleCount(BaseModel):
+    manager_name: str | None
+    count: int
+
+
 class ThroneTracker(BaseModel):
     timeline: list[ThroneEntry]
     dynasties: list[Dynasty]
-    most_titles: dict  # {manager_name, count}
+    most_titles: TitleCount
     active_champion: str | None
 
 
@@ -206,13 +219,13 @@ class RivalryMatchup(BaseModel):
     week: int
     a_points: float
     b_points: float
-    winner: str  # "a", "b", or "tie"
+    winner: Literal["a", "b", "tie"]
     margin: float
     is_playoff: bool
-    game_id: int | None = None
-    league_id: str | None = None
-    team_a_yahoo_id: int | None = None
-    team_b_yahoo_id: int | None = None
+    game_id: int | None
+    league_id: str | None
+    team_a_yahoo_id: int | None
+    team_b_yahoo_id: int | None
 
 class RivalryTrend(BaseModel):
     year: int
@@ -229,6 +242,12 @@ class RivalrySummary(BaseModel):
     b_pf: float
     win_pct: float
 
+
+class RivalryStreak(BaseModel):
+    holder: Literal["a", "b"]
+    length: int
+
+
 class RivalryDetail(BaseModel):
     manager_a_id: int
     manager_a_name: str
@@ -237,8 +256,8 @@ class RivalryDetail(BaseModel):
     summary: RivalrySummary
     matchups: list[RivalryMatchup]
     trends: list[RivalryTrend]
-    current_streak: dict  # {holder: "a"|"b", length: int}
-    longest_streak: dict  # {holder: "a"|"b", length: int}
+    current_streak: RivalryStreak
+    longest_streak: RivalryStreak
     biggest_blowout: RivalryMatchup | None
     closest_game: RivalryMatchup | None
 
@@ -336,6 +355,14 @@ class StreakRow(BaseModel):
 # Manager Tiers
 # ---------------------------------------------------------------------------
 
+class ManagerTierDimensions(BaseModel):
+    win_pct: float
+    avg_ppg: float
+    expected_win_pct: float
+    championships: float
+    playoff_rate: float
+
+
 class ManagerTierRow(BaseModel):
     manager_id: int
     manager_name: str
@@ -348,7 +375,7 @@ class ManagerTierRow(BaseModel):
     playoff_rate: float
     consistency_score: float
     seasons_played: int
-    dimension_scores: dict[str, float]
+    dimension_scores: ManagerTierDimensions
 
 
 # ---------------------------------------------------------------------------

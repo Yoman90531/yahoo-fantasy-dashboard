@@ -44,7 +44,10 @@ server on port 8000.
 python -m unittest discover -s tests -v
 
 # frontend/
+npm run generate:api
 npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
 ## Database changes and backups
@@ -62,6 +65,19 @@ that the complete legacy schema exists, stamps the initial revision, and then
 upgrades normally. Backups are stored beside the SQLite database under
 `backups/`; the newest 14 are retained by default.
 
+Verify a backup before an incident, or restore it to a separate file:
+
+```powershell
+python scripts/restore_database.py ../data/backups/fantasy-<timestamp>.sqlite3
+python scripts/restore_database.py ../data/backups/fantasy-<timestamp>.sqlite3 `
+  --destination ../data/restored.db
+```
+
+For off-site copies, set `BACKUP_S3_BUCKET` plus standard AWS credentials in
+the deployment environment. `BACKUP_S3_PREFIX` and
+`BACKUP_S3_ENDPOINT_URL` support alternate prefixes and S3-compatible
+providers. Uploads remain disabled unless a bucket is explicitly configured.
+
 ## Production
 
 The Compose project runs the private FastAPI container behind Caddy. Configure
@@ -74,6 +90,9 @@ chmod +x deploy.sh
 
 Deployment builds the image, backs up the mounted SQLite database, starts the
 new application (which runs migrations), and waits for the public health check.
+GitHub Actions accepts a `DROPLET_SSH_KEY` deploy secret and retains
+`DROPLET_PASSWORD` as a migration fallback. After the key has been verified,
+remove the password secret and its workflow input.
 
 Useful commands:
 
