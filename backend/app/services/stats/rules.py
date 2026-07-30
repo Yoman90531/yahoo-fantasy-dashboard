@@ -11,7 +11,15 @@ from sqlalchemy.orm import Query
 from app.models.matchup import Matchup
 
 
-_RULES_PATH = Path(__file__).resolve().parents[4] / "shared" / "stat_rules.json"
+def _find_rules_path(source_file: Path = Path(__file__).resolve()) -> Path:
+    for parent in source_file.parents:
+        candidate = parent / "shared" / "stat_rules.json"
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError("Could not locate shared/stat_rules.json")
+
+
+_RULES_PATH = _find_rules_path()
 with _RULES_PATH.open(encoding="utf-8") as rules_file:
     _RULES = json.load(rules_file)
 
