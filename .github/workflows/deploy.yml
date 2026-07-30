@@ -15,36 +15,15 @@ jobs:
           username: root
           password: ${{ secrets.DROPLET_PASSWORD }}
           command_timeout: 15m
-          script_stop: true
           script: |
             set -eu
             cd /opt/yahoo-fantasy-dashboard
             git pull --ff-only origin main
 
-            # Build before the cutover so the legacy router stays online for as
-            # long as possible.
             docker compose build app
             docker compose pull caddy
-
-            legacy_dir=/opt/splitwise-mcp
-            legacy_compose="$legacy_dir/docker-compose.prod.yml"
-            legacy_stopped=0
-
-            rollback() {
-              if [ "$legacy_stopped" -eq 1 ]; then
-                echo "New stack failed; restoring the legacy router."
-                docker compose down || true
-                docker compose -f "$legacy_compose" up -d || true
-              fi
-            }
-            trap rollback EXIT
-
-            if [ -f "$legacy_compose" ]; then
-              docker compose -f "$legacy_compose" stop caddy
-              legacy_stopped=1
-            fi
-
             docker compose up -d --remove-orphans
+            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
             docker compose ps
 
             healthy=0
@@ -61,13 +40,4 @@ jobs:
               exit 1
             fi
 
-            if [ "$legacy_stopped" -eq 1 ]; then
-              docker compose -f "$legacy_compose" down
-              install -d -m 700 /opt/retired-apps
-              retired_dir="/opt/retired-apps/splitwise-mcp-$(date +%Y%m%d-%H%M%S)"
-              mv "$legacy_dir" "$retired_dir"
-              echo "Retired legacy Splitwise deployment to $retired_dir"
-            fi
-
-            trap - EXIT
             curl -fsS https://vibedan.duckdns.org/health

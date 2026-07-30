@@ -1,25 +1,24 @@
 vibedan.duckdns.org {
 	encode gzip
 
-	@retired_splitwise path /mcp /oauth/* /.well-known/oauth-authorization-server /.well-known/oauth-protected-resource
-	handle @retired_splitwise {
-		respond "Not Found" 404
-	}
-
 	handle /health {
 		rewrite * /api/health
 		reverse_proxy app:8000
 	}
 
 	handle /fantasy {
-		redir /fantasy/ 308
+		redir * /fantasy/ 308
 	}
 
 	handle_path /fantasy/* {
 		reverse_proxy app:8000
 	}
 
+	handle / {
+		redir * /fantasy/ 308
+	}
+
 	handle {
-		redir /fantasy/ 308
+		respond "Not Found" 404
 	}
 }
