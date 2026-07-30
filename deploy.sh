@@ -11,8 +11,14 @@ if [ ! -f .env.production ]; then
     exit 1
 fi
 
-echo "==> Rebuilding the dashboard and site router..."
-docker compose up -d --build --remove-orphans
+echo "==> Building the dashboard..."
+docker compose build app
+
+echo "==> Backing up the current database..."
+docker compose run --rm --no-deps app python scripts/backup_database.py
+
+echo "==> Starting the dashboard and site router..."
+docker compose up -d --remove-orphans
 docker compose up -d --force-recreate --no-deps caddy
 
 echo "==> Waiting for the dashboard health check..."

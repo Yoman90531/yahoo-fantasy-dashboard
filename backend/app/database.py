@@ -22,16 +22,23 @@ if settings.database_url.startswith("sqlite:///"):
         Path(sqlite_path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
 
 
+is_sqlite = settings.database_url.startswith("sqlite:")
+
 engine = create_engine(
     settings.database_url,
-    connect_args={"check_same_thread": False},
+    connect_args={"check_same_thread": False, "timeout": 30} if is_sqlite else {},
+    pool_pre_ping=True,
 )
 
-# Enable WAL mode to prevent locking when sync and API run concurrently
+# Keep SQLite reads responsive while a sync or backup is active.
 @event.listens_for(engine, "connect")
-def set_wal_mode(dbapi_connection, connection_record):
+def configure_sqlite(dbapi_connection, connection_record):
+    if not is_sqlite:
+        return
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.execute("PRAGMA busy_timeout=30000")
     cursor.close()
 
 

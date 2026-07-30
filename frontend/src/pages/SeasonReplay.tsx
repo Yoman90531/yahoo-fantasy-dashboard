@@ -4,19 +4,17 @@ import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
-import { useAppStore } from '../store/appStore'
+import { useSeasons } from '../hooks/useSeasons'
 import { seasonsApi } from '../api/client'
 import type { MatchupOut, SeasonDetail } from '../types'
-
-const BLOWOUT_THRESHOLD = 30
-const CLOSE_GAME_THRESHOLD = 5
+import { isBlowout as meetsBlowoutRule, isCloseGame } from '../domain/statRules'
 
 function MatchupCard({ matchup }: { matchup: MatchupOut }) {
   const team1Won = matchup.winner_manager_id === matchup.team1_manager_id
   const team2Won = matchup.winner_manager_id === matchup.team2_manager_id
   const isTie = matchup.winner_manager_id === null
-  const isBlowout = matchup.margin >= BLOWOUT_THRESHOLD
-  const isClose = matchup.margin > 0 && matchup.margin <= CLOSE_GAME_THRESHOLD
+  const isBlowout = meetsBlowoutRule(matchup.margin)
+  const isClose = isCloseGame(matchup.margin)
   const yahooUrl = matchup.league_id && matchup.team1_yahoo_id && matchup.team2_yahoo_id
     ? `https://football.fantasysports.yahoo.com/${matchup.season_year}/f1/${matchup.league_id}/matchup?week=${matchup.week}&mid1=${matchup.team1_yahoo_id}&mid2=${matchup.team2_yahoo_id}`
     : null
@@ -116,13 +114,10 @@ function MatchupCard({ matchup }: { matchup: MatchupOut }) {
 }
 
 export default function SeasonReplay() {
-  const { seasons, setSeasons } = useAppStore()
+  const { data: seasonOptions } = useSeasons()
+  const seasons = seasonOptions ?? []
   const [year, setYear] = useState<number | null>(null)
   const [selectedWeek, setSelectedWeek] = useState<number | string>('all')
-
-  useEffect(() => {
-    if (!seasons.length) seasonsApi.list().then(setSeasons)
-  }, [])
 
   useEffect(() => {
     if (seasons.length && !year) {
@@ -132,14 +127,16 @@ export default function SeasonReplay() {
 
   // Fetch season detail to know total weeks
   const { data: seasonDetail } = useApi<SeasonDetail>(
-    () => (year ? seasonsApi.get(year) : Promise.resolve(null)),
-    [year],
+    ['season', year],
+    () => seasonsApi.get(year!),
+    Boolean(year),
   )
 
   // Fetch all matchups for the season (no week filter -- we filter client-side)
   const { data: allMatchups, loading, error } = useApi<MatchupOut[]>(
-    () => (year ? seasonsApi.matchups(year) : Promise.resolve([])),
-    [year],
+    ['season-matchups', year],
+    () => seasonsApi.matchups(year!),
+    Boolean(year),
   )
 
   // Compute max week from data
@@ -187,8 +184,8 @@ export default function SeasonReplay() {
   const stats = useMemo(() => {
     if (!filteredMatchups.length) return null
     const totalGames = filteredMatchups.length
-    const blowouts = filteredMatchups.filter(m => m.margin >= BLOWOUT_THRESHOLD).length
-    const closeGames = filteredMatchups.filter(m => m.margin > 0 && m.margin <= CLOSE_GAME_THRESHOLD).length
+    const blowouts = filteredMatchups.filter(m => meetsBlowoutRule(m.margin)).length
+    const closeGames = filteredMatchups.filter(m => isCloseGame(m.margin)).length
     const avgMargin = filteredMatchups.reduce((sum, m) => sum + m.margin, 0) / totalGames
     const highScore = Math.max(
       ...filteredMatchups.flatMap(m => [m.team1_points, m.team2_points]),

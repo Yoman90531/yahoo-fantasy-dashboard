@@ -21,7 +21,7 @@ function formatWhen(startYear: number | null, startWeek: number | null, endYear:
 }
 
 export default function StreakTracker() {
-  const { data, loading, error } = useApi<StreakRow[]>(() => statsApi.streaks(), [])
+  const { data, loading, error } = useApi<StreakRow[]>(['streaks'], () => statsApi.streaks())
   const { sorted, th } = useSortedTable<StreakRow, SortKey>(data, 'current_streak_length')
 
   // Summary card helpers

@@ -7,19 +7,16 @@ import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
-import { useAppStore } from '../store/appStore'
+import { useSeasons } from '../hooks/useSeasons'
 import { seasonsApi } from '../api/client'
 import type { SeasonDetail } from '../types'
 
 export default function SeasonView() {
-  const { seasons, setSeasons } = useAppStore()
+  const { data: seasonOptions } = useSeasons()
+  const seasons = seasonOptions ?? []
   const [params, setParams] = useSearchParams()
   const requestedYear = Number(params.get('year'))
   const [year, setYear] = useState<number | null>(requestedYear || null)
-
-  useEffect(() => {
-    if (!seasons.length) seasonsApi.list().then(setSeasons)
-  }, [])
 
   useEffect(() => {
     if (seasons.length && !year) {
@@ -28,8 +25,9 @@ export default function SeasonView() {
   }, [seasons])
 
   const { data: season, loading, error } = useApi<SeasonDetail>(
-    () => (year ? seasonsApi.get(year) : Promise.resolve(null)),
-    [year],
+    ['season', year],
+    () => seasonsApi.get(year!),
+    Boolean(year),
   )
 
   const pfData = season?.standings.map(r => ({

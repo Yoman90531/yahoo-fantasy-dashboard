@@ -55,6 +55,4 @@ export const feedbackApi = {
 export const syncApi = {
   status: () => api.get('/sync/status').then(r => r.data),
   log: () => api.get('/sync/log').then(r => r.data),
-  run: (years?: number[], force?: boolean) =>
-    api.post('/sync/run', null, { params: { ...(force ? { force: true } : {}), ...(years ? { years } : {}) } }).then(r => r.data),
 }

@@ -1,51 +1,18 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import {
-  Archive,
-  BarChart3,
-  BookOpen,
-  ClipboardList,
-  Crown,
-  Dices,
-  House,
-  Menu,
-  Medal,
-  MessageSquare,
-  Swords,
-  X,
-  type LucideIcon,
-} from 'lucide-react'
-
-interface NavItem {
-  to: string
-  label: string
-  activePrefix: string
-  icon: LucideIcon
-}
-
-const primaryNavigation: NavItem[] = [
-  { to: '/', label: 'League HQ', activePrefix: '/', icon: House },
-  { to: '/seasons/archive', label: 'Season Vault', activePrefix: '/seasons', icon: Archive },
-  { to: '/managers/all-time', label: 'Manager Rankings', activePrefix: '/managers', icon: Crown },
-  { to: '/rivalries', label: 'Rivalries', activePrefix: '/rivalries', icon: Swords },
-  { to: '/record-book/weekly', label: 'Record Book', activePrefix: '/record-book', icon: BookOpen },
-  { to: '/scoring/trends', label: 'Scoring Lab', activePrefix: '/scoring', icon: BarChart3 },
-  { to: '/luck-schedule/luck', label: 'Luck & Schedule', activePrefix: '/luck-schedule', icon: Dices },
-  { to: '/postseason/playoffs', label: 'Postseason', activePrefix: '/postseason', icon: Medal },
-  { to: '/draft', label: 'Draft Room', activePrefix: '/draft', icon: ClipboardList },
-  { to: '/feedback', label: 'Feedback Wall', activePrefix: '/feedback', icon: MessageSquare },
-]
+import { Menu, X } from 'lucide-react'
+import { primaryNavigation, type NavigationItem } from '../../config/navigation'
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
 
-  const isActive = (item: NavItem) =>
+  const isActive = (item: NavigationItem) =>
     item.activePrefix === '/'
       ? pathname === '/'
       : pathname.startsWith(item.activePrefix)
 
-  const renderLink = (item: NavItem) => {
+  const renderLink = (item: NavigationItem) => {
     const Icon = item.icon
     const active = isActive(item)
 

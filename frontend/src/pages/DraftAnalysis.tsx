@@ -25,8 +25,11 @@ type GradeSortKey = 'manager_name' | 'year' | 'grade' | 'composite_score' | 'tot
 
 export default function DraftAnalysis() {
   const [year, setYear] = useState<number | undefined>(undefined)
-  const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
-  const { data, loading, error } = useApi<DraftAnalysisType>(() => draftApi.analysis(year), [year])
+  const { data: seasons } = useApi<SeasonSummary[]>(['seasons'], () => seasonsApi.list())
+  const { data, loading, error } = useApi<DraftAnalysisType>(
+    ['draft-analysis', year],
+    () => draftApi.analysis(year),
+  )
   const { sorted: sortedGrades, th } = useSortedTable<DraftGradeRow, GradeSortKey>(data?.grades ?? null, 'composite_score')
 
   // Build stacked bar data for position capital chart

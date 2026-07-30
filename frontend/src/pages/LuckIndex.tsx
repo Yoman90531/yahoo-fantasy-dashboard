@@ -15,8 +15,11 @@ type SortKey = 'manager_name' | 'actual_wins' | 'expected_wins' | 'luck_score'
 
 export default function LuckIndex() {
   const [year, setYear] = useState<number | undefined>(undefined)
-  const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
-  const { data, loading, error } = useApi<LuckIndexRow[]>(() => statsApi.luckIndex(year), [year])
+  const { data: seasons } = useApi<SeasonSummary[]>(['seasons'], () => seasonsApi.list())
+  const { data, loading, error } = useApi<LuckIndexRow[]>(
+    ['luck-index', year],
+    () => statsApi.luckIndex(year),
+  )
   const { sorted, th } = useSortedTable<LuckIndexRow, SortKey>(data, 'luck_score')
 
   const barData = (data ?? []).map(r => ({

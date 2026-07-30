@@ -1,5 +1,5 @@
 """
-Apply manager name overrides and merges from data/manager_overrides.json.
+Apply manager name overrides and merges from app/resources/manager_overrides.json.
 
 Run this after any sync to clean up hidden managers and duplicate entries.
 
@@ -7,24 +7,14 @@ Usage (from the backend/ directory):
     python scripts/fix_managers.py          # preview changes
     python scripts/fix_managers.py --apply  # apply changes
 """
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data"
-OVERRIDES_FILE = DATA_DIR / "manager_overrides.json"
-
-
 def load_overrides():
-    from app.services.manager_names import MANAGER_RENAMES
-
-    if not OVERRIDES_FILE.exists():
-        return MANAGER_RENAMES, {}
-    with open(OVERRIDES_FILE) as f:
-        data = json.load(f)
-    return MANAGER_RENAMES, data.get("merges", {})
+    from app.services.manager_names import MANAGER_MERGES, MANAGER_RENAMES
+    return MANAGER_RENAMES, MANAGER_MERGES
 
 
 def main():

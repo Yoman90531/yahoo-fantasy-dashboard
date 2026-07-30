@@ -59,7 +59,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 )
 
 export default function WeeklyRecords() {
-  const { data, loading, error } = useApi<WR>(() => statsApi.weeklyRecords(), [])
+  const { data, loading, error } = useApi<WR>(['weekly-records'], () => statsApi.weeklyRecords())
 
   if (loading) return <PageWrapper title="Weekly Highs & Lows"><LoadingSpinner /></PageWrapper>
   if (error) return <PageWrapper title="Weekly Highs & Lows"><ErrorMessage message={error} /></PageWrapper>

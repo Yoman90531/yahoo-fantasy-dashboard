@@ -11,7 +11,10 @@ interface Props {
 
 export default function AwardsSection({ seasons }: Props) {
   const [year, setYear] = useState<number | undefined>(undefined)
-  const { data, loading, error } = useApi<SeasonAwards>(() => statsApi.awards(year), [year])
+  const { data, loading, error } = useApi<SeasonAwards>(
+    ['awards', year],
+    () => statsApi.awards(year),
+  )
 
   return (
     <div aria-labelledby="awards-heading">

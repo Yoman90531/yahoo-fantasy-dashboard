@@ -1,42 +1,44 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.schemas import stats as schemas
+from app.schemas.manager import ManagerStats
 from app.services import stats_engine
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
 
-@router.get("/alltime")
+@router.get("/alltime", response_model=list[ManagerStats])
 def all_time_stats(db: Session = Depends(get_db)):
     return stats_engine.compute_all_time_records(db)
 
 
-@router.get("/headtohead")
+@router.get("/headtohead", response_model=schemas.H2HMatrix)
 def head_to_head(db: Session = Depends(get_db)):
     return stats_engine.compute_head_to_head(db)
 
 
-@router.get("/luck-index")
+@router.get("/luck-index", response_model=list[schemas.LuckIndexRow])
 def luck_index(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_luck_index(db, year=year)
 
 
-@router.get("/weekly-records")
+@router.get("/weekly-records", response_model=schemas.WeeklyRecords)
 def weekly_records(top_n: int = Query(10, ge=1, le=50), db: Session = Depends(get_db)):
     return stats_engine.compute_weekly_records(db, top_n=top_n)
 
 
-@router.get("/consistency")
+@router.get("/consistency", response_model=list[schemas.ConsistencyRow])
 def consistency(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_consistency(db, year=year)
 
 
-@router.get("/points-inflation")
+@router.get("/points-inflation", response_model=list[schemas.InflationPoint])
 def points_inflation(db: Session = Depends(get_db)):
     return stats_engine.compute_points_inflation(db)
 
 
-@router.get("/trophy-case/{manager_id}")
+@router.get("/trophy-case/{manager_id}", response_model=schemas.TrophyCase)
 def trophy_case(manager_id: int, db: Session = Depends(get_db)):
     result = stats_engine.compute_trophy_case(db, manager_id)
     if result is None:
@@ -45,62 +47,62 @@ def trophy_case(manager_id: int, db: Session = Depends(get_db)):
     return result
 
 
-@router.get("/droughts")
+@router.get("/droughts", response_model=list[schemas.DroughtRow])
 def droughts(db: Session = Depends(get_db)):
     return stats_engine.compute_droughts(db)
 
 
-@router.get("/season-scoring")
+@router.get("/season-scoring", response_model=schemas.SeasonScoringData)
 def season_scoring(db: Session = Depends(get_db)):
     return stats_engine.compute_season_scoring(db)
 
 
-@router.get("/score-distribution")
+@router.get("/score-distribution", response_model=list[schemas.ScoreDistributionRow])
 def score_distribution(db: Session = Depends(get_db)):
     return stats_engine.compute_score_distribution(db)
 
 
-@router.get("/weekly-finish-distribution")
+@router.get("/weekly-finish-distribution", response_model=list[schemas.WeeklyFinishRow])
 def weekly_finish_distribution(db: Session = Depends(get_db)):
     return stats_engine.compute_weekly_finish_distribution(db)
 
 
-@router.get("/throne-tracker")
+@router.get("/throne-tracker", response_model=schemas.ThroneTracker)
 def throne_tracker(db: Session = Depends(get_db)):
     return stats_engine.compute_throne_tracker(db)
 
 
-@router.get("/awards")
+@router.get("/awards", response_model=schemas.SeasonAwards)
 def awards(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_awards(db, year=year)
 
 
-@router.get("/power-rankings")
+@router.get("/power-rankings", response_model=list[schemas.PowerRankingRow])
 def power_rankings(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_power_rankings(db, year=year)
 
 
-@router.get("/projection-performance")
+@router.get("/projection-performance", response_model=list[schemas.ProjectionRow])
 def projection_performance(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_projection_performance(db, year=year)
 
 
-@router.get("/win-margins")
+@router.get("/win-margins", response_model=list[schemas.WinMarginRow])
 def win_margins(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_win_margins(db, year=year)
 
 
-@router.get("/playoff-performance")
+@router.get("/playoff-performance", response_model=list[schemas.PlayoffPerformanceRow])
 def playoff_performance(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_playoff_performance(db, year=year)
 
 
-@router.get("/league-parity")
+@router.get("/league-parity", response_model=list[schemas.LeagueParityRow])
 def league_parity(db: Session = Depends(get_db)):
     return stats_engine.compute_league_parity(db)
 
 
-@router.get("/rivalry")
+@router.get("/rivalry", response_model=schemas.RivalryDetail)
 def rivalry(
     manager_a: int = Query(...),
     manager_b: int = Query(...),
@@ -113,17 +115,17 @@ def rivalry(
     return result
 
 
-@router.get("/streaks")
+@router.get("/streaks", response_model=list[schemas.StreakRow])
 def streaks(db: Session = Depends(get_db)):
     return stats_engine.compute_streaks_all(db)
 
 
-@router.get("/consolation")
+@router.get("/consolation", response_model=list[schemas.ConsolationRow])
 def consolation_bracket(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_consolation_bracket(db, year=year)
 
 
-@router.get("/manager-tiers")
+@router.get("/manager-tiers", response_model=list[schemas.ManagerTierRow])
 def manager_tiers(
     year_start: int | None = Query(None),
     year_end: int | None = Query(None),
@@ -132,6 +134,6 @@ def manager_tiers(
     return stats_engine.compute_manager_tiers(db, year_start=year_start, year_end=year_end)
 
 
-@router.get("/strength-of-schedule")
+@router.get("/strength-of-schedule", response_model=list[schemas.StrengthOfScheduleRow])
 def strength_of_schedule(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_strength_of_schedule(db, year=year)

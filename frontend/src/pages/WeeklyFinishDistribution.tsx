@@ -23,7 +23,10 @@ const BUCKETS = [
 type WFSortKey = 'manager_name' | 'total_weeks' | 'first' | 'top_three_total' | 'top_half_total' | 'bottom_half' | 'bot_three_total' | 'last' | 'pct_top_half'
 
 export default function WeeklyFinishDistribution() {
-  const { data, loading, error } = useApi<WeeklyFinishRow[]>(() => statsApi.weeklyFinishDistribution(), [])
+  const { data, loading, error } = useApi<WeeklyFinishRow[]>(
+    ['weekly-finish-distribution'],
+    () => statsApi.weeklyFinishDistribution(),
+  )
   const [sort, setSort] = useState<{ key: WFSortKey; dir: 1 | -1 }>({ key: 'pct_top_half', dir: -1 })
 
   const toggle = (key: WFSortKey) =>

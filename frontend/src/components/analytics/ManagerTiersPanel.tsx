@@ -48,8 +48,8 @@ export default function ManagerTiersPanel({ seasons }: Props) {
   const [yearEnd, setYearEnd] = useState<number | undefined>(undefined)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const { data, loading, error } = useApi<ManagerTierRow[]>(
+    ['manager-tiers', yearStart, yearEnd],
     () => statsApi.managerTiers(yearStart, yearEnd),
-    [yearStart, yearEnd],
   )
   const { sorted, th } = useSortedTable<ManagerTierRow, SortKey>(data, 'composite_score')
 

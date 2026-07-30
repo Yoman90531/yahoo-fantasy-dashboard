@@ -17,8 +17,9 @@ export default function Rivalry() {
   const bId = Number(params.get('b'))
 
   const { data, loading, error } = useApi<RivalryDetail>(
+    ['rivalry', aId, bId],
     () => statsApi.rivalry(aId, bId),
-    [aId, bId],
+    Boolean(aId && bId),
   )
 
   if (!aId || !bId) {

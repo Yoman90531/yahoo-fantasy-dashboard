@@ -8,7 +8,7 @@ import { statsApi } from '../api/client'
 import type { H2HMatrix } from '../types'
 
 export default function HeadToHead() {
-  const { data, loading, error } = useApi<H2HMatrix>(() => statsApi.headToHead(), [])
+  const { data, loading, error } = useApi<H2HMatrix>(['head-to-head'], () => statsApi.headToHead())
 
   return (
     <PageWrapper

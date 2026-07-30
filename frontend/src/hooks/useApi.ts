@@ -1,20 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
-export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []) {
-  const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export function useApi<T>(
+  queryKey: readonly unknown[],
+  fetcher: () => Promise<T>,
+  enabled = true,
+) {
+  const query = useQuery<T, Error>({
+    queryKey,
+    queryFn: fetcher,
+    enabled,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  })
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    fetcher()
-      .then(d => { if (!cancelled) { setData(d); setLoading(false) } })
-      .catch(e => { if (!cancelled) { setError(e.message ?? 'Error'); setLoading(false) } })
-    return () => { cancelled = true }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps)
-
-  return { data, loading, error }
+  return {
+    data: query.data ?? null,
+    loading: query.isPending,
+    error: query.error?.message ?? null,
+  }
 }

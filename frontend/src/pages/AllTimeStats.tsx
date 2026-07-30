@@ -9,7 +9,7 @@ import { managersApi } from '../api/client'
 import type { ManagerStats } from '../types'
 
 export default function AllTimeStats() {
-  const { data: managers, loading, error } = useApi<ManagerStats[]>(() => managersApi.list(), [])
+  const { data: managers, loading, error } = useApi<ManagerStats[]>(['managers'], () => managersApi.list())
 
   if (loading) return <PageWrapper title="All-Time Standings"><LoadingSpinner /></PageWrapper>
   if (error) return <PageWrapper title="All-Time Standings"><ErrorMessage message={error} /></PageWrapper>

@@ -17,7 +17,7 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
 })
 
 export default function FeedbackWall() {
-  const { data, loading, error } = useApi<FeedbackPost[]>(() => feedbackApi.list(), [])
+  const { data, loading, error } = useApi<FeedbackPost[]>(['feedback'], () => feedbackApi.list())
   const [posts, setPosts] = useState<FeedbackPost[]>([])
   const [authorName, setAuthorName] = useState('')
   const [message, setMessage] = useState('')

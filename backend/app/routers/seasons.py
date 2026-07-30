@@ -3,10 +3,9 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.season import Season
 from app.models.team import Team
-from app.models.manager import Manager
 from app.schemas.season import SeasonSummary, SeasonDetail, StandingsRow
 from app.schemas.matchup import MatchupOut
-from app.services.stats_engine import _apply_overrides, _get_active_managers
+from app.services.stats_engine import _get_active_managers
 from app import crud
 
 router = APIRouter(prefix="/seasons", tags=["seasons"])
@@ -15,15 +14,23 @@ router = APIRouter(prefix="/seasons", tags=["seasons"])
 @router.get("", response_model=list[SeasonSummary])
 def list_seasons(db: Session = Depends(get_db)):
     seasons = crud.season.get_all(db)
+    champion_team_ids = {
+        season.champion_team_id
+        for season in seasons
+        if season.champion_team_id is not None
+    }
+    champion_teams = {
+        team.id: team
+        for team in db.query(Team).filter(Team.id.in_(champion_team_ids)).all()
+    }
+    managers = {manager.id: manager for manager in _get_active_managers(db)}
     result = []
     for s in seasons:
         champion_name = None
         if s.champion_team_id:
-            champ_team = db.query(Team).filter(Team.id == s.champion_team_id).first()
+            champ_team = champion_teams.get(s.champion_team_id)
             if champ_team:
-                mgr = db.query(Manager).filter(Manager.id == champ_team.manager_id).first()
-                if mgr:
-                    _apply_overrides([mgr])
+                mgr = managers.get(champ_team.manager_id)
                 champion_name = mgr.display_name if mgr else None
         result.append(SeasonSummary(
             id=s.id, year=s.year, league_name=s.league_name,
@@ -39,11 +46,10 @@ def get_season(year: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Season {year} not found")
 
     teams = crud.team.get_by_season(db, season.id)
+    managers = {manager.id: manager for manager in _get_active_managers(db)}
     standings = []
     for t in sorted(teams, key=lambda x: (x.final_rank or 999)):
-        mgr = db.query(Manager).filter(Manager.id == t.manager_id).first()
-        if mgr:
-            _apply_overrides([mgr])
+        mgr = managers.get(t.manager_id)
         standings.append(StandingsRow(
             final_rank=t.final_rank,
             team_name=t.team_name,

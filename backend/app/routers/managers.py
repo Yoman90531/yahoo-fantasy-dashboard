@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
-from app.models.manager import Manager
 from app.models.team import Team
 from app.models.season import Season
-from app.schemas.manager import ManagerOut, ManagerStats, ManagerProfile, ManagerSeasonRow
-from app.schemas.matchup import MatchupOut
+from app.schemas.manager import ManagerOut, ManagerStats, ManagerProfile, ManagerSeasonRow, ManagerStreak
 from app.services import stats_engine
 from app import crud
 
@@ -26,6 +24,7 @@ def get_manager(manager_id: int, db: Session = Depends(get_db)):
 
     teams = (
         db.query(Team)
+        .options(joinedload(Team.season))
         .join(Season, Team.season_id == Season.id)
         .filter(Team.manager_id == manager_id)
         .order_by(Season.year)
@@ -58,7 +57,7 @@ def get_manager(manager_id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.get("/{manager_id}/streak")
+@router.get("/{manager_id}/streak", response_model=ManagerStreak)
 def get_manager_streak(manager_id: int, db: Session = Depends(get_db)):
     mgr = crud.manager.get_by_id(db, manager_id)
     if not mgr:

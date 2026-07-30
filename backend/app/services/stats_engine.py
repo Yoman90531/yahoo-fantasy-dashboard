@@ -6,32 +6,27 @@ that map directly to the Pydantic response schemas in schemas/stats.py.
 import math
 from collections import defaultdict
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_
+from sqlalchemy import func, or_
 from app.models.manager import Manager
 from app.models.season import Season
 from app.models.team import Team
 from app.models.matchup import Matchup
 from app.models.draft_pick import DraftPick
 from app.models.player_season import PlayerSeason
-from app.services.manager_names import MANAGER_RENAMES, override_name_for_guid
+from app.services.manager_names import override_name_for_guid
+from app.services.stats.rules import (
+    MatchupScope,
+    apply_matchup_scope,
+    is_blowout,
+    is_close_game,
+)
 
 
 # ---------------------------------------------------------------------------
-# Canonical manager names plus custom data/manager_overrides.json entries
-# ---------------------------------------------------------------------------
-
-_RENAMES = MANAGER_RENAMES
-
-
-def _override_name_for_guid(guid: str) -> str | None:
-    return override_name_for_guid(guid)
-
-
 def _apply_overrides(managers: list) -> list:
-    """Apply canonical and custom display-name overrides in memory.
-    Supports both exact GUID match and prefix match for truncated GUIDs."""
+    """Apply canonical display-name overrides in memory."""
     for mgr in managers:
-        override_name = _override_name_for_guid(mgr.yahoo_guid)
+        override_name = override_name_for_guid(mgr.yahoo_guid)
         if override_name:
             mgr.display_name = override_name
     return managers
@@ -47,7 +42,7 @@ def _get_active_managers(db: Session) -> list:
     return [
         manager for manager in managers
         if (
-            _override_name_for_guid(manager.yahoo_guid)
+            override_name_for_guid(manager.yahoo_guid)
             or (
                 not manager.yahoo_guid.lower().startswith("hidden_")
                 and "hidden" not in manager.display_name.lower()
@@ -78,9 +73,14 @@ def _season_map(db: Session) -> dict[int, Season]:
 
 def _get_matchups(db: Session, *, is_playoff: bool | None = None, is_consolation: bool = False) -> list:
     """Load matchups with standard filters."""
-    q = db.query(Matchup).filter(Matchup.is_consolation == is_consolation)
-    if is_playoff is not None:
-        q = q.filter(Matchup.is_playoff == is_playoff)
+    if is_consolation:
+        q = apply_matchup_scope(db.query(Matchup), MatchupScope.CONSOLATION)
+    elif is_playoff is True:
+        q = apply_matchup_scope(db.query(Matchup), MatchupScope.PLAYOFFS)
+    elif is_playoff is False:
+        q = apply_matchup_scope(db.query(Matchup), MatchupScope.REGULAR_SEASON)
+    else:
+        q = db.query(Matchup).filter(Matchup.is_consolation.is_(False))
     return q.all()
 
 
@@ -291,7 +291,10 @@ def compute_luck_index(db: Session, year: int | None = None) -> list[dict]:
     managers = {m.id: m for m in _get_active_managers(db)}
     seasons = _season_map(db)
 
-    matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
+    matchup_q = apply_matchup_scope(
+        db.query(Matchup),
+        MatchupScope.REGULAR_SEASON,
+    )
     if year:
         season = _get_season_by_year(db, year)
         if not season:
@@ -659,11 +662,8 @@ def compute_streaks(db: Session, manager_id: int) -> dict:
 
     # Gather all regular season matchups in chronological order
     matchups = (
-        db.query(Matchup)
-        .filter(
-            Matchup.is_playoff == False,
-            or_(Matchup.team1_id.in_(team_ids), Matchup.team2_id.in_(team_ids)),
-        )
+        apply_matchup_scope(db.query(Matchup), MatchupScope.REGULAR_SEASON)
+        .filter(or_(Matchup.team1_id.in_(team_ids), Matchup.team2_id.in_(team_ids)))
         .join(Season, Matchup.season_id == Season.id)
         .order_by(Season.year, Matchup.week)
         .all()
@@ -910,12 +910,12 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
             "description": "Most weeks with the highest score in the league",
         })
 
-    # --- Close Game King: best record in games decided by <5 pts ---
+    # --- Close Game King: best record in games decided by 5 or fewer points ---
     close_wins: dict[int, int] = defaultdict(int)
     close_losses: dict[int, int] = defaultdict(int)
     for m in matchups:
         margin = abs(m.team1_points - m.team2_points)
-        if margin < 5 and m.winner_team_id:
+        if is_close_game(margin) and m.winner_team_id:
             w_mgr = team_to_mgr.get(m.winner_team_id)
             l_tid = m.team2_id if m.winner_team_id == m.team1_id else m.team1_id
             l_mgr = team_to_mgr.get(l_tid)
@@ -939,14 +939,14 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
                 "manager_id": ck_id,
                 "manager_name": mgr_map[ck_id].display_name,
                 "value": f"{cw}-{cl} ({cw/(cw+cl)*100:.0f}%)",
-                "description": "Best record in games decided by fewer than 5 points",
+                "description": "Best record in games decided by 5 or fewer points",
             })
 
-    # --- Blowout Artist: most wins by 20+ pts ---
+    # --- Blowout Artist: most wins by 30+ pts ---
     blowout_wins: dict[int, int] = defaultdict(int)
     for m in matchups:
         margin = abs(m.team1_points - m.team2_points)
-        if margin >= 20 and m.winner_team_id:
+        if is_blowout(margin) and m.winner_team_id:
             w_mgr = team_to_mgr.get(m.winner_team_id)
             if w_mgr and w_mgr in mgr_map:
                 blowout_wins[w_mgr] += 1
@@ -958,7 +958,7 @@ def compute_awards(db: Session, year: int | None = None) -> dict:
             "manager_id": ba_id,
             "manager_name": mgr_map[ba_id].display_name,
             "value": f"{blowout_wins[ba_id]} blowouts",
-            "description": "Most wins by 20+ points",
+            "description": "Most wins by 30+ points",
         })
 
     # --- Most Improved (season mode only) ---
@@ -1406,10 +1406,8 @@ def compute_projection_performance(db: Session, year: int | None = None) -> list
 
     # Fetch regular-season matchups with projection data
     q = (
-        db.query(Matchup)
+        apply_matchup_scope(db.query(Matchup), MatchupScope.REGULAR_SEASON)
         .filter(
-            Matchup.is_consolation == False,
-            Matchup.is_playoff == False,
             Matchup.team1_projected.isnot(None),
             Matchup.team2_projected.isnot(None),
             Matchup.team1_projected > 0,
@@ -1505,6 +1503,16 @@ def compute_playoff_performance(db: Session, year: int | None = None) -> list[di
     # Exclude consolation matchups
     matchups = q.filter(Matchup.is_consolation == False).all()
 
+    team_ids = {
+        team_id
+        for matchup in matchups
+        for team_id in (matchup.team1_id, matchup.team2_id)
+    }
+    teams_by_id = {
+        team.id: team
+        for team in db.query(Team).filter(Team.id.in_(team_ids)).all()
+    }
+
     # Accumulators per manager: {mgr_id: {reg: {...}, playoff: {...}}}
     stats: dict[int, dict] = {}
 
@@ -1516,8 +1524,8 @@ def compute_playoff_performance(db: Session, year: int | None = None) -> list[di
             }
 
     for m in matchups:
-        t1 = db.get(Team, m.team1_id)
-        t2 = db.get(Team, m.team2_id)
+        t1 = teams_by_id.get(m.team1_id)
+        t2 = teams_by_id.get(m.team2_id)
         if not t1 or not t2:
             continue
         mgr1 = t1.manager_id
@@ -1594,7 +1602,10 @@ def compute_win_margins(db: Session, year: int | None = None) -> list[dict]:
     team_to_mgr: dict[int, int] = _team_to_manager(teams)
     managers = {m.id: m for m in _get_active_managers(db)}
 
-    matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
+    matchup_q = apply_matchup_scope(
+        db.query(Matchup),
+        MatchupScope.REGULAR_SEASON,
+    )
     if year:
         season = _get_season_by_year(db, year)
         if not season:
@@ -1635,10 +1646,10 @@ def compute_win_margins(db: Session, year: int | None = None) -> list[dict]:
 
         avg_win = round(sum(wins) / len(wins), 2) if wins else 0.0
         avg_loss = round(sum(losses) / len(losses), 2) if losses else 0.0
-        blowout_wins = sum(1 for m in wins if m > 30)
-        close_wins = sum(1 for m in wins if m < 5)
-        blowout_losses = sum(1 for m in losses if m > 30)
-        close_losses = sum(1 for m in losses if m < 5)
+        blowout_wins = sum(1 for margin in wins if is_blowout(margin))
+        close_wins = sum(1 for margin in wins if is_close_game(margin))
+        blowout_losses = sum(1 for margin in losses if is_blowout(margin))
+        close_losses = sum(1 for margin in losses if is_close_game(margin))
         biggest_win = round(max(wins), 2) if wins else 0.0
         biggest_loss = round(max(losses), 2) if losses else 0.0
 
@@ -1670,8 +1681,7 @@ def compute_streaks_all(db: Session) -> list[dict]:
 
     # Pre-fetch all regular-season matchups in chronological order
     all_matchups = (
-        db.query(Matchup)
-        .filter(Matchup.is_playoff == False)
+        apply_matchup_scope(db.query(Matchup), MatchupScope.REGULAR_SEASON)
         .join(Season, Matchup.season_id == Season.id)
         .order_by(Season.year, Matchup.week)
         .all()
@@ -1807,11 +1817,10 @@ def compute_league_parity(db: Session) -> list[dict]:
         record_spread = max(wins_list) - min(wins_list)
 
         # Average points per game across the league
-        total_matchups = db.query(Matchup).filter(
-            Matchup.season_id == season.id,
-            Matchup.is_playoff == False,
-            Matchup.is_consolation == False,
-        ).all()
+        total_matchups = apply_matchup_scope(
+            db.query(Matchup),
+            MatchupScope.REGULAR_SEASON,
+        ).filter(Matchup.season_id == season.id).all()
         all_scores = []
         for m in total_matchups:
             all_scores.append(m.team1_points)
@@ -1872,7 +1881,7 @@ def compute_consolation_bracket(db: Session, year: int | None = None) -> list[di
             missed_playoffs[t.manager_id] += 1
 
     # Query consolation matchups
-    q = db.query(Matchup).filter(Matchup.is_consolation == True)
+    q = apply_matchup_scope(db.query(Matchup), MatchupScope.CONSOLATION)
     if year:
         q = q.join(Season).filter(Season.year == year)
     consolation_matchups = q.all()
@@ -1975,9 +1984,9 @@ def compute_manager_tiers(db: Session, year_start: int | None = None, year_end: 
     # every other team that week, independent of the scheduled opponent.
     all_teams = _all_teams(db)
     team_to_manager = _team_to_manager(all_teams)
-    matchup_q = db.query(Matchup).filter(
-        Matchup.is_playoff == False,
-        Matchup.is_consolation == False,
+    matchup_q = apply_matchup_scope(
+        db.query(Matchup),
+        MatchupScope.REGULAR_SEASON,
     )
     if season_ids is not None:
         matchup_q = matchup_q.filter(Matchup.season_id.in_(season_ids))
@@ -2159,7 +2168,10 @@ def compute_strength_of_schedule(db: Session, year: int | None = None) -> list[d
         }
 
     # Get regular-season matchups
-    matchup_q = db.query(Matchup).filter(Matchup.is_playoff == False)
+    matchup_q = apply_matchup_scope(
+        db.query(Matchup),
+        MatchupScope.REGULAR_SEASON,
+    )
     if year:
         season = _get_season_by_year(db, year)
         if not season:

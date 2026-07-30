@@ -21,8 +21,11 @@ const COLORS = [
 
 export default function StrengthOfSchedule() {
   const [year, setYear] = useState<number | undefined>(undefined)
-  const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
-  const { data, loading, error } = useApi<StrengthOfScheduleRow[]>(() => statsApi.strengthOfSchedule(year), [year])
+  const { data: seasons } = useApi<SeasonSummary[]>(['seasons'], () => seasonsApi.list())
+  const { data, loading, error } = useApi<StrengthOfScheduleRow[]>(
+    ['strength-of-schedule', year],
+    () => statsApi.strengthOfSchedule(year),
+  )
   const { sorted, th } = useSortedTable<StrengthOfScheduleRow, SortKey>(data, 'adjusted_win_pct')
 
   // Scatter plot data

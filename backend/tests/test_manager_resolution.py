@@ -17,12 +17,27 @@ from app.models.season import Season
 from app.models.team import Team
 from app.routers.managers import get_manager
 from app.routers.seasons import get_season_matchups
+from app.schemas.stats import (
+    H2HMatrix,
+    LeagueParityRow,
+    SeasonAwards,
+    StreakRow,
+    StrengthOfScheduleRow,
+    WeeklyRecords,
+    WinMarginRow,
+)
 from app.services.stats_engine import (
     _get_active_managers,
     _tie_aware_percentiles,
+    compute_awards,
+    compute_head_to_head,
+    compute_league_parity,
     compute_manager_tiers,
     compute_rivalry,
+    compute_streaks_all,
+    compute_strength_of_schedule,
     compute_trophy_case,
+    compute_win_margins,
     compute_weekly_records,
 )
 from scripts.audit_data import audit_database
@@ -197,6 +212,20 @@ class ManagerResolutionTest(unittest.TestCase):
             self.assertEqual(active_by_guid[guid], expected_name)
             profile = get_manager(manager_ids[guid], db=self.db)
             self.assertEqual(profile.manager.display_name, expected_name)
+
+    def test_representative_analytics_match_declared_api_contracts(self) -> None:
+        H2HMatrix.model_validate(compute_head_to_head(self.db))
+        WeeklyRecords.model_validate(compute_weekly_records(self.db))
+        SeasonAwards.model_validate(compute_awards(self.db, year=2017))
+
+        for row in compute_win_margins(self.db, year=2017):
+            WinMarginRow.model_validate(row)
+        for row in compute_streaks_all(self.db):
+            StreakRow.model_validate(row)
+        for row in compute_league_parity(self.db):
+            LeagueParityRow.model_validate(row)
+        for row in compute_strength_of_schedule(self.db, year=2017):
+            StrengthOfScheduleRow.model_validate(row)
 
 
 if __name__ == "__main__":

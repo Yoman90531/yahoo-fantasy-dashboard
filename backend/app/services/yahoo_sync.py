@@ -25,6 +25,7 @@ def _make_query(game_id: int, league_id: str):
     """Instantiate a per-season YFPY query object."""
     from yfpy.query import YahooFantasySportsQuery
 
+    settings.require_yahoo_credentials()
     return YahooFantasySportsQuery(
         league_id=league_id,
         game_id=game_id,
@@ -63,6 +64,7 @@ def get_game_id_map(start_year: int) -> dict[int, int]:
     """
     from yfpy.query import YahooFantasySportsQuery
 
+    settings.require_yahoo_credentials()
     query = YahooFantasySportsQuery(
         league_id=settings.league_id,
         game_code="nfl",

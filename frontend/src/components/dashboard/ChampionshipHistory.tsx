@@ -11,7 +11,7 @@ const COLORS = [
 ]
 
 export default function ChampionshipHistory() {
-  const { data, loading, error } = useApi<ThroneTracker>(() => statsApi.throneTracker(), [])
+  const { data, loading, error } = useApi<ThroneTracker>(['throne-tracker'], () => statsApi.throneTracker())
 
   const colorMap: Record<string, string> = {}
   if (data) {

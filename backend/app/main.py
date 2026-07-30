@@ -5,14 +5,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from app import models  # noqa: F401
-from app.database import Base, engine
 from app.routers import seasons, managers, stats, sync, draft, feedback
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    Base.metadata.create_all(bind=engine)
     yield
 
 
@@ -48,7 +45,9 @@ if _STATIC_DIR.is_dir():
     @app.get("/{full_path:path}")
     def serve_spa(full_path: str):
         """Serve the React SPA for any non-API route."""
-        file = _STATIC_DIR / full_path
+        file = (_STATIC_DIR / full_path).resolve()
+        if _STATIC_DIR.resolve() not in file.parents:
+            return FileResponse(_STATIC_DIR / "index.html")
         if file.is_file():
             return FileResponse(file)
         return FileResponse(_STATIC_DIR / "index.html")

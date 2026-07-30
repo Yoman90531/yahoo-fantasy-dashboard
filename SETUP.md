@@ -1,130 +1,88 @@
 # Setup Guide
 
 ## Prerequisites
-- Python 3.11+ — install from https://python.org (check "Add to PATH" during install)
-- Node.js 20+ — install from https://nodejs.org
 
----
+- Python 3.12+
+- Node.js 20.19+ (or 22.12+)
+- Yahoo Developer credentials with Fantasy Sports read access
 
-## Backend Setup
+## Local backend
 
-```bash
-cd backend
+From `backend/`:
 
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate       # Windows
-
-# Install dependencies
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-# Configure environment
-copy .env.example .env
-# Edit .env and fill in:
-#   YAHOO_CLIENT_ID=...
-#   YAHOO_CLIENT_SECRET=...
-#   LEAGUE_ID=...  (the number in your Yahoo league URL)
-#   LEAGUE_START_YEAR=2014  (first year your league ran)
-```
-
-### Get Yahoo Developer Credentials
-1. Go to https://developer.yahoo.com/apps/create/
-2. Create a new app
-3. Set Application Domain to `localhost`
-4. Under Permissions, enable **Fantasy Sports** (Read)
-5. Copy the Client ID and Client Secret into `.env`
-
-### Authenticate (one-time)
-```bash
+Copy-Item .env.example .env
+python scripts/migrate_database.py
 python scripts/auth_init.py
-# A browser window will open — log in with your Yahoo account and authorize
-# Token is saved to data/.env
-```
-
-### Sync historical data
-```bash
-# First test with one recent season
-python sync_runner.py --years 2023
-
-# Then sync everything
+python scripts/find_league_ids.py
 python sync_runner.py
-```
-
-The initial sync of 10+ seasons takes 5–15 minutes.
-
-### Start the API server
-```bash
 uvicorn app.main:app --reload
-# API running at http://localhost:8000
-# Swagger docs at http://localhost:8000/docs
 ```
 
----
+Edit `.env` before authentication. Runtime data is written to the repository's
+ignored `data/` directory.
 
-## Frontend Setup
+## Local frontend
 
-```bash
-cd frontend
-npm install
+From `frontend/`:
+
+```powershell
+npm ci
 npm run dev
-# Site running at http://localhost:5173/fantasy/
 ```
 
----
+Open `http://localhost:5173/fantasy/`. Vite proxies API calls to the FastAPI
+server on port 8000.
 
-## Running both together
+## Verification
 
-Open two terminals:
+```powershell
+# backend/
+python -m unittest discover -s tests -v
 
-**Terminal 1 (backend):**
-```bash
-cd backend && venv\Scripts\activate && uvicorn app.main:app --reload
+# frontend/
+npm run build
 ```
 
-**Terminal 2 (frontend):**
-```bash
-cd frontend && npm run dev
+## Database changes and backups
+
+The application no longer creates tables at API startup. Alembic is the schema
+authority:
+
+```powershell
+python scripts/migrate_database.py
+python scripts/backup_database.py
 ```
 
-Then open http://localhost:5173/fantasy/ in your browser.
+`migrate_database.py` recognizes databases created by older releases, verifies
+that the complete legacy schema exists, stamps the initial revision, and then
+upgrades normally. Backups are stored beside the SQLite database under
+`backups/`; the newest 14 are retained by default.
 
----
+## Production
 
-## Re-syncing data
-
-To pick up the current season mid-year:
-```bash
-python sync_runner.py --years 2025 --force
-```
-
-Or use the **Sync Data** page in the dashboard.
-
----
-
-## VibeDan Production Deployment
-
-The production app is served below `https://vibedan.duckdns.org/fantasy/`.
-This compose project owns both the private application container and the Caddy
-container that serves public HTTP and HTTPS. The application does not publish a
-host port; Caddy reaches it over the private Compose network.
+The Compose project runs the private FastAPI container behind Caddy. Configure
+`.env.production`, then:
 
 ```bash
-cp .env.production.example .env.production
-# Fill in the Yahoo credentials, league ID, and first season year.
-
 chmod +x deploy.sh
 ./deploy.sh
 ```
 
-Yahoo OAuth and all synced data are stored in the `app-data` Docker volume.
-Authenticate and initialize the data after the first deployment:
+Deployment builds the image, backs up the mounted SQLite database, starts the
+new application (which runs migrations), and waits for the public health check.
+
+Useful commands:
 
 ```bash
 docker compose exec app python scripts/auth_init.py
 docker compose exec app python scripts/find_league_ids.py
-docker compose exec app python sync_runner.py --years 2025
-docker compose exec app python sync_runner.py
+docker compose exec app python sync_runner.py --years 2025 --force
+docker compose logs -f app
 ```
 
-Do not run `docker compose down -v` unless you intend to delete the database,
-Yahoo tokens, league IDs, manager overrides, and Caddy certificate state.
+Do not run `docker compose down -v` unless deletion of the database, Yahoo
+tokens, league IDs, backups, and Caddy certificate state is intended.

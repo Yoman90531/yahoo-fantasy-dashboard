@@ -12,10 +12,19 @@ export default function ManagerProfile() {
   const { id } = useParams<{ id: string }>()
   const managerId = Number(id)
 
-  const { data: profile, loading, error } = useApi<MgrProfile>(() => managersApi.get(managerId), [managerId])
-  const { data: allTime } = useApi<ManagerStats[]>(() => managersApi.list(), [])
-  const { data: streak } = useApi(() => managersApi.streak(managerId), [managerId])
-  const { data: trophy } = useApi(() => statsApi.trophyCase(managerId), [managerId])
+  const { data: profile, loading, error } = useApi<MgrProfile>(
+    ['manager-profile', managerId],
+    () => managersApi.get(managerId),
+  )
+  const { data: allTime } = useApi<ManagerStats[]>(['managers'], () => managersApi.list())
+  const { data: streak } = useApi(
+    ['manager-streak', managerId],
+    () => managersApi.streak(managerId),
+  )
+  const { data: trophy } = useApi(
+    ['trophy-case', managerId],
+    () => statsApi.trophyCase(managerId),
+  )
 
   const myStats = allTime?.find(m => m.id === managerId)
 

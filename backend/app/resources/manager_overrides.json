@@ -1,7 +1,7 @@
 {
   "_instructions": {
-    "renames": "Map a manager's Yahoo GUID to a display name. Use this to fix --hidden-- managers or correct names.",
-    "merges": "Map a GUID to merge INTO another GUID. The 'merge_into' GUID's record will be kept, the other deleted."
+    "renames": "Map a manager's Yahoo GUID to the canonical display name.",
+    "merges": "Map a duplicate GUID to the canonical GUID whose manager record should be kept."
   },
   "renames": {
     "BPHZFVHKP3ZTT4RB": "JK",

@@ -55,3 +55,10 @@ class ManagerProfile(BaseModel):
     season_history: list[ManagerSeasonRow]
 
     model_config = {"from_attributes": True}
+
+
+class ManagerStreak(BaseModel):
+    best_win_streak: int
+    best_loss_streak: int
+    current_streak_type: str
+    current_streak_length: int

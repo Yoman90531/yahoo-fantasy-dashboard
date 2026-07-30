@@ -11,7 +11,10 @@ import type { ScoreDistributionRow } from '../types'
 type SDSortKey = 'manager_name' | 'n' | 'min' | 'q1' | 'median' | 'mean' | 'q3' | 'max' | 'std_dev' | 'outlier_count'
 
 export default function ScoringDistribution() {
-  const { data, loading, error } = useApi<ScoreDistributionRow[]>(() => statsApi.scoreDistribution(), [])
+  const { data, loading, error } = useApi<ScoreDistributionRow[]>(
+    ['score-distribution'],
+    () => statsApi.scoreDistribution(),
+  )
   const [sort, setSort] = useState<{ key: SDSortKey; dir: 1 | -1 }>({ key: 'median', dir: -1 })
 
   const toggle = (key: SDSortKey) =>

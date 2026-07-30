@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import {
   BrowserRouter,
   Navigate,
@@ -6,62 +7,39 @@ import {
   useLocation,
 } from 'react-router-dom'
 import Sidebar from './components/layout/Sidebar'
-import HubLayout, { type HubTab } from './components/layout/HubLayout'
-import Dashboard from './pages/Dashboard'
-import SeasonView from './pages/SeasonView'
-import AllTimeStats from './pages/AllTimeStats'
-import ManagerProfile from './pages/ManagerProfile'
-import HeadToHead from './pages/HeadToHead'
-import WeeklyRecords from './pages/WeeklyRecords'
-import LuckIndex from './pages/LuckIndex'
-import CareerTiers from './pages/CareerTiers'
-import Rivalry from './pages/Rivalry'
-import ScoringDistribution from './pages/ScoringDistribution'
-import WeeklyFinishDistribution from './pages/WeeklyFinishDistribution'
-import SyncStatus from './pages/SyncStatus'
-import ProjectionPerformance from './pages/ProjectionPerformance'
-import WinMargins from './pages/WinMargins'
-import PlayoffPerformance from './pages/PlayoffPerformance'
-import SeasonReplay from './pages/SeasonReplay'
-import LeagueParity from './pages/LeagueParity'
-import StreakTracker from './pages/StreakTracker'
-import ConsolationBracket from './pages/ConsolationBracket'
-import StrengthOfSchedule from './pages/StrengthOfSchedule'
-import DraftAnalysis from './pages/DraftAnalysis'
-import FeedbackWall from './pages/FeedbackWall'
+import HubLayout from './components/layout/HubLayout'
+import LoadingSpinner from './components/cards/LoadingSpinner'
+import {
+  luckTabs,
+  managerTabs,
+  postseasonTabs,
+  recordTabs,
+  scoringTabs,
+  seasonTabs,
+} from './config/navigation'
 
-const seasonTabs: HubTab[] = [
-  { label: 'Season Archive', to: '/seasons/archive' },
-  { label: 'Week-by-Week', to: '/seasons/week-by-week' },
-]
-
-const managerTabs: HubTab[] = [
-  { label: 'All-Time Standings', to: '/managers/all-time' },
-  { label: 'Career Tiers', to: '/managers/tiers' },
-]
-
-const recordTabs: HubTab[] = [
-  { label: 'Weekly Highs & Lows', to: '/record-book/weekly' },
-  { label: 'Blowouts & Nail-Biters', to: '/record-book/margins' },
-  { label: 'Hot & Cold Streaks', to: '/record-book/streaks' },
-]
-
-const scoringTabs: HubTab[] = [
-  { label: 'League Trends', to: '/scoring/trends' },
-  { label: 'Scoring Profiles', to: '/scoring/profiles' },
-  { label: 'Weekly Rankings', to: '/scoring/weekly-rankings' },
-  { label: 'Projection Accuracy', to: '/scoring/projections' },
-]
-
-const luckTabs: HubTab[] = [
-  { label: 'Schedule Luck', to: '/luck-schedule/luck' },
-  { label: 'Schedule Difficulty', to: '/luck-schedule/difficulty' },
-]
-
-const postseasonTabs: HubTab[] = [
-  { label: 'Playoff Records', to: '/postseason/playoffs' },
-  { label: 'Toilet Bowl', to: '/postseason/toilet-bowl' },
-]
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const SeasonView = lazy(() => import('./pages/SeasonView'))
+const AllTimeStats = lazy(() => import('./pages/AllTimeStats'))
+const ManagerProfile = lazy(() => import('./pages/ManagerProfile'))
+const HeadToHead = lazy(() => import('./pages/HeadToHead'))
+const WeeklyRecords = lazy(() => import('./pages/WeeklyRecords'))
+const LuckIndex = lazy(() => import('./pages/LuckIndex'))
+const CareerTiers = lazy(() => import('./pages/CareerTiers'))
+const Rivalry = lazy(() => import('./pages/Rivalry'))
+const ScoringDistribution = lazy(() => import('./pages/ScoringDistribution'))
+const WeeklyFinishDistribution = lazy(() => import('./pages/WeeklyFinishDistribution'))
+const SyncStatus = lazy(() => import('./pages/SyncStatus'))
+const ProjectionPerformance = lazy(() => import('./pages/ProjectionPerformance'))
+const WinMargins = lazy(() => import('./pages/WinMargins'))
+const PlayoffPerformance = lazy(() => import('./pages/PlayoffPerformance'))
+const SeasonReplay = lazy(() => import('./pages/SeasonReplay'))
+const LeagueParity = lazy(() => import('./pages/LeagueParity'))
+const StreakTracker = lazy(() => import('./pages/StreakTracker'))
+const ConsolationBracket = lazy(() => import('./pages/ConsolationBracket'))
+const StrengthOfSchedule = lazy(() => import('./pages/StrengthOfSchedule'))
+const DraftAnalysis = lazy(() => import('./pages/DraftAnalysis'))
+const FeedbackWall = lazy(() => import('./pages/FeedbackWall'))
 
 function LegacyRedirect({ to }: { to: string }) {
   const { search } = useLocation()
@@ -73,7 +51,8 @@ function AppRoutes() {
     <div className="flex min-h-screen">
       <Sidebar />
       <main className="flex-1 overflow-auto pt-12 md:pt-0">
-        <Routes>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
           <Route path="/" element={<Dashboard />} />
 
           <Route
@@ -163,7 +142,8 @@ function AppRoutes() {
           <Route path="/draft/feedback" element={<LegacyRedirect to="/feedback" />} />
           <Route path="/draft-analysis" element={<LegacyRedirect to="/draft" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </main>
     </div>
   )

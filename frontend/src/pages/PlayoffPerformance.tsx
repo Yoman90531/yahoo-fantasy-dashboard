@@ -17,8 +17,11 @@ type SortKey = 'manager_name' | 'reg_win_pct' | 'playoff_win_pct' | 'delta_win_p
 
 export default function PlayoffPerformance() {
   const [year, setYear] = useState<number | undefined>(undefined)
-  const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
-  const { data, loading, error } = useApi<PlayoffPerformanceRow[]>(() => statsApi.playoffPerformance(year), [year])
+  const { data: seasons } = useApi<SeasonSummary[]>(['seasons'], () => seasonsApi.list())
+  const { data, loading, error } = useApi<PlayoffPerformanceRow[]>(
+    ['playoff-performance', year],
+    () => statsApi.playoffPerformance(year),
+  )
   const { sorted, th } = useSortedTable<PlayoffPerformanceRow, SortKey>(data, 'delta_win_pct')
 
   const chartData = (data ?? []).map(r => ({

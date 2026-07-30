@@ -37,6 +37,7 @@ class WeeklyRecordEntry(BaseModel):
     points: float
     opponent_points: float | None
     opponent_manager_name: str | None
+    margin: float | None = None
     league_id: str | None = None
     yahoo_team_id: int | None = None
     opponent_yahoo_team_id: int | None = None
@@ -44,6 +45,7 @@ class WeeklyRecordEntry(BaseModel):
 
 class WeeklyRecords(BaseModel):
     highest_score: list[WeeklyRecordEntry]
+    lowest_score: list[WeeklyRecordEntry]
     lowest_winning_score: list[WeeklyRecordEntry]
     highest_losing_score: list[WeeklyRecordEntry]
     biggest_blowout: list[WeeklyRecordEntry]   # winner side
@@ -89,6 +91,54 @@ class SyncStatusRow(BaseModel):
     status: str
     synced_at: str | None
     error_msg: str | None
+
+
+class SeasonScoringData(BaseModel):
+    managers: list[str]
+    seasons: list[dict[str, int | float | None]]
+
+
+class ScoreDistributionRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    n: int
+    min: float
+    q1: float
+    median: float
+    q3: float
+    max: float
+    mean: float
+    std_dev: float
+    outliers: list[float]
+
+
+class WeeklyFinishRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    total_weeks: int
+    first: int
+    top_three: int
+    top_half: int
+    bottom_half: int
+    bottom_three: int
+    last: int
+    pct_first: float
+    pct_top_three: float
+    pct_top_half: float
+    pct_last: float
+    pct_bottom_three: float
+
+
+class ProjectionRow(BaseModel):
+    manager_id: int
+    manager_name: str
+    weeks: int
+    avg_actual: float
+    avg_projected: float
+    avg_diff: float
+    beat_projection_pct: float
+    std_dev_diff: float
+    total_over: float
 
 
 # ---------------------------------------------------------------------------

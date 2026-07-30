@@ -5,7 +5,7 @@ import { seasonsApi } from '../api/client'
 import type { SeasonSummary } from '../types'
 
 export default function CareerTiers() {
-  const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
+  const { data: seasons } = useApi<SeasonSummary[]>(['seasons'], () => seasonsApi.list())
 
   return (
     <PageWrapper

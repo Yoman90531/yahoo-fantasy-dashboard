@@ -16,8 +16,11 @@ type SortKey = 'manager_name' | 'avg_diff' | 'avg_actual' | 'avg_projected' | 'b
 export default function ProjectionPerformance() {
   const [year, setYear] = useState<number | undefined>(undefined)
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'avg_diff', dir: -1 })
-  const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
-  const { data, loading, error } = useApi<ProjectionRow[]>(() => statsApi.projectionPerformance(year), [year])
+  const { data: seasons } = useApi<SeasonSummary[]>(['seasons'], () => seasonsApi.list())
+  const { data, loading, error } = useApi<ProjectionRow[]>(
+    ['projection-performance', year],
+    () => statsApi.projectionPerformance(year),
+  )
 
   const toggle = (key: SortKey) =>
     setSort(s => s.key === key ? { key, dir: (s.dir * -1) as 1 | -1 } : { key, dir: key === 'manager_name' ? 1 : -1 })

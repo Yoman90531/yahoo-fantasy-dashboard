@@ -20,7 +20,8 @@ from app.models.matchup import Matchup
 from app.models.player_season import PlayerSeason
 from app.models.season import Season
 from app.models.team import Team
-from app.services.stats_engine import _RENAMES, _get_active_managers
+from app.services.manager_names import MANAGER_RENAMES
+from app.services.stats_engine import _get_active_managers
 
 
 class Audit:
@@ -224,7 +225,7 @@ def audit_database(session_factory=SessionLocal) -> Audit:
             audit.warn(f"{len(teams_without_scores)} teams never appear in a matchup.")
 
         unused_overrides = [
-            guid for guid in _RENAMES
+            guid for guid in MANAGER_RENAMES
             if not any(_guid_matches(guid, manager.yahoo_guid) for manager in managers)
         ]
         if unused_overrides:

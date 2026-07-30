@@ -17,8 +17,11 @@ type SortKey = 'manager_name' | 'avg_win_margin' | 'avg_loss_margin' | 'blowout_
 
 export default function WinMargins() {
   const [year, setYear] = useState<number | undefined>(undefined)
-  const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
-  const { data, loading, error } = useApi<WinMarginRow[]>(() => statsApi.winMargins(year), [year])
+  const { data: seasons } = useApi<SeasonSummary[]>(['seasons'], () => seasonsApi.list())
+  const { data, loading, error } = useApi<WinMarginRow[]>(
+    ['win-margins', year],
+    () => statsApi.winMargins(year),
+  )
   const { sorted, th } = useSortedTable<WinMarginRow, SortKey>(data, 'avg_win_margin')
 
   const chartData = (data ?? []).map(r => ({
@@ -35,7 +38,7 @@ export default function WinMargins() {
     >
       <KeyInsights insightKey="blowoutsNailBiters" />
       <ExplainerCard>
-        For every regular-season matchup, we calculate the point margin. Blowouts are margins greater than 30 points; close games are margins under 5 points. Only decided games (no ties) are counted.
+        For every regular-season matchup, we calculate the point margin. Blowouts are margins of at least 30 points; close games are margins of 5 points or fewer. Only decided games (no ties) are counted.
       </ExplainerCard>
 
       <YearFilter seasons={seasons} year={year} onChange={setYear} />

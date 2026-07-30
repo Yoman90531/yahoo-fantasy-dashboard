@@ -16,17 +16,20 @@ import type { InflationPoint, LeagueParityRow, SeasonScoringData } from '../type
 type SortKey = 'year' | 'scoring_std_dev' | 'scoring_range' | 'record_spread' | 'avg_points_per_game' | 'closest_standings_gap' | 'gini_coefficient' | 'num_teams'
 
 export default function LeagueParity() {
-  const { data, loading, error } = useApi<LeagueParityRow[]>(() => statsApi.leagueParity(), [])
+  const { data, loading, error } = useApi<LeagueParityRow[]>(
+    ['league-parity'],
+    () => statsApi.leagueParity(),
+  )
   const {
     data: inflation,
     loading: inflationLoading,
     error: inflationError,
-  } = useApi<InflationPoint[]>(() => statsApi.pointsInflation(), [])
+  } = useApi<InflationPoint[]>(['points-inflation'], () => statsApi.pointsInflation())
   const {
     data: scoring,
     loading: scoringLoading,
     error: scoringError,
-  } = useApi<SeasonScoringData>(() => statsApi.seasonScoring(), [])
+  } = useApi<SeasonScoringData>(['season-scoring'], () => statsApi.seasonScoring())
   const { sorted, th } = useSortedTable<LeagueParityRow, SortKey>(data, 'year', 1)
 
   // Determine most/least competitive seasons by scoring std dev (lower = more parity)

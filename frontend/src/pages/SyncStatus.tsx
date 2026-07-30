@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
@@ -7,35 +6,18 @@ import { syncApi } from '../api/client'
 import type { SyncStatusRow } from '../types'
 
 export default function SyncStatus() {
-  const [syncing, setSyncing] = useState(false)
-  const [syncMsg, setSyncMsg] = useState<string | null>(null)
-  const { data: status, loading, error, } = useApi<SyncStatusRow[]>(() => syncApi.status(), [syncMsg])
-  const { data: log } = useApi(() => syncApi.log(), [syncMsg])
-
-  async function handleSync() {
-    setSyncing(true)
-    setSyncMsg(null)
-    try {
-      const res = await syncApi.run()
-      setSyncMsg(res.message)
-    } catch (e: unknown) {
-      setSyncMsg(`Error: ${e instanceof Error ? e.message : String(e)}`)
-    } finally {
-      setSyncing(false)
-    }
-  }
+  const { data: status, loading, error } = useApi<SyncStatusRow[]>(
+    ['sync-status'],
+    () => syncApi.status(),
+  )
+  const { data: log } = useApi(['sync-log'], () => syncApi.log())
 
   return (
-    <PageWrapper title="Data Sync" subtitle="Pull the latest league history from Yahoo Fantasy Sports.">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={handleSync}
-          disabled={syncing}
-          className="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          {syncing ? 'Syncing...' : 'Sync Now'}
-        </button>
-        {syncMsg && <span className="text-sm text-gray-400">{syncMsg}</span>}
+    <PageWrapper title="Data Sync" subtitle="Review the latest Yahoo Fantasy import status.">
+      <div className="mb-6 rounded-xl border border-gray-800 bg-gray-900 p-4 text-sm text-gray-400">
+        Data imports are intentionally run from the server CLI so public visitors cannot start
+        overlapping Yahoo sync jobs. Run <code className="text-gray-200">python sync_runner.py</code>{' '}
+        from the backend when an update is needed.
       </div>
 
       {loading && <LoadingSpinner />}

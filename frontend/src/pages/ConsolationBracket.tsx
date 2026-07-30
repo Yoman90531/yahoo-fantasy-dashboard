@@ -14,8 +14,11 @@ type SortKey = 'manager_name' | 'times_missed_playoffs' | 'consolation_games' | 
 
 export default function ConsolationBracket() {
   const [year, setYear] = useState<number | undefined>(undefined)
-  const { data: seasons } = useApi<SeasonSummary[]>(() => seasonsApi.list(), [])
-  const { data, loading, error } = useApi<ConsolationRow[]>(() => statsApi.consolation(year), [year])
+  const { data: seasons } = useApi<SeasonSummary[]>(['seasons'], () => seasonsApi.list())
+  const { data, loading, error } = useApi<ConsolationRow[]>(
+    ['consolation', year],
+    () => statsApi.consolation(year),
+  )
   const { sorted, th } = useSortedTable<ConsolationRow, SortKey>(data, 'consolation_wins')
 
   // Summary cards
