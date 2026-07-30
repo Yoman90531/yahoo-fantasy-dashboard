@@ -6,8 +6,6 @@
 
 ## Completed
 - [x] Year Range Filter for Manager Tiers (From/To year selection)
-- [x] What If Schedule Simulator (1,000 randomized schedule simulations)
-- [x] Clutch Rating for must-win games (late season + playoff performance)
 - [x] Draft & Roster Analysis with player stats sync (position ROI, draft grades, tendencies)
 - [x] Player-Level Contributions (player_seasons table synced from Yahoo API)
 - [x] Hyperlink game references to Yahoo Fantasy matchup pages (Rivalry, Season Replay, Weekly Records)

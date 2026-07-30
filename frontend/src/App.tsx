@@ -8,12 +8,9 @@ import HeadToHead from './pages/HeadToHead'
 import WeeklyRecords from './pages/WeeklyRecords'
 import LuckIndex from './pages/LuckIndex'
 import PowerRankings from './pages/PowerRankings'
-import ThroneTracker from './pages/ThroneTracker'
-import Awards from './pages/Awards'
 import Rivalry from './pages/Rivalry'
 import ScoringDistribution from './pages/ScoringDistribution'
 import WeeklyFinishDistribution from './pages/WeeklyFinishDistribution'
-import ManagerEras from './pages/ManagerEras'
 import SyncStatus from './pages/SyncStatus'
 import ProjectionPerformance from './pages/ProjectionPerformance'
 import WinMargins from './pages/WinMargins'
@@ -22,11 +19,8 @@ import SeasonReplay from './pages/SeasonReplay'
 import LeagueParity from './pages/LeagueParity'
 import StreakTracker from './pages/StreakTracker'
 import ConsolationBracket from './pages/ConsolationBracket'
-import ManagerTiers from './pages/ManagerTiers'
 import StrengthOfSchedule from './pages/StrengthOfSchedule'
 import DraftAnalysis from './pages/DraftAnalysis'
-import WhatIfSimulator from './pages/WhatIfSimulator'
-import ClutchRating from './pages/ClutchRating'
 
 export default function App() {
   return (
@@ -43,12 +37,9 @@ export default function App() {
             <Route path="/weekly-records" element={<WeeklyRecords />} />
             <Route path="/luck-index" element={<LuckIndex />} />
             <Route path="/power-rankings" element={<PowerRankings />} />
-            <Route path="/throne-tracker" element={<ThroneTracker />} />
-            <Route path="/awards" element={<Awards />} />
             <Route path="/rivalry" element={<Rivalry />} />
             <Route path="/scoring-distribution" element={<ScoringDistribution />} />
             <Route path="/weekly-finish" element={<WeeklyFinishDistribution />} />
-            <Route path="/manager-eras" element={<ManagerEras />} />
             <Route path="/projections" element={<ProjectionPerformance />} />
             <Route path="/win-margins" element={<WinMargins />} />
             <Route path="/playoff-performance" element={<PlayoffPerformance />} />
@@ -56,11 +47,8 @@ export default function App() {
             <Route path="/league-parity" element={<LeagueParity />} />
             <Route path="/streaks" element={<StreakTracker />} />
             <Route path="/consolation" element={<ConsolationBracket />} />
-            <Route path="/manager-tiers" element={<ManagerTiers />} />
             <Route path="/strength-of-schedule" element={<StrengthOfSchedule />} />
             <Route path="/draft-analysis" element={<DraftAnalysis />} />
-            <Route path="/what-if" element={<WhatIfSimulator />} />
-            <Route path="/clutch-rating" element={<ClutchRating />} />
             <Route path="/sync" element={<SyncStatus />} />
           </Routes>
         </main>

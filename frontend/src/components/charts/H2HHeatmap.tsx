@@ -44,10 +44,6 @@ export default function H2HHeatmap({ data }: Props) {
 
   return (
     <div className="overflow-auto">
-      <p className="text-xs text-gray-500 mb-3 flex items-center gap-1.5">
-        <span className="inline-block w-3 h-3 rounded-sm bg-green-900 border border-green-700" />
-        Click any colored cell to see the full rivalry breakdown
-      </p>
       <table
         style={{
           borderCollapse: 'collapse',
@@ -136,6 +132,7 @@ export default function H2HHeatmap({ data }: Props) {
                       cursor: rec ? 'pointer' : 'default',
                       transition: 'background-color 0.1s, border-color 0.1s',
                     }}
+                    title={rec ? `Open ${row.name} vs ${col.name}` : undefined}
                     onClick={() => rec && navigate(`/rivalry?a=${row.id}&b=${col.id}`)}
                     onMouseEnter={e => {
                       if (rec) {

@@ -27,7 +27,6 @@ const navigation: NavEntry[] = [
     items: [
       { to: '/seasons', label: 'Seasons', icon: '📅' },
       { to: '/alltime', label: 'All-Time Stats', icon: '📊' },
-      { to: '/throne-tracker', label: 'Throne Tracker', icon: '🏰' },
       { to: '/league-parity', label: 'League Parity', icon: '⚖️' },
     ],
   },
@@ -46,7 +45,7 @@ const navigation: NavEntry[] = [
     groupLabel: 'Analytics',
     groupIcon: '📈',
     items: [
-      { to: '/power-rankings', label: 'Power Rankings', icon: '👑' },
+      { to: '/power-rankings', label: 'Rankings & Tiers', icon: '👑' },
       { to: '/luck-index', label: 'Luck Index', icon: '🎲' },
       { to: '/scoring-distribution', label: 'Score Distribution', icon: '📦' },
       { to: '/weekly-finish', label: 'Weekly Finishes', icon: '📈' },
@@ -55,17 +54,6 @@ const navigation: NavEntry[] = [
       { to: '/streaks', label: 'Streak Tracker', icon: '🔥' },
       { to: '/strength-of-schedule', label: 'Strength of Schedule', icon: '💪' },
       { to: '/draft-analysis', label: 'Draft Analysis', icon: '📋' },
-      { to: '/what-if', label: 'What If Simulator', icon: '🔀' },
-      { to: '/clutch-rating', label: 'Clutch Rating', icon: '🎯' },
-    ],
-  },
-  {
-    groupLabel: 'Managers',
-    groupIcon: '👤',
-    items: [
-      { to: '/manager-tiers', label: 'Manager Tiers', icon: '🏷️' },
-      { to: '/manager-eras', label: 'Manager Eras', icon: '🕰️' },
-      { to: '/awards', label: 'Awards', icon: '🏅' },
     ],
   },
   {

@@ -29,7 +29,6 @@ export const statsApi = {
   seasonScoring: () => api.get('/stats/season-scoring').then(r => r.data),
   scoreDistribution: () => api.get('/stats/score-distribution').then(r => r.data),
   weeklyFinishDistribution: () => api.get('/stats/weekly-finish-distribution').then(r => r.data),
-  managerEras: () => api.get('/stats/manager-eras').then(r => r.data),
   winMargins: (year?: number) => api.get('/stats/win-margins', { params: year ? { year } : {} }).then(r => r.data),
   projectionPerformance: (year?: number) => api.get('/stats/projection-performance', { params: year ? { year } : {} }).then(r => r.data),
   throneTracker: () => api.get('/stats/throne-tracker').then(r => r.data),
@@ -42,8 +41,6 @@ export const statsApi = {
   consolation: (year?: number) => api.get('/stats/consolation', { params: year ? { year } : {} }).then(r => r.data),
   managerTiers: (yearStart?: number, yearEnd?: number) => api.get('/stats/manager-tiers', { params: { ...(yearStart ? { year_start: yearStart } : {}), ...(yearEnd ? { year_end: yearEnd } : {}) } }).then(r => r.data),
   strengthOfSchedule: (year?: number) => api.get('/stats/strength-of-schedule', { params: year ? { year } : {} }).then(r => r.data),
-  whatIf: (year?: number) => api.get('/stats/what-if', { params: year ? { year } : {} }).then(r => r.data),
-  clutchRating: (year?: number) => api.get('/stats/clutch-rating', { params: year ? { year } : {} }).then(r => r.data),
 }
 
 export const draftApi = {

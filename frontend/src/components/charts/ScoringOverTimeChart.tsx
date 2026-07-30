@@ -45,6 +45,7 @@ export default function ScoringOverTimeChart({ scoring, inflation }: Props) {
         <Tooltip
           contentStyle={{ backgroundColor: '#111827', border: '1px solid #374151', borderRadius: 8, fontSize: 11 }}
           labelStyle={{ color: '#f3f4f6' }}
+          itemSorter={item => -(Number(item.value) || 0)}
           formatter={(v: number, name: string) => [
             v != null ? v.toFixed(1) : '—',
             name,

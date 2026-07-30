@@ -6,7 +6,7 @@ from app.models.team import Team
 from app.models.manager import Manager
 from app.schemas.season import SeasonSummary, SeasonDetail, StandingsRow
 from app.schemas.matchup import MatchupOut
-from app.services.stats_engine import _apply_overrides
+from app.services.stats_engine import _apply_overrides, _get_active_managers
 from app import crud
 
 router = APIRouter(prefix="/seasons", tags=["seasons"])
@@ -83,8 +83,7 @@ def get_season_matchups(year: int, week: int | None = None, db: Session = Depend
     matchups = q.order_by(Matchup.week).all()
 
     teams = {t.id: t for t in crud.team.get_by_season(db, season.id)}
-    mgr_list = db.query(Manager).filter(~Manager.yahoo_guid.like("hidden_%"), ~Manager.display_name.like("%hidden%")).all()
-    _apply_overrides(mgr_list)
+    mgr_list = _get_active_managers(db)
     managers = {m.id: m for m in mgr_list}
 
     result = []

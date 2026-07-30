@@ -65,11 +65,6 @@ def weekly_finish_distribution(db: Session = Depends(get_db)):
     return stats_engine.compute_weekly_finish_distribution(db)
 
 
-@router.get("/manager-eras")
-def manager_eras(db: Session = Depends(get_db)):
-    return stats_engine.compute_manager_eras(db)
-
-
 @router.get("/throne-tracker")
 def throne_tracker(db: Session = Depends(get_db)):
     return stats_engine.compute_throne_tracker(db)
@@ -140,13 +135,3 @@ def manager_tiers(
 @router.get("/strength-of-schedule")
 def strength_of_schedule(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_strength_of_schedule(db, year=year)
-
-
-@router.get("/what-if")
-def what_if(year: int | None = Query(None), db: Session = Depends(get_db)):
-    return stats_engine.compute_what_if(db, year=year)
-
-
-@router.get("/clutch-rating")
-def clutch_rating(year: int | None = Query(None), db: Session = Depends(get_db)):
-    return stats_engine.compute_clutch_rating(db, year=year)

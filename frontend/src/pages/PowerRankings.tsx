@@ -4,6 +4,7 @@ import PowerRadarChart from '../components/charts/PowerRadarChart'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import YearFilter from '../components/cards/YearFilter'
+import ManagerTiersPanel from '../components/analytics/ManagerTiersPanel'
 import { useApi } from '../hooks/useApi'
 import { statsApi, seasonsApi } from '../api/client'
 import type { PowerRankingRow, SeasonSummary } from '../types'
@@ -11,6 +12,7 @@ import type { PowerRankingRow, SeasonSummary } from '../types'
 type PRSortKey = 'manager_name' | 'overall_score' | 'win_rate' | 'scoring' | 'consistency' | 'luck_adjusted' | 'playoff_success'
 
 export default function PowerRankings() {
+  const [view, setView] = useState<'rankings' | 'tiers'>('rankings')
   const [year, setYear] = useState<number | undefined>(undefined)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [sort, setSort] = useState<{ key: PRSortKey; dir: 1 | -1 }>({ key: 'overall_score', dir: -1 })
@@ -51,14 +53,45 @@ export default function PowerRankings() {
 
   return (
     <PageWrapper
-      title="Power Rankings"
-      subtitle="Composite dominance score across 5 dimensions. Click rows to compare on the radar chart."
+      title="Power Rankings & Manager Tiers"
+      subtitle="Compare managers by current power or long-term performance tier."
       dataScope="regular"
     >
-      <YearFilter seasons={seasons} year={year} onChange={y => { setYear(y); setSelected(new Set()) }} />
+      <div role="tablist" aria-label="Ranking view" className="flex border-b border-gray-800 mb-6">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === 'rankings'}
+          onClick={() => setView('rankings')}
+          className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            view === 'rankings'
+              ? 'border-brand-500 text-white'
+              : 'border-transparent text-gray-500 hover:text-gray-200'
+          }`}
+        >
+          Power Rankings
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === 'tiers'}
+          onClick={() => setView('tiers')}
+          className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            view === 'tiers'
+              ? 'border-brand-500 text-white'
+              : 'border-transparent text-gray-500 hover:text-gray-200'
+          }`}
+        >
+          Manager Tiers
+        </button>
+      </div>
 
-      {/* Methodology */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
+      {view === 'rankings' ? (
+        <>
+          <YearFilter seasons={seasons} year={year} onChange={y => { setYear(y); setSelected(new Set()) }} />
+
+          {/* Methodology */}
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
         <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">How It Works</h2>
         <p className="text-xs text-gray-400 mb-4">
           Each dimension is independently computed, then percentile-ranked 0–100 against all managers in the selected scope.
@@ -106,11 +139,11 @@ export default function PowerRankings() {
         </div>
       </div>
 
-      {loading && <LoadingSpinner />}
-      {error && <ErrorMessage message={error} />}
+          {loading && <LoadingSpinner />}
+          {error && <ErrorMessage message={error} />}
 
-      {data && data.length > 0 && (
-        <>
+          {data && data.length > 0 && (
+            <>
           {/* Radar chart */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
             <PowerRadarChart managers={radarManagers} />
@@ -159,7 +192,11 @@ export default function PowerRankings() {
             </table>
           </div>
 
+            </>
+          )}
         </>
+      ) : (
+        <ManagerTiersPanel seasons={seasons} />
       )}
     </PageWrapper>
   )
