@@ -10,6 +10,7 @@ import {
   House,
   Menu,
   Medal,
+  MessageSquare,
   Swords,
   X,
   type LucideIcon,
@@ -31,7 +32,8 @@ const primaryNavigation: NavItem[] = [
   { to: '/scoring/trends', label: 'Scoring Lab', activePrefix: '/scoring', icon: BarChart3 },
   { to: '/luck-schedule/luck', label: 'Luck & Schedule', activePrefix: '/luck-schedule', icon: Dices },
   { to: '/postseason/playoffs', label: 'Postseason', activePrefix: '/postseason', icon: Medal },
-  { to: '/draft/analysis', label: 'Draft Room', activePrefix: '/draft', icon: ClipboardList },
+  { to: '/draft', label: 'Draft Room', activePrefix: '/draft', icon: ClipboardList },
+  { to: '/feedback', label: 'Feedback Wall', activePrefix: '/feedback', icon: MessageSquare },
 ]
 
 export default function Sidebar() {
