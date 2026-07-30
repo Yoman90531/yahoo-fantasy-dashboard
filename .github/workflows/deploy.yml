@@ -14,4 +14,21 @@ jobs:
           host: ${{ secrets.DROPLET_IP }}
           username: root
           password: ${{ secrets.DROPLET_PASSWORD }}
-          script: /opt/deploy.sh
+          command_timeout: 15m
+          script_stop: true
+          script: |
+            set -e
+            cd /opt/yahoo-fantasy-dashboard
+            git pull --ff-only origin main
+            docker compose up -d --build --remove-orphans
+            docker compose ps
+
+            for attempt in $(seq 1 30); do
+              if curl -fsS http://172.17.0.1:3001/api/health; then
+                exit 0
+              fi
+              sleep 2
+            done
+
+            docker compose logs --tail=100 app
+            exit 1

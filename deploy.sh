@@ -12,8 +12,22 @@ if [ ! -f .env.production ]; then
 fi
 
 echo "==> Rebuilding the private dashboard service..."
-docker compose down --remove-orphans
-docker compose up -d --build
+docker compose up -d --build --remove-orphans
+
+echo "==> Waiting for the dashboard health check..."
+for attempt in $(seq 1 30); do
+    if curl -fsS http://172.17.0.1:3001/api/health; then
+        echo ""
+        break
+    fi
+
+    if [ "$attempt" -eq 30 ]; then
+        docker compose logs --tail=100 app
+        exit 1
+    fi
+
+    sleep 2
+done
 
 echo ""
 echo "==> Dashboard is listening privately on 172.17.0.1:3001"
