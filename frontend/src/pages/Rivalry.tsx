@@ -23,8 +23,8 @@ export default function Rivalry() {
 
   if (!aId || !bId) {
     return (
-      <PageWrapper title="Rivalry" subtitle="Select two managers from the Head-to-Head page.">
-        <p className="text-gray-500">No managers selected. Go to Head-to-Head and click a cell.</p>
+      <PageWrapper title="Rivalry Receipts" subtitle="Select two managers from the Rivalries page.">
+        <p className="text-gray-500">No managers selected. Go to Rivalries and choose your beef.</p>
       </PageWrapper>
     )
   }
@@ -35,7 +35,7 @@ export default function Rivalry() {
   return (
     <PageWrapper
       title={data ? `${data.manager_a_name} vs ${data.manager_b_name}` : 'Rivalry'}
-      subtitle="Full head-to-head rivalry history."
+      subtitle="The full series history, from close calls to public embarrassment."
       dataScope="playoffs"
     >
       {loading && <LoadingSpinner />}

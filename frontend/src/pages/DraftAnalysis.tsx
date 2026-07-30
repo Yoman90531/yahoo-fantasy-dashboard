@@ -58,8 +58,8 @@ export default function DraftAnalysis() {
 
   return (
     <PageWrapper
-      title="Draft Analysis"
-      subtitle="Analyze draft capital allocation, position tendencies, and pick ROI across seasons."
+      title="Draft Room"
+      subtitle="Draft tendencies, pick value, and the selections that aged terribly."
       dataScope="regular"
     >
       <ExplainerCard>

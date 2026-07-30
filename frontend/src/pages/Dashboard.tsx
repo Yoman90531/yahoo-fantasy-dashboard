@@ -37,45 +37,50 @@ export default function Dashboard() {
   )
 
   return (
-    <PageWrapper title="GARYS Fantasy Dashboard" subtitle={`${seasons.length} seasons of data`}>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-        <StatCard
-          label="Current Champion"
-          value={latestSeason?.champion_name ?? '-'}
-          sub={latestSeason ? `${latestSeason.year} season` : ''}
-          accent
-        />
-        <StatCard
-          label="Most Championships"
-          value={championshipLeaders.length > 0
-            ? `${championshipLeaders.map(manager => manager.display_name).join(' & ')} (${championshipCount})`
-            : '-'}
-          sub="all time"
-        />
-        <StatCard
-          label="Highest Score Ever"
-          value={highScore ? highScore.points.toFixed(2) : '-'}
-          sub={highScore ? `${highScore.manager_name}, ${highScore.year} Wk ${highScore.week}` : ''}
-        />
-        <StatCard
-          label="Lowest Score Ever"
-          value={lowScore ? lowScore.points.toFixed(2) : '-'}
-          sub={lowScore ? `${lowScore.manager_name}, ${lowScore.year} Wk ${lowScore.week}` : ''}
-        />
-        <StatCard
-          label="Longest Drought"
-          value={longestDroughtManagers.length > 0
-            ? longestDroughtManagers.map(drought => drought.manager_name).join(' & ')
-            : '-'}
-          sub={longestDroughtManagers.length > 0
-            ? `${longestDroughtLength} seasons without a title`
-            : undefined}
-        />
-      </div>
+    <PageWrapper title="GARYS League HQ" subtitle={`${seasons.length} seasons of scores, grudges, and receipts.`}>
+      <section aria-labelledby="league-snapshot-heading" className="mb-6">
+        <h2 id="league-snapshot-heading" className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3">
+          League Snapshot
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <StatCard
+            label="Current Champion"
+            value={latestSeason?.champion_name ?? '-'}
+            sub={latestSeason ? `${latestSeason.year} season` : ''}
+            accent
+          />
+          <StatCard
+            label="Most Championships"
+            value={championshipLeaders.length > 0
+              ? `${championshipLeaders.map(manager => manager.display_name).join(' & ')} (${championshipCount})`
+              : '-'}
+            sub="all time"
+          />
+          <StatCard
+            label="Highest Score Ever"
+            value={highScore ? highScore.points.toFixed(2) : '-'}
+            sub={highScore ? `${highScore.manager_name}, ${highScore.year} Wk ${highScore.week}` : ''}
+          />
+          <StatCard
+            label="Lowest Score Ever"
+            value={lowScore ? lowScore.points.toFixed(2) : '-'}
+            sub={lowScore ? `${lowScore.manager_name}, ${lowScore.year} Wk ${lowScore.week}` : ''}
+          />
+          <StatCard
+            label="Longest Drought"
+            value={longestDroughtManagers.length > 0
+              ? longestDroughtManagers.map(drought => drought.manager_name).join(' & ')
+              : '-'}
+            sub={longestDroughtManagers.length > 0
+              ? `${longestDroughtLength} seasons without a title`
+              : undefined}
+          />
+        </div>
+      </section>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
         <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">
-          League Avg & Max Weekly Score Over Time
+          Scoring by Era
         </h2>
         {iLoading && <LoadingSpinner />}
         {iError && <ErrorMessage message={iError} />}
@@ -84,7 +89,7 @@ export default function Dashboard() {
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">
-          Avg Weekly Score - All Managers Over Time
+          Manager Scoring Trends
         </h2>
         {scoring && inflation
           ? <ScoringOverTimeChart scoring={scoring} inflation={inflation} />

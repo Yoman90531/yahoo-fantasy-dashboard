@@ -38,8 +38,8 @@ export default function StreakTracker() {
 
   return (
     <PageWrapper
-      title="Streak Tracker"
-      subtitle="Winning and losing streaks across all managers."
+      title="Hot & Cold Streaks"
+      subtitle="The heaters everyone remembers and the losing streaks nobody is allowed to forget."
       dataScope="regular"
     >
       {loading && <LoadingSpinner />}

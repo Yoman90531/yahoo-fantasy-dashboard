@@ -11,8 +11,8 @@ export default function HeadToHead() {
 
   return (
     <PageWrapper
-      title="Head-to-Head"
-      subtitle="All-time matchup records between every pair of managers. Cell value = wins. Hover for details."
+      title="Rivalries"
+      subtitle="The all-time beef matrix. Each cell shows wins from the row manager's perspective."
       dataScope="playoffs"
     >
       {loading && <LoadingSpinner />}
@@ -20,7 +20,7 @@ export default function HeadToHead() {
       {data && data.managers.length > 0 && (
         <>
           <div className="mb-4 border-l-4 border-brand-500 bg-blue-950/60 px-4 py-3">
-            <div className="text-sm font-semibold text-blue-200">Open a rivalry breakdown</div>
+            <div className="text-sm font-semibold text-blue-200">Choose your beef</div>
             <p className="text-xs text-gray-300 mt-1">
               Click any colored matchup cell to see the full series, scoring history, and individual games.
             </p>

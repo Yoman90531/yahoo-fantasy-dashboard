@@ -133,7 +133,7 @@ export default function H2HHeatmap({ data }: Props) {
                       transition: 'background-color 0.1s, border-color 0.1s',
                     }}
                     title={rec ? `Open ${row.name} vs ${col.name}` : undefined}
-                    onClick={() => rec && navigate(`/rivalry?a=${row.id}&b=${col.id}`)}
+                    onClick={() => rec && navigate(`/rivalries/matchup?a=${row.id}&b=${col.id}`)}
                     onMouseEnter={e => {
                       if (rec) {
                         setHovered(cellKey)

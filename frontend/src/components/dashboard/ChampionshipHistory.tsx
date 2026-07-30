@@ -24,8 +24,8 @@ export default function ChampionshipHistory() {
   return (
     <section className="mt-8" aria-labelledby="championship-history-heading">
       <div className="mb-4">
-        <h2 id="championship-history-heading" className="text-lg font-semibold text-white">Throne Tracker</h2>
-        <p className="text-xs text-gray-400 mt-1">Championship history, season by season.</p>
+        <h2 id="championship-history-heading" className="text-lg font-semibold text-white">Championship Timeline</h2>
+        <p className="text-xs text-gray-400 mt-1">Who held the belt each season.</p>
       </div>
 
       {loading && <LoadingSpinner />}

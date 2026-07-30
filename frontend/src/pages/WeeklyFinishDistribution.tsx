@@ -61,8 +61,8 @@ export default function WeeklyFinishDistribution() {
 
   return (
     <PageWrapper
-      title="Weekly Finish Distribution"
-      subtitle="How often each manager finishes 1st, top-3, top-half, bottom-half, bottom-3, or last in weekly scoring."
+      title="Weekly Rankings"
+      subtitle="How often each manager finishes first, top-three, top-half, or dead last."
       dataScope="regular"
     >
       {loading && <LoadingSpinner />}

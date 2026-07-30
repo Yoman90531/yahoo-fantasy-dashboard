@@ -60,12 +60,12 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 export default function WeeklyRecords() {
   const { data, loading, error } = useApi<WR>(() => statsApi.weeklyRecords(), [])
 
-  if (loading) return <PageWrapper title="Weekly Records"><LoadingSpinner /></PageWrapper>
-  if (error) return <PageWrapper title="Weekly Records"><ErrorMessage message={error} /></PageWrapper>
+  if (loading) return <PageWrapper title="Weekly Highs & Lows"><LoadingSpinner /></PageWrapper>
+  if (error) return <PageWrapper title="Weekly Highs & Lows"><ErrorMessage message={error} /></PageWrapper>
   if (!data) return null
 
   return (
-    <PageWrapper title="Weekly Records" subtitle="The best, worst, and most dramatic single-week performances in league history." dataScope="all">
+    <PageWrapper title="Weekly Highs & Lows" subtitle="The best, worst, and least defensible single-week performances." dataScope="all">
       <div className="flex flex-col gap-6">
         <Section title="Highest Scores Ever">
           <RecordTable

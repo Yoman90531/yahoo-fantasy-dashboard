@@ -103,7 +103,7 @@ export default function ManagerProfile() {
             {[...season_history].reverse().map(s => (
               <tr key={s.year} className={`border-t border-gray-800 hover:bg-gray-800 transition-colors ${s.is_champion ? 'bg-amber-950/20' : ''}`}>
                 <td className="px-4 py-3 font-medium">
-                  <Link to={`/seasons?year=${s.year}`} className="text-brand-400 hover:underline">{s.year}</Link>
+                  <Link to={`/seasons/archive?year=${s.year}`} className="text-brand-400 hover:underline">{s.year}</Link>
                 </td>
                 <td className="px-4 py-3 text-gray-400">{s.team_name ?? '—'}</td>
                 <td className="px-4 py-3 text-right text-green-400">{s.wins}</td>

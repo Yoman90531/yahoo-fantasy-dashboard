@@ -1,5 +1,12 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom'
 import Sidebar from './components/layout/Sidebar'
+import HubLayout, { type HubTab } from './components/layout/HubLayout'
 import Dashboard from './pages/Dashboard'
 import SeasonView from './pages/SeasonView'
 import AllTimeStats from './pages/AllTimeStats'
@@ -22,37 +29,146 @@ import ConsolationBracket from './pages/ConsolationBracket'
 import StrengthOfSchedule from './pages/StrengthOfSchedule'
 import DraftAnalysis from './pages/DraftAnalysis'
 
+const seasonTabs: HubTab[] = [
+  { label: 'Season Archive', to: '/seasons/archive' },
+  { label: 'Week-by-Week', to: '/seasons/week-by-week' },
+]
+
+const managerTabs: HubTab[] = [
+  { label: 'All-Time Standings', to: '/managers/all-time' },
+  { label: 'Power Index', to: '/managers/power' },
+  { label: 'Career Tiers', to: '/managers/tiers' },
+]
+
+const recordTabs: HubTab[] = [
+  { label: 'Weekly Highs & Lows', to: '/record-book/weekly' },
+  { label: 'Blowouts & Nail-Biters', to: '/record-book/margins' },
+  { label: 'Hot & Cold Streaks', to: '/record-book/streaks' },
+]
+
+const scoringTabs: HubTab[] = [
+  { label: 'League Trends', to: '/scoring/trends' },
+  { label: 'Scoring Profiles', to: '/scoring/profiles' },
+  { label: 'Weekly Rankings', to: '/scoring/weekly-rankings' },
+  { label: 'Projection Accuracy', to: '/scoring/projections' },
+]
+
+const luckTabs: HubTab[] = [
+  { label: 'Schedule Luck', to: '/luck-schedule/luck' },
+  { label: 'Schedule Difficulty', to: '/luck-schedule/difficulty' },
+]
+
+const postseasonTabs: HubTab[] = [
+  { label: 'Playoff Records', to: '/postseason/playoffs' },
+  { label: 'Toilet Bowl', to: '/postseason/toilet-bowl' },
+]
+
+function LegacyRedirect({ to }: { to: string }) {
+  const { search } = useLocation()
+  return <Navigate to={`${to}${search}`} replace />
+}
+
+function AppRoutes() {
+  return (
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <main className="flex-1 overflow-auto pt-12 md:pt-0">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+
+          <Route
+            path="/seasons"
+            element={<HubLayout title="Season Vault" subtitle="Every season, standings table, and weekly receipt." tabs={seasonTabs} />}
+          >
+            <Route index element={<Navigate to="archive" replace />} />
+            <Route path="archive" element={<SeasonView />} />
+            <Route path="week-by-week" element={<SeasonReplay />} />
+          </Route>
+
+          <Route
+            path="/managers"
+            element={<HubLayout title="Manager Rankings" subtitle="Career resumes, current power, and the league pecking order." tabs={managerTabs} />}
+          >
+            <Route index element={<Navigate to="all-time" replace />} />
+            <Route path="all-time" element={<AllTimeStats />} />
+            <Route path="power" element={<PowerRankings view="rankings" />} />
+            <Route path="tiers" element={<PowerRankings view="tiers" />} />
+          </Route>
+          <Route path="/managers/:id" element={<ManagerProfile />} />
+
+          <Route path="/rivalries" element={<HeadToHead />} />
+          <Route path="/rivalries/matchup" element={<Rivalry />} />
+
+          <Route
+            path="/record-book"
+            element={<HubLayout title="Record Book" subtitle="The league's highest highs, lowest lows, and longest receipts." tabs={recordTabs} />}
+          >
+            <Route index element={<Navigate to="weekly" replace />} />
+            <Route path="weekly" element={<WeeklyRecords />} />
+            <Route path="margins" element={<WinMargins />} />
+            <Route path="streaks" element={<StreakTracker />} />
+          </Route>
+
+          <Route
+            path="/scoring"
+            element={<HubLayout title="Scoring Lab" subtitle="How the league scores, changes, and beats the projections." tabs={scoringTabs} />}
+          >
+            <Route index element={<Navigate to="trends" replace />} />
+            <Route path="trends" element={<LeagueParity />} />
+            <Route path="profiles" element={<ScoringDistribution />} />
+            <Route path="weekly-rankings" element={<WeeklyFinishDistribution />} />
+            <Route path="projections" element={<ProjectionPerformance />} />
+          </Route>
+
+          <Route
+            path="/luck-schedule"
+            element={<HubLayout title="Luck & Schedule" subtitle="Who earned it, who escaped, and who got the brutal slate." tabs={luckTabs} />}
+          >
+            <Route index element={<Navigate to="luck" replace />} />
+            <Route path="luck" element={<LuckIndex />} />
+            <Route path="difficulty" element={<StrengthOfSchedule />} />
+          </Route>
+
+          <Route
+            path="/postseason"
+            element={<HubLayout title="Postseason" subtitle="Championship runs at the top; Toilet Bowl business at the bottom." tabs={postseasonTabs} />}
+          >
+            <Route index element={<Navigate to="playoffs" replace />} />
+            <Route path="playoffs" element={<PlayoffPerformance />} />
+            <Route path="toilet-bowl" element={<ConsolationBracket />} />
+          </Route>
+
+          <Route path="/draft" element={<DraftAnalysis />} />
+          <Route path="/sync" element={<SyncStatus />} />
+
+          <Route path="/alltime" element={<LegacyRedirect to="/managers/all-time" />} />
+          <Route path="/power-rankings" element={<LegacyRedirect to="/managers/power" />} />
+          <Route path="/headtohead" element={<LegacyRedirect to="/rivalries" />} />
+          <Route path="/rivalry" element={<LegacyRedirect to="/rivalries/matchup" />} />
+          <Route path="/weekly-records" element={<LegacyRedirect to="/record-book/weekly" />} />
+          <Route path="/win-margins" element={<LegacyRedirect to="/record-book/margins" />} />
+          <Route path="/streaks" element={<LegacyRedirect to="/record-book/streaks" />} />
+          <Route path="/season-replay" element={<LegacyRedirect to="/seasons/week-by-week" />} />
+          <Route path="/league-parity" element={<LegacyRedirect to="/scoring/trends" />} />
+          <Route path="/scoring-distribution" element={<LegacyRedirect to="/scoring/profiles" />} />
+          <Route path="/weekly-finish" element={<LegacyRedirect to="/scoring/weekly-rankings" />} />
+          <Route path="/projections" element={<LegacyRedirect to="/scoring/projections" />} />
+          <Route path="/luck-index" element={<LegacyRedirect to="/luck-schedule/luck" />} />
+          <Route path="/strength-of-schedule" element={<LegacyRedirect to="/luck-schedule/difficulty" />} />
+          <Route path="/playoff-performance" element={<LegacyRedirect to="/postseason/playoffs" />} />
+          <Route path="/consolation" element={<LegacyRedirect to="/postseason/toilet-bowl" />} />
+          <Route path="/draft-analysis" element={<LegacyRedirect to="/draft" />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter basename="/fantasy">
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <main className="flex-1 overflow-auto pt-12 md:pt-0">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/seasons" element={<SeasonView />} />
-            <Route path="/alltime" element={<AllTimeStats />} />
-            <Route path="/managers/:id" element={<ManagerProfile />} />
-            <Route path="/headtohead" element={<HeadToHead />} />
-            <Route path="/weekly-records" element={<WeeklyRecords />} />
-            <Route path="/luck-index" element={<LuckIndex />} />
-            <Route path="/power-rankings" element={<PowerRankings />} />
-            <Route path="/rivalry" element={<Rivalry />} />
-            <Route path="/scoring-distribution" element={<ScoringDistribution />} />
-            <Route path="/weekly-finish" element={<WeeklyFinishDistribution />} />
-            <Route path="/projections" element={<ProjectionPerformance />} />
-            <Route path="/win-margins" element={<WinMargins />} />
-            <Route path="/playoff-performance" element={<PlayoffPerformance />} />
-            <Route path="/season-replay" element={<SeasonReplay />} />
-            <Route path="/league-parity" element={<LeagueParity />} />
-            <Route path="/streaks" element={<StreakTracker />} />
-            <Route path="/consolation" element={<ConsolationBracket />} />
-            <Route path="/strength-of-schedule" element={<StrengthOfSchedule />} />
-            <Route path="/draft-analysis" element={<DraftAnalysis />} />
-            <Route path="/sync" element={<SyncStatus />} />
-          </Routes>
-        </main>
-      </div>
+      <AppRoutes />
     </BrowserRouter>
   )
 }

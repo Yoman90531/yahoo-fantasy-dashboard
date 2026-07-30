@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import PageWrapper from '../components/layout/PageWrapper'
 import StandingsTable from '../components/tables/StandingsTable'
 import WinRateBarChart from '../components/charts/WinRateBarChart'
@@ -11,7 +12,9 @@ import type { SeasonDetail } from '../types'
 
 export default function SeasonView() {
   const { seasons, setSeasons } = useAppStore()
-  const [year, setYear] = useState<number | null>(null)
+  const [params, setParams] = useSearchParams()
+  const requestedYear = Number(params.get('year'))
+  const [year, setYear] = useState<number | null>(requestedYear || null)
 
   useEffect(() => {
     if (!seasons.length) seasonsApi.list().then(setSeasons)
@@ -39,13 +42,17 @@ export default function SeasonView() {
   })) ?? []
 
   return (
-    <PageWrapper title="Season View" subtitle="Select a season to see final standings and points.">
+    <PageWrapper title="Season Archive" subtitle="Pick a year to reopen the standings and scoring receipts.">
       {/* Year selector */}
       <div className="flex items-center gap-3 mb-6">
         <label className="text-gray-400 text-sm">Season:</label>
         <select
           value={year ?? ''}
-          onChange={e => setYear(Number(e.target.value))}
+          onChange={e => {
+            const nextYear = Number(e.target.value)
+            setYear(nextYear)
+            setParams({ year: String(nextYear) }, { replace: true })
+          }}
           className="bg-gray-900 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500"
         >
           {[...seasons].reverse().map(s => (

@@ -39,8 +39,8 @@ export default function StrengthOfSchedule() {
 
   return (
     <PageWrapper
-      title="Strength of Schedule"
-      subtitle="Who had the toughest opponents? SOS-adjusted win% accounts for schedule difficulty."
+      title="Schedule Difficulty"
+      subtitle="Who faced the weekly gauntlet, and who got the soft landing?"
       dataScope="regular"
     >
       <ExplainerCard>

@@ -37,8 +37,8 @@ export default function ConsolationBracket() {
 
   return (
     <PageWrapper
-      title="Consolation Bracket"
-      subtitle="Who dominates the loser bracket? Stats from consolation round matchups."
+      title="Toilet Bowl"
+      subtitle="The battle for dignity after the championship dream is already dead."
       dataScope="playoffs"
     >
       <YearFilter seasons={seasons} year={year} onChange={setYear} />
@@ -52,16 +52,16 @@ export default function ConsolationBracket() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {consolationKing && (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <div className="text-xs uppercase tracking-wider text-gray-500 mb-1">Consolation King</div>
+                <div className="text-xs uppercase tracking-wider text-gray-500 mb-1">King of the Toilet Bowl</div>
                 <div className="text-xl font-bold text-white">{consolationKing.manager_name}</div>
                 <div className="text-sm text-gray-400 mt-1">
-                  {consolationKing.consolation_wins} consolation wins ({(consolationKing.consolation_win_pct * 100).toFixed(0)}% win rate)
+                  {consolationKing.consolation_wins} Toilet Bowl wins ({(consolationKing.consolation_win_pct * 100).toFixed(0)}% win rate)
                 </div>
               </div>
             )}
             {mostAppearances && (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <div className="text-xs uppercase tracking-wider text-gray-500 mb-1">Most Consolation Appearances</div>
+                <div className="text-xs uppercase tracking-wider text-gray-500 mb-1">Most Toilet Bowl Appearances</div>
                 <div className="text-xl font-bold text-white">{mostAppearances.manager_name}</div>
                 <div className="text-sm text-gray-400 mt-1">
                   Missed playoffs {mostAppearances.times_missed_playoffs} time{mostAppearances.times_missed_playoffs !== 1 ? 's' : ''}

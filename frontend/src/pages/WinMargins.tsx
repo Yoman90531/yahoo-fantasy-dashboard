@@ -28,8 +28,8 @@ export default function WinMargins() {
 
   return (
     <PageWrapper
-      title="Win Margin Analytics"
-      subtitle="How dominant are wins? How painful are losses? Analyze the margin of victory and defeat for each manager."
+      title="Blowouts & Nail-Biters"
+      subtitle="Who runs up the score, who lives dangerously, and who gets publicly flattened?"
       dataScope="regular"
     >
       <ExplainerCard>

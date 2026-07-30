@@ -26,7 +26,7 @@ export default function SyncStatus() {
   }
 
   return (
-    <PageWrapper title="Sync Data" subtitle="Pull the latest data from Yahoo Fantasy Sports.">
+    <PageWrapper title="Data Sync" subtitle="Pull the latest league history from Yahoo Fantasy Sports.">
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={handleSync}

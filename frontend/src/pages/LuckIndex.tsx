@@ -25,8 +25,8 @@ export default function LuckIndex() {
 
   return (
     <PageWrapper
-      title="Luck Index"
-      subtitle="How lucky has each manager been? Positive = got luckier than expected. Negative = deserved better."
+      title="Schedule Luck"
+      subtitle="Who escaped with wins, and who deserved better than the schedule allowed?"
       dataScope="regular"
     >
       <ExplainerCard>

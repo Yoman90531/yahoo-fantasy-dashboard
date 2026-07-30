@@ -17,8 +17,8 @@ export default function AwardsSection({ seasons }: Props) {
     <section className="mt-8" aria-labelledby="awards-heading">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
         <div>
-          <h2 id="awards-heading" className="text-lg font-semibold text-white">League Awards</h2>
-          <p className="text-xs text-gray-400 mt-1">The best, worst, and most memorable performances.</p>
+          <h2 id="awards-heading" className="text-lg font-semibold text-white">League Superlatives</h2>
+          <p className="text-xs text-gray-400 mt-1">The best, worst, and hardest-to-explain performances.</p>
         </div>
         <label className="flex items-center gap-2 text-gray-400 text-sm">
           Season

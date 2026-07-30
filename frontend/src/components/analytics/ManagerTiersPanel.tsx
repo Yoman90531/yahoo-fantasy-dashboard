@@ -74,7 +74,7 @@ export default function ManagerTiersPanel({ seasons }: Props) {
       {data && data.length > 0 && (
         <>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
-            <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">How Tiers Are Calculated</h2>
+            <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">Tier Formula</h2>
             <p className="text-xs text-gray-400 mb-4">
               Each stat is percentile-ranked 0-100 across qualifying managers, then combined into a weighted score.
               A minimum of three seasons is required.

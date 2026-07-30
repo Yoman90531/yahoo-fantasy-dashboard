@@ -11,8 +11,11 @@ import type { PowerRankingRow, SeasonSummary } from '../types'
 
 type PRSortKey = 'manager_name' | 'overall_score' | 'win_rate' | 'scoring' | 'consistency' | 'luck_adjusted' | 'playoff_success'
 
-export default function PowerRankings() {
-  const [view, setView] = useState<'rankings' | 'tiers'>('rankings')
+interface Props {
+  view: 'rankings' | 'tiers'
+}
+
+export default function PowerRankings({ view }: Props) {
   const [year, setYear] = useState<number | undefined>(undefined)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [sort, setSort] = useState<{ key: PRSortKey; dir: 1 | -1 }>({ key: 'overall_score', dir: -1 })
@@ -53,46 +56,19 @@ export default function PowerRankings() {
 
   return (
     <PageWrapper
-      title="Power Rankings & Manager Tiers"
-      subtitle="Compare managers by current power or long-term performance tier."
+      title={view === 'rankings' ? 'Power Index' : 'Career Tiers'}
+      subtitle={view === 'rankings'
+        ? 'A five-part score for deciding who is actually good right now.'
+        : 'Long-term league status, from elite to rebuilding.'}
       dataScope="regular"
     >
-      <div role="tablist" aria-label="Ranking view" className="flex border-b border-gray-800 mb-6">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === 'rankings'}
-          onClick={() => setView('rankings')}
-          className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-            view === 'rankings'
-              ? 'border-brand-500 text-white'
-              : 'border-transparent text-gray-500 hover:text-gray-200'
-          }`}
-        >
-          Power Rankings
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === 'tiers'}
-          onClick={() => setView('tiers')}
-          className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-            view === 'tiers'
-              ? 'border-brand-500 text-white'
-              : 'border-transparent text-gray-500 hover:text-gray-200'
-          }`}
-        >
-          Manager Tiers
-        </button>
-      </div>
-
       {view === 'rankings' ? (
         <>
           <YearFilter seasons={seasons} year={year} onChange={y => { setYear(y); setSelected(new Set()) }} />
 
           {/* Methodology */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
-        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">How It Works</h2>
+        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">Ranking Formula</h2>
         <p className="text-xs text-gray-400 mb-4">
           Each dimension is independently computed, then percentile-ranked 0–100 against all managers in the selected scope.
           A score of 100 means best in the league; 0 means worst. <strong className="text-gray-300">Overall</strong> is the simple average of all five.
@@ -118,7 +94,7 @@ export default function PowerRankings() {
               desc: 'How predictable is your output week to week? A low standard deviation = high consistency. Boom-or-bust managers score high one week and tank the next. Steady managers show up reliably and avoid catastrophic losses.',
             },
             {
-              label: 'Skill',
+              label: 'Expected Wins',
               color: 'text-purple-400',
               formula: 'Expected Wins Per Game',
               desc: 'Each week, your score is ranked against all other teams\' scores. Your "expected wins" = fraction of opponents you would have beaten. A manager with high skill consistently puts up scores that would beat most opponents — regardless of who they actually faced.',
@@ -162,7 +138,7 @@ export default function PowerRankings() {
                   {th('Win Rate', 'win_rate')}
                   {th('Scoring', 'scoring')}
                   {th('Consistency', 'consistency')}
-                  {th('Skill', 'luck_adjusted')}
+                  {th('Expected Wins', 'luck_adjusted')}
                   {th('Playoffs', 'playoff_success')}
                 </tr>
               </thead>

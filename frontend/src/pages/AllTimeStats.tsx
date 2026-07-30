@@ -10,9 +10,9 @@ import type { ManagerStats } from '../types'
 export default function AllTimeStats() {
   const { data: managers, loading, error } = useApi<ManagerStats[]>(() => managersApi.list(), [])
 
-  if (loading) return <PageWrapper title="All-Time Stats"><LoadingSpinner /></PageWrapper>
-  if (error) return <PageWrapper title="All-Time Stats"><ErrorMessage message={error} /></PageWrapper>
-  if (!managers?.length) return <PageWrapper title="All-Time Stats"><p className="text-gray-500">No data yet. Run a data sync first.</p></PageWrapper>
+  if (loading) return <PageWrapper title="All-Time Standings"><LoadingSpinner /></PageWrapper>
+  if (error) return <PageWrapper title="All-Time Standings"><ErrorMessage message={error} /></PageWrapper>
+  if (!managers?.length) return <PageWrapper title="All-Time Standings"><p className="text-gray-500">No data yet. Run a data sync first.</p></PageWrapper>
 
   const barData = managers.map(m => ({
     name: m.nickname ?? m.display_name.split(' ')[0],
@@ -25,7 +25,7 @@ export default function AllTimeStats() {
   }))
 
   return (
-    <PageWrapper title="All-Time Stats" subtitle="Career records for every manager. Click a row to see their full profile." dataScope="all">
+    <PageWrapper title="All-Time Standings" subtitle="Career resumes for every manager. Click a row to inspect the receipts." dataScope="all">
       <AllTimeTable managers={managers} />
 
       <div className="grid md:grid-cols-2 gap-6 mt-8">
