@@ -17,18 +17,57 @@ jobs:
           command_timeout: 15m
           script_stop: true
           script: |
-            set -e
+            set -eu
             cd /opt/yahoo-fantasy-dashboard
             git pull --ff-only origin main
-            docker compose up -d --build --remove-orphans
+
+            # Build before the cutover so the legacy router stays online for as
+            # long as possible.
+            docker compose build app
+            docker compose pull caddy
+
+            legacy_dir=/opt/splitwise-mcp
+            legacy_compose="$legacy_dir/docker-compose.prod.yml"
+            legacy_stopped=0
+
+            rollback() {
+              if [ "$legacy_stopped" -eq 1 ]; then
+                echo "New stack failed; restoring the legacy router."
+                docker compose down || true
+                docker compose -f "$legacy_compose" up -d || true
+              fi
+            }
+            trap rollback EXIT
+
+            if [ -f "$legacy_compose" ]; then
+              docker compose -f "$legacy_compose" stop caddy
+              legacy_stopped=1
+            fi
+
+            docker compose up -d --remove-orphans
             docker compose ps
 
-            for attempt in $(seq 1 30); do
-              if curl -fsS http://172.17.0.1:3001/api/health; then
-                exit 0
+            healthy=0
+            for attempt in $(seq 1 60); do
+              if curl -fsS https://vibedan.duckdns.org/fantasy/api/health; then
+                healthy=1
+                break
               fi
               sleep 2
             done
 
-            docker compose logs --tail=100 app
-            exit 1
+            if [ "$healthy" -ne 1 ]; then
+              docker compose logs --tail=100 app caddy
+              exit 1
+            fi
+
+            if [ "$legacy_stopped" -eq 1 ]; then
+              docker compose -f "$legacy_compose" down
+              install -d -m 700 /opt/retired-apps
+              retired_dir="/opt/retired-apps/splitwise-mcp-$(date +%Y%m%d-%H%M%S)"
+              mv "$legacy_dir" "$retired_dir"
+              echo "Retired legacy Splitwise deployment to $retired_dir"
+            fi
+
+            trap - EXIT
+            curl -fsS https://vibedan.duckdns.org/health

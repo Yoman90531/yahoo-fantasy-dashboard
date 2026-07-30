@@ -11,12 +11,12 @@ if [ ! -f .env.production ]; then
     exit 1
 fi
 
-echo "==> Rebuilding the private dashboard service..."
+echo "==> Rebuilding the dashboard and site router..."
 docker compose up -d --build --remove-orphans
 
 echo "==> Waiting for the dashboard health check..."
 for attempt in $(seq 1 30); do
-    if curl -fsS http://172.17.0.1:3001/api/health; then
+    if curl -fsS https://vibedan.duckdns.org/fantasy/api/health; then
         echo ""
         break
     fi
@@ -30,7 +30,7 @@ for attempt in $(seq 1 30); do
 done
 
 echo ""
-echo "==> Dashboard is listening privately on 172.17.0.1:3001"
+echo "==> Dashboard and HTTPS router are healthy"
 echo "==> Public URL: https://vibedan.duckdns.org/fantasy/"
 echo ""
 echo "To authenticate: docker compose exec app python scripts/auth_init.py"

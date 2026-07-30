@@ -104,8 +104,9 @@ Or use the **Sync Data** page in the dashboard.
 ## VibeDan Production Deployment
 
 The production app is served below `https://vibedan.duckdns.org/fantasy/`.
-Caddy owns public HTTP and HTTPS; this compose project only listens on the
-Docker host bridge at `172.17.0.1:3001`.
+This compose project owns both the private application container and the Caddy
+container that serves public HTTP and HTTPS. The application does not publish a
+host port; Caddy reaches it over the private Compose network.
 
 ```bash
 cp .env.production.example .env.production
@@ -126,4 +127,4 @@ docker compose exec app python sync_runner.py
 ```
 
 Do not run `docker compose down -v` unless you intend to delete the database,
-Yahoo tokens, league IDs, and manager overrides.
+Yahoo tokens, league IDs, manager overrides, and Caddy certificate state.
