@@ -28,6 +28,7 @@ import StreakTracker from './pages/StreakTracker'
 import ConsolationBracket from './pages/ConsolationBracket'
 import StrengthOfSchedule from './pages/StrengthOfSchedule'
 import DraftAnalysis from './pages/DraftAnalysis'
+import FeedbackWall from './pages/FeedbackWall'
 
 const seasonTabs: HubTab[] = [
   { label: 'Season Archive', to: '/seasons/archive' },
@@ -60,6 +61,11 @@ const luckTabs: HubTab[] = [
 const postseasonTabs: HubTab[] = [
   { label: 'Playoff Records', to: '/postseason/playoffs' },
   { label: 'Toilet Bowl', to: '/postseason/toilet-bowl' },
+]
+
+const draftTabs: HubTab[] = [
+  { label: 'Draft Analysis', to: '/draft/analysis' },
+  { label: 'Feedback Wall', to: '/draft/feedback' },
 ]
 
 function LegacyRedirect({ to }: { to: string }) {
@@ -137,7 +143,14 @@ function AppRoutes() {
             <Route path="toilet-bowl" element={<ConsolationBracket />} />
           </Route>
 
-          <Route path="/draft" element={<DraftAnalysis />} />
+          <Route
+            path="/draft"
+            element={<HubLayout title="Draft Room" subtitle="Draft history, league ideas, and what comes next." tabs={draftTabs} />}
+          >
+            <Route index element={<Navigate to="analysis" replace />} />
+            <Route path="analysis" element={<DraftAnalysis />} />
+            <Route path="feedback" element={<FeedbackWall />} />
+          </Route>
           <Route path="/sync" element={<SyncStatus />} />
 
           <Route path="/alltime" element={<LegacyRedirect to="/managers/all-time" />} />
@@ -157,7 +170,7 @@ function AppRoutes() {
           <Route path="/strength-of-schedule" element={<LegacyRedirect to="/luck-schedule/difficulty" />} />
           <Route path="/playoff-performance" element={<LegacyRedirect to="/postseason/playoffs" />} />
           <Route path="/consolation" element={<LegacyRedirect to="/postseason/toilet-bowl" />} />
-          <Route path="/draft-analysis" element={<LegacyRedirect to="/draft" />} />
+          <Route path="/draft-analysis" element={<LegacyRedirect to="/draft/analysis" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

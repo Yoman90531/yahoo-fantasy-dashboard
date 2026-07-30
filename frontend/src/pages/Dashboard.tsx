@@ -15,18 +15,14 @@ export default function Dashboard() {
 
   return (
     <PageWrapper title="GARYS League HQ" subtitle="Championship history, league lore, and the business ahead.">
-      <section aria-labelledby="league-legacy-heading">
-        <div className="mb-5">
-          <h2 id="league-legacy-heading" className="text-xl font-bold text-white">League Legacy</h2>
-          <p className="text-sm text-gray-400 mt-1">The belt, the bragging rights, and the performances nobody forgot.</p>
-        </div>
+      <KeyDatesSection />
+
+      <section aria-label="League history and superlatives" className="mt-10">
         <ChampionshipHistory />
         <div className="border-t border-gray-800 mt-8 pt-8">
           <AwardsSection seasons={seasons} />
         </div>
       </section>
-
-      <KeyDatesSection />
     </PageWrapper>
   )
 }

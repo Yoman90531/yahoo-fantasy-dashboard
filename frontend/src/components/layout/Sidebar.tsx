@@ -10,7 +10,6 @@ import {
   House,
   Menu,
   Medal,
-  RefreshCw,
   Swords,
   X,
   type LucideIcon,
@@ -32,11 +31,7 @@ const primaryNavigation: NavItem[] = [
   { to: '/scoring/trends', label: 'Scoring Lab', activePrefix: '/scoring', icon: BarChart3 },
   { to: '/luck-schedule/luck', label: 'Luck & Schedule', activePrefix: '/luck-schedule', icon: Dices },
   { to: '/postseason/playoffs', label: 'Postseason', activePrefix: '/postseason', icon: Medal },
-  { to: '/draft', label: 'Draft Room', activePrefix: '/draft', icon: ClipboardList },
-]
-
-const adminNavigation: NavItem[] = [
-  { to: '/sync', label: 'Data Sync', activePrefix: '/sync', icon: RefreshCw },
+  { to: '/draft/analysis', label: 'Draft Room', activePrefix: '/draft', icon: ClipboardList },
 ]
 
 export default function Sidebar() {
@@ -120,15 +115,6 @@ export default function Sidebar() {
         <nav aria-label="Primary" className="flex flex-col gap-1">
           {primaryNavigation.map(renderLink)}
         </nav>
-
-        <div className="mt-auto pt-6">
-          <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-600">
-            League Office
-          </div>
-          <nav aria-label="Administration" className="flex flex-col gap-1">
-            {adminNavigation.map(renderLink)}
-          </nav>
-        </div>
       </aside>
     </>
   )

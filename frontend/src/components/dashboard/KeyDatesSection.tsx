@@ -14,7 +14,7 @@ const KEY_DATES = [
 
 export default function KeyDatesSection() {
   return (
-    <section className="mt-10" aria-labelledby="key-dates-heading">
+    <section aria-labelledby="key-dates-heading">
       <div className="flex items-start gap-3 mb-4">
         <div className="w-9 h-9 border border-blue-700 bg-blue-950/60 rounded-lg flex items-center justify-center shrink-0">
           <CalendarDays size={18} className="text-blue-300" aria-hidden="true" />

@@ -58,7 +58,7 @@ export default function DraftAnalysis() {
 
   return (
     <PageWrapper
-      title="Draft Room"
+      title="Draft Analysis"
       subtitle="Draft tendencies, pick value, and the selections that aged terribly."
       dataScope="regular"
     >

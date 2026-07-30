@@ -466,3 +466,10 @@ export interface DraftAnalysis {
   best_picks: BestWorstPick[]
   worst_picks: BestWorstPick[]
 }
+
+export interface FeedbackPost {
+  id: number
+  author_name: string
+  message: string
+  created_at: string
+}

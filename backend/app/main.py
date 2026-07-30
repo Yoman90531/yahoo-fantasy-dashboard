@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app import models  # noqa: F401
 from app.database import Base, engine
-from app.routers import seasons, managers, stats, sync, draft
+from app.routers import seasons, managers, stats, sync, draft, feedback
 
 
 @asynccontextmanager
@@ -31,6 +31,7 @@ app.include_router(managers.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
 app.include_router(sync.router, prefix="/api")
 app.include_router(draft.router, prefix="/api")
+app.include_router(feedback.router, prefix="/api")
 
 
 @app.get("/api/health")
