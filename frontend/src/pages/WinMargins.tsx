@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import YearFilter from '../components/cards/YearFilter'
 import ExplainerCard from '../components/cards/ExplainerCard'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi, seasonsApi } from '../api/client'
@@ -32,6 +33,7 @@ export default function WinMargins() {
       subtitle="Who runs up the score, who lives dangerously, and who gets publicly flattened?"
       dataScope="regular"
     >
+      <KeyInsights insightKey="blowoutsNailBiters" />
       <ExplainerCard>
         For every regular-season matchup, we calculate the point margin. Blowouts are margins greater than 30 points; close games are margins under 5 points. Only decided games (no ties) are counted.
       </ExplainerCard>

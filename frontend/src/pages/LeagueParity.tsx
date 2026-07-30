@@ -5,6 +5,7 @@ import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import ExplainerCard from '../components/cards/ExplainerCard'
+import KeyInsights from '../components/cards/KeyInsights'
 import InflationChart from '../components/charts/InflationChart'
 import ScoringOverTimeChart from '../components/charts/ScoringOverTimeChart'
 import { useApi } from '../hooks/useApi'
@@ -48,6 +49,7 @@ export default function LeagueParity() {
       subtitle="How scoring and competitive balance have changed from era to era."
       dataScope="regular"
     >
+      <KeyInsights insightKey="leagueTrends" />
       <section aria-labelledby="scoring-history-heading" className="mb-8">
         <div className="mb-4">
           <h3 id="scoring-history-heading" className="text-lg font-semibold text-white">Scoring History</h3>

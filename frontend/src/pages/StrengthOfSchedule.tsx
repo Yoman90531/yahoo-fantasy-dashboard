@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import YearFilter from '../components/cards/YearFilter'
 import ExplainerCard from '../components/cards/ExplainerCard'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi, seasonsApi } from '../api/client'
@@ -43,6 +44,7 @@ export default function StrengthOfSchedule() {
       subtitle="Who faced the weekly gauntlet, and who got the soft landing?"
       dataScope="regular"
     >
+      <KeyInsights insightKey="scheduleDifficulty" />
       <ExplainerCard>
         For each manager, we calculate the average win percentage and scoring of every opponent they faced in the regular season. The SOS-adjusted win% adds a bonus for facing tough opponents and a penalty for facing weak ones. Wins Above Expected shows how many extra wins a manager earned relative to their schedule difficulty.
       </ExplainerCard>

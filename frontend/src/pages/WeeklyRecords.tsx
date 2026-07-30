@@ -1,6 +1,7 @@
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { statsApi } from '../api/client'
 import type { WeeklyRecords as WR, WeeklyRecordEntry } from '../types'
@@ -66,6 +67,7 @@ export default function WeeklyRecords() {
 
   return (
     <PageWrapper title="Weekly Highs & Lows" subtitle="The best, worst, and least defensible single-week performances." dataScope="all">
+      <KeyInsights insightKey="weeklyHighsLows" />
       <div className="flex flex-col gap-6">
         <Section title="Highest Scores Ever">
           <RecordTable

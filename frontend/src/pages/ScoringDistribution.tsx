@@ -3,6 +3,7 @@ import PageWrapper from '../components/layout/PageWrapper'
 import BoxPlotChart from '../components/charts/BoxPlotChart'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { statsApi } from '../api/client'
 import type { ScoreDistributionRow } from '../types'
@@ -34,6 +35,7 @@ export default function ScoringDistribution() {
       subtitle="See who is steady, volatile, explosive, or one bad Sunday away from disaster."
       dataScope="regular"
     >
+      <KeyInsights insightKey="scoringProfiles" />
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
 

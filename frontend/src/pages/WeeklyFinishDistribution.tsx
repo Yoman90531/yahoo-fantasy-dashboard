@@ -6,6 +6,7 @@ import {
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { statsApi } from '../api/client'
 import type { WeeklyFinishRow } from '../types'
@@ -65,6 +66,7 @@ export default function WeeklyFinishDistribution() {
       subtitle="How often each manager finishes first, top-three, top-half, or dead last."
       dataScope="regular"
     >
+      <KeyInsights insightKey="weeklyRankings" />
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
 

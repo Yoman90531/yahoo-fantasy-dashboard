@@ -1,6 +1,7 @@
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi } from '../api/client'
@@ -42,6 +43,7 @@ export default function StreakTracker() {
       subtitle="The heaters everyone remembers and the losing streaks nobody is allowed to forget."
       dataScope="regular"
     >
+      <KeyInsights insightKey="hotColdStreaks" />
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
 

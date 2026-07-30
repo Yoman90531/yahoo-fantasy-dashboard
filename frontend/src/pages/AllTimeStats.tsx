@@ -3,6 +3,7 @@ import AllTimeTable from '../components/tables/AllTimeTable'
 import WinRateBarChart from '../components/charts/WinRateBarChart'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { managersApi } from '../api/client'
 import type { ManagerStats } from '../types'
@@ -26,6 +27,7 @@ export default function AllTimeStats() {
 
   return (
     <PageWrapper title="All-Time Standings" subtitle="Career resumes for every manager. Click a row to inspect the receipts." dataScope="all">
+      <KeyInsights insightKey="allTimeStandings" />
       <AllTimeTable managers={managers} />
 
       <div className="grid md:grid-cols-2 gap-6 mt-8">

@@ -4,6 +4,7 @@ import WinRateBarChart from '../components/charts/WinRateBarChart'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import YearFilter from '../components/cards/YearFilter'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi, seasonsApi } from '../api/client'
@@ -41,6 +42,7 @@ export default function ConsolationBracket() {
       subtitle="The battle for dignity after the championship dream is already dead."
       dataScope="playoffs"
     >
+      <KeyInsights insightKey="toiletBowl" />
       <YearFilter seasons={seasons} year={year} onChange={setYear} />
 
       {loading && <LoadingSpinner />}

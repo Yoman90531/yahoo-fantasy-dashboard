@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { useAppStore } from '../store/appStore'
 import { seasonsApi } from '../api/client'
@@ -205,6 +206,7 @@ export default function SeasonReplay() {
 
   return (
     <PageWrapper title="Week-by-Week" subtitle="Reopen every matchup, blowout, and bad beat." dataScope="playoffs">
+      <KeyInsights insightKey="weekByWeek" />
       {/* Selectors */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex items-center gap-2">

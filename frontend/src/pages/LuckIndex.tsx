@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import YearFilter from '../components/cards/YearFilter'
 import ExplainerCard from '../components/cards/ExplainerCard'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi, seasonsApi } from '../api/client'
@@ -29,6 +30,7 @@ export default function LuckIndex() {
       subtitle="Who escaped with wins, and who deserved better than the schedule allowed?"
       dataScope="regular"
     >
+      <KeyInsights insightKey="scheduleLuck" />
       <ExplainerCard>
         Each week, we calculate how many other teams you would have beaten with your score. That gives an "expected wins" number. Your luck score = actual wins − expected wins. Positive means you benefited from favorable scheduling. Negative means you were unlucky.
       </ExplainerCard>

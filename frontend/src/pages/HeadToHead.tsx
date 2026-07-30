@@ -2,6 +2,7 @@ import PageWrapper from '../components/layout/PageWrapper'
 import H2HHeatmap from '../components/charts/H2HHeatmap'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { statsApi } from '../api/client'
 import type { H2HMatrix } from '../types'
@@ -15,6 +16,7 @@ export default function HeadToHead() {
       subtitle="The all-time beef matrix. Each cell shows wins from the row manager's perspective."
       dataScope="playoffs"
     >
+      <KeyInsights insightKey="rivalries" />
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
       {data && data.managers.length > 0 && (

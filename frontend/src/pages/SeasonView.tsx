@@ -5,6 +5,7 @@ import StandingsTable from '../components/tables/StandingsTable'
 import WinRateBarChart from '../components/charts/WinRateBarChart'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { useAppStore } from '../store/appStore'
 import { seasonsApi } from '../api/client'
@@ -43,6 +44,7 @@ export default function SeasonView() {
 
   return (
     <PageWrapper title="Season Archive" subtitle="Pick a year to reopen the standings and scoring receipts.">
+      <KeyInsights insightKey="seasonArchive" />
       {/* Year selector */}
       <div className="flex items-center gap-3 mb-6">
         <label className="text-gray-400 text-sm">Season:</label>

@@ -6,6 +6,7 @@ import {
 import PageWrapper from '../components/layout/PageWrapper'
 import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { statsApi, seasonsApi } from '../api/client'
 import type { ProjectionRow, SeasonSummary } from '../types'
@@ -42,6 +43,7 @@ export default function ProjectionPerformance() {
       subtitle="Who beats Yahoo's expectations, and whose projected points are pure fiction?"
       dataScope="regular"
     >
+      <KeyInsights insightKey="projectionAccuracy" />
       {/* Explainer */}
       <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-6 text-sm text-gray-400">
         <span className="text-gray-200 font-medium">How it works: </span>

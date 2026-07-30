@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/cards/LoadingSpinner'
 import ErrorMessage from '../components/cards/ErrorMessage'
 import YearFilter from '../components/cards/YearFilter'
 import ExplainerCard from '../components/cards/ExplainerCard'
+import KeyInsights from '../components/cards/KeyInsights'
 import { useApi } from '../hooks/useApi'
 import { useSortedTable } from '../hooks/useSortedTable'
 import { statsApi, seasonsApi } from '../api/client'
@@ -32,6 +33,7 @@ export default function PlayoffPerformance() {
       subtitle="Who rises in the postseason, and who folds when the bracket gets real?"
       dataScope="playoffs"
     >
+      <KeyInsights insightKey="playoffRecords" />
       <ExplainerCard>
         We split each manager's matchups into regular season and playoff games (excluding consolation). Win rates and average scores are compared between the two, and the delta shows how much better (or worse) each manager performs when it matters most.
       </ExplainerCard>
