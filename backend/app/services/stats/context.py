@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.manager import Manager
@@ -51,6 +52,31 @@ def _team_yahoo_ids(teams: list[Team]) -> dict[int, int]:
 
 def _season_map(db: Session) -> dict[int, Season]:
     return {season.id: season for season in db.query(Season).all()}
+
+
+def _season_team_counts(db: Session) -> dict[int, int]:
+    """Return the persisted team count for each season."""
+    return {
+        season_id: int(team_count)
+        for season_id, team_count in (
+            db.query(Team.season_id, func.count(Team.id))
+            .group_by(Team.season_id)
+            .all()
+        )
+    }
+
+
+def _season_num_teams(
+    season: Season | None,
+    team_counts: dict[int, int],
+) -> int | None:
+    """Use Yahoo's season size when present, otherwise infer it from team rows."""
+    if season is None:
+        return None
+    if season.num_teams is not None and season.num_teams > 1:
+        return season.num_teams
+    inferred_count = team_counts.get(season.id)
+    return inferred_count if inferred_count is not None and inferred_count > 1 else None
 
 
 def _get_matchups(

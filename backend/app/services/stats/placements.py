@@ -14,6 +14,8 @@ from app.services.stats.context import (
     _get_active_managers,
     _get_matchups,
     _season_map,
+    _season_num_teams,
+    _season_team_counts,
     _team_to_manager,
 )
 
@@ -48,6 +50,7 @@ def compute_manager_placements(
     managers = _get_active_managers(db)
     manager_map = {manager.id: manager for manager in managers}
     seasons = _season_map(db)
+    season_team_counts = _season_team_counts(db)
 
     query = db.query(Team).join(Season, Team.season_id == Season.id)
     if year_start is not None:
@@ -71,17 +74,17 @@ def compute_manager_placements(
             continue
 
         finishes = [team.final_rank for team in ranked_teams]
-        normalized_finishes = [
-            percentile
-            for team in ranked_teams
-            if (
-                percentile := normalized_finish_percentile(
-                    team.final_rank,
-                    seasons.get(team.season_id).num_teams if seasons.get(team.season_id) else None,
-                )
+        normalized_finishes = []
+        for team in ranked_teams:
+            percentile = normalized_finish_percentile(
+                team.final_rank,
+                _season_num_teams(
+                    seasons.get(team.season_id),
+                    season_team_counts,
+                ),
             )
-            is not None
-        ]
+            if percentile is not None:
+                normalized_finishes.append(percentile)
         championships = sum(
             1 for team in ranked_teams if team.is_champion or team.final_rank == 1
         )
@@ -92,8 +95,13 @@ def compute_manager_placements(
             for team in ranked_teams
             if (
                 (season := seasons.get(team.season_id))
-                and season.num_teams
-                and team.final_rank == season.num_teams
+                and (
+                    num_teams := _season_num_teams(
+                        season,
+                        season_team_counts,
+                    )
+                )
+                and team.final_rank == num_teams
             )
         )
         playoff_appearances = sum(1 for team in teams if team.made_playoffs)
@@ -321,6 +329,7 @@ def compute_manager_profile_summary(db: Session, manager_id: int) -> dict | None
     )
 
     seasons = _season_map(db)
+    season_team_counts = _season_team_counts(db)
     manager_teams = [team for team in all_teams if team.manager_id == manager_id]
     ranked_teams = [team for team in manager_teams if team.final_rank is not None]
     signature_team = (
@@ -349,7 +358,7 @@ def compute_manager_profile_summary(db: Session, manager_id: int) -> dict | None
             "final_finish": signature_team.final_rank,
             "finish_percentile": normalized_finish_percentile(
                 signature_team.final_rank,
-                season.num_teams,
+                _season_num_teams(season, season_team_counts),
             ),
             "wins": signature_team.wins,
             "losses": signature_team.losses,

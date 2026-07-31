@@ -263,6 +263,25 @@ class ManagerResolutionTest(unittest.TestCase):
         self.assertEqual(profile.season_history[0].num_teams, 2)
         self.assertEqual(profile.season_history[0].finish_percentile, 100.0)
 
+    def test_percentiles_infer_team_count_when_season_metadata_is_missing(self) -> None:
+        season = self.db.get(Season, 1)
+        season.num_teams = None
+        self.db.commit()
+
+        placements = {
+            row["manager_id"]: row
+            for row in compute_manager_placements(self.db)
+        }
+        summary = compute_manager_profile_summary(self.db, 22)
+        profile = get_manager(22, db=self.db)
+
+        self.assertEqual(placements[22]["finish_percentile"], 100.0)
+        self.assertEqual(placements[23]["finish_percentile"], 0.0)
+        self.assertEqual(placements[23]["last_place_finishes"], 1)
+        self.assertEqual(summary["signature_season"]["finish_percentile"], 100.0)
+        self.assertEqual(profile.season_history[0].num_teams, 2)
+        self.assertEqual(profile.season_history[0].finish_percentile, 100.0)
+
     def test_ranked_insights_expose_complete_manager_order(self) -> None:
         rankings = compute_insight_rankings(self.db, "allTimeStandings")
         validated = InsightRankings.model_validate(rankings)

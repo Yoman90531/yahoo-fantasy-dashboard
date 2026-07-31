@@ -9,6 +9,7 @@ from app.services.stats.placements import (
     compute_manager_profile_summary,
     normalized_finish_percentile,
 )
+from app.services.stats.context import _season_num_teams, _season_team_counts
 from app import crud
 
 router = APIRouter(prefix="/managers", tags=["managers"])
@@ -34,6 +35,7 @@ def get_manager(manager_id: int, db: Session = Depends(get_db)):
         .order_by(Season.year)
         .all()
     )
+    season_team_counts = _season_team_counts(db)
 
     history = [
         ManagerSeasonRow(
@@ -48,10 +50,10 @@ def get_manager(manager_id: int, db: Session = Depends(get_db)):
             made_playoffs=t.made_playoffs,
             is_champion=t.is_champion,
             playoff_finish=t.playoff_finish,
-            num_teams=t.season.num_teams,
+            num_teams=_season_num_teams(t.season, season_team_counts),
             finish_percentile=normalized_finish_percentile(
                 t.final_rank,
-                t.season.num_teams,
+                _season_num_teams(t.season, season_team_counts),
             ),
         )
         for t in teams
