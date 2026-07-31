@@ -47,6 +47,13 @@ export interface ManagerStats {
   runner_ups: number
   playoff_appearances: number
   best_finish: number | null
+  worst_finish: number | null
+  average_finish: number | null
+  median_finish: number | null
+  finish_percentile: number | null
+  top_three_finishes: number
+  last_place_finishes: number
+  playoff_rate: number
   current_drought: number
 }
 
@@ -62,6 +69,70 @@ export interface ManagerSeasonRow {
   made_playoffs: boolean
   is_champion: boolean
   playoff_finish: number | null
+  num_teams: number | null
+  finish_percentile: number | null
+}
+
+export interface ManagerPlacementRow {
+  placement_rank: number
+  manager_id: number
+  manager_name: string
+  seasons_played: number
+  ranked_seasons: number
+  average_finish: number
+  median_finish: number
+  finish_percentile: number | null
+  best_finish: number
+  worst_finish: number
+  championships: number
+  runner_ups: number
+  top_three_finishes: number
+  top_three_rate: number
+  last_place_finishes: number
+  last_place_rate: number
+  playoff_appearances: number
+  playoff_rate: number
+}
+
+export interface ManagerOpponentIdentity {
+  manager_id: number
+  manager_name: string
+  games: number
+  wins: number
+  losses: number
+  ties: number
+  win_pct: number
+  points_for: number
+  points_against: number
+  point_diff: number
+}
+
+export interface ManagerSignatureSeason {
+  year: number
+  team_name: string | null
+  final_finish: number
+  finish_percentile: number | null
+  wins: number
+  losses: number
+  ties: number
+  points_for: number
+  is_champion: boolean
+}
+
+export interface ManagerBadge {
+  key: string
+  label: string
+  icon: string
+  description: string
+}
+
+export interface ManagerProfileSummary {
+  placement: ManagerPlacementRow
+  favorite_opponent: ManagerOpponentIdentity | null
+  nemesis: ManagerOpponentIdentity | null
+  closest_rivalry: ManagerOpponentIdentity | null
+  signature_season: ManagerSignatureSeason | null
+  badges: ManagerBadge[]
 }
 
 export interface ManagerProfile {
@@ -71,7 +142,29 @@ export interface ManagerProfile {
     display_name: string
     nickname: string | null
   }
+  summary: ManagerProfileSummary | null
   season_history: ManagerSeasonRow[]
+}
+
+export interface InsightRankingEntry {
+  rank: number
+  manager_id: number
+  manager_name: string
+  value: number
+  display_value: string
+}
+
+export interface InsightRankingGroup {
+  metric_key: string
+  title: string
+  description: string
+  higher_is_better: boolean
+  entries: InsightRankingEntry[]
+}
+
+export interface InsightRankings {
+  insight_key: string
+  groups: InsightRankingGroup[]
 }
 
 export interface MatchupOut {

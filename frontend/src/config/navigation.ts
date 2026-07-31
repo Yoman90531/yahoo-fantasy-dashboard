@@ -44,6 +44,7 @@ export const seasonTabs: HubTabConfig[] = [
 
 export const managerTabs: HubTabConfig[] = [
   { label: 'All-Time Standings', to: '/managers/all-time' },
+  { label: 'Finishes & Placements', to: '/managers/finishes' },
   { label: 'Career Tiers', to: '/managers/tiers' },
 ]
 

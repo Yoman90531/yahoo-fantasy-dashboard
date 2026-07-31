@@ -11,6 +11,53 @@ const seasonSummary = {
   champion_name: 'Dan',
 }
 
+const danPlacement = {
+  placement_rank: 1,
+  manager_id: 1,
+  manager_name: 'Dan',
+  seasons_played: 3,
+  ranked_seasons: 3,
+  average_finish: 2.33,
+  median_finish: 2,
+  finish_percentile: 85.2,
+  best_finish: 1,
+  worst_finish: 4,
+  championships: 1,
+  runner_ups: 1,
+  top_three_finishes: 2,
+  top_three_rate: 0.6667,
+  last_place_finishes: 0,
+  last_place_rate: 0,
+  playoff_appearances: 3,
+  playoff_rate: 1,
+}
+
+const managerStats = {
+  id: 1,
+  display_name: 'Dan',
+  nickname: null,
+  seasons_played: 3,
+  total_wins: 24,
+  total_losses: 15,
+  total_ties: 0,
+  win_pct: 0.6154,
+  total_points_for: 4800,
+  total_points_against: 4500,
+  pf_pa_ratio: 1.0667,
+  championships: 1,
+  runner_ups: 1,
+  playoff_appearances: 3,
+  best_finish: 1,
+  worst_finish: 4,
+  average_finish: 2.33,
+  median_finish: 2,
+  finish_percentile: 85.2,
+  top_three_finishes: 2,
+  last_place_finishes: 0,
+  playoff_rate: 1,
+  current_drought: 0,
+}
+
 async function mockApi(page: Page) {
   await page.route('**/fantasy/api/**', async route => {
     const url = new URL(route.request().url())
@@ -18,10 +65,160 @@ async function mockApi(page: Page) {
 
     if (url.pathname.endsWith('/seasons')) {
       body = [seasonSummary]
+    } else if (url.pathname.endsWith('/managers/1/streak')) {
+      body = {
+        best_win_streak: 6,
+        best_loss_streak: 3,
+        current_streak_type: 'W',
+        current_streak_length: 2,
+      }
+    } else if (url.pathname.endsWith('/managers/1')) {
+      body = {
+        manager: {
+          id: 1,
+          yahoo_guid: 'dan-test',
+          display_name: 'Dan',
+          nickname: null,
+        },
+        summary: {
+          placement: danPlacement,
+          favorite_opponent: {
+            manager_id: 2,
+            manager_name: 'Karna',
+            games: 12,
+            wins: 8,
+            losses: 4,
+            ties: 0,
+            win_pct: 0.6667,
+            points_for: 1400,
+            points_against: 1300,
+            point_diff: 100,
+          },
+          nemesis: {
+            manager_id: 3,
+            manager_name: 'Lowell',
+            games: 10,
+            wins: 3,
+            losses: 7,
+            ties: 0,
+            win_pct: 0.3,
+            points_for: 1100,
+            points_against: 1250,
+            point_diff: -150,
+          },
+          closest_rivalry: {
+            manager_id: 4,
+            manager_name: 'Jeremy',
+            games: 14,
+            wins: 7,
+            losses: 7,
+            ties: 0,
+            win_pct: 0.5,
+            points_for: 1600,
+            points_against: 1598,
+            point_diff: 2,
+          },
+          signature_season: {
+            year: 2023,
+            team_name: 'Dan Yo Jones',
+            final_finish: 1,
+            finish_percentile: 100,
+            wins: 10,
+            losses: 3,
+            ties: 0,
+            points_for: 1700,
+            is_champion: true,
+          },
+          badges: [
+            {
+              key: 'league-champion',
+              label: 'League Champion',
+              icon: 'trophy',
+              description: '1 league championship.',
+            },
+          ],
+        },
+        season_history: [
+          {
+            year: 2023,
+            team_name: 'Dan Yo Jones',
+            wins: 10,
+            losses: 3,
+            ties: 0,
+            points_for: 1700,
+            points_against: 1500,
+            final_rank: 1,
+            made_playoffs: true,
+            is_champion: true,
+            playoff_finish: 1,
+            num_teams: 10,
+            finish_percentile: 100,
+          },
+        ],
+      }
+    } else if (url.pathname.endsWith('/managers')) {
+      body = [managerStats]
     } else if (url.pathname.endsWith('/seasons/2023')) {
       body = {
         ...seasonSummary,
         standings: [],
+      }
+    } else if (url.pathname.endsWith('/stats/manager-placements')) {
+      body = [
+        danPlacement,
+        {
+          ...danPlacement,
+          placement_rank: 2,
+          manager_id: 2,
+          manager_name: 'Karna',
+          average_finish: 4.5,
+          median_finish: 4.5,
+          finish_percentile: 61.1,
+          best_finish: 2,
+          worst_finish: 7,
+          championships: 0,
+          runner_ups: 1,
+          top_three_finishes: 1,
+          playoff_appearances: 2,
+          playoff_rate: 0.6667,
+        },
+      ]
+    } else if (url.pathname.includes('/stats/insight-rankings/')) {
+      body = {
+        insight_key: url.pathname.split('/').pop(),
+        groups: [
+          {
+            metric_key: 'average_finish',
+            title: 'Best Average Finish',
+            description: 'Lower is better.',
+            higher_is_better: false,
+            entries: [
+              {
+                rank: 1,
+                manager_id: 1,
+                manager_name: 'Dan',
+                value: 2.33,
+                display_value: '2.33',
+              },
+              {
+                rank: 2,
+                manager_id: 2,
+                manager_name: 'Karna',
+                value: 4.5,
+                display_value: '4.50',
+              },
+            ],
+          },
+        ],
+      }
+    } else if (url.pathname.endsWith('/stats/trophy-case/1')) {
+      body = {
+        manager_id: 1,
+        manager_name: 'Dan',
+        championships: [2023],
+        runner_ups: [2022],
+        playoff_appearances: [2021, 2022, 2023],
+        best_regular_season: 2023,
       }
     } else if (url.pathname.endsWith('/stats/throne-tracker')) {
       body = {
@@ -122,4 +319,40 @@ test('mobile navigation reaches rivalries', async ({ page }) => {
   await expect(page).toHaveURL(/\/fantasy\/rivalries$/)
   await expect(page.getByRole('heading', { name: 'Rivalries' })).toBeVisible()
   await expect(page.getByText('No matchup data yet')).toBeVisible()
+})
+
+test('finish leaderboard ranks final placements and opens a manager resume', async ({ page }) => {
+  await page.goto('/fantasy/managers/finishes')
+
+  await expect(page.getByRole('heading', { name: 'Finishes & Placements' })).toBeVisible()
+  await expect(page.getByText('Best Average Finish')).toBeVisible()
+  await expect(page.getByRole('cell', { name: '2.33' })).toBeVisible()
+
+  await page.getByRole('cell', { name: 'Dan' }).click()
+  await expect(page).toHaveURL(/\/fantasy\/managers\/1$/)
+  await expect(page.getByText('#1 average finish')).toBeVisible()
+})
+
+test('manager resume shows earned identity and final placement history', async ({ page }) => {
+  await page.goto('/fantasy/managers/1')
+
+  await expect(page.getByRole('heading', { name: 'Dan' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Earned Badges' })).toBeVisible()
+  await expect(page.getByText('1 league championship.', { exact: true })).toBeVisible()
+  await expect(page.getByText('Favorite Opponent')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Karna' })).toHaveAttribute(
+    'href',
+    '/fantasy/rivalries/matchup?a=1&b=2',
+  )
+  await expect(page.getByText('Signature Season')).toBeVisible()
+  await expect(page.getByRole('cell', { name: '100.0%' })).toBeVisible()
+})
+
+test('key insights expose the complete ranking behind the claim', async ({ page }) => {
+  await page.goto('/fantasy/managers/all-time')
+
+  await page.getByRole('button', { name: 'View complete rankings' }).click()
+  await expect(page.getByRole('heading', { name: 'Best Average Finish' })).toBeVisible()
+  await expect(page.getByText('#1')).toBeVisible()
+  await expect(page.getByRole('link', { name: /Dan/ })).toBeVisible()
 })

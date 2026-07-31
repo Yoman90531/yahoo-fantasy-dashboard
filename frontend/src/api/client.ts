@@ -43,6 +43,8 @@ export const statsApi = {
   consolation: (year?: number) => api.get<Schema<'ConsolationRow'>[]>('/stats/consolation', { params: year ? { year } : {} }).then(r => r.data),
   managerTiers: (yearStart?: number, yearEnd?: number) => api.get<Schema<'ManagerTierRow'>[]>('/stats/manager-tiers', { params: { ...(yearStart ? { year_start: yearStart } : {}), ...(yearEnd ? { year_end: yearEnd } : {}) } }).then(r => r.data),
   strengthOfSchedule: (year?: number) => api.get<Schema<'StrengthOfScheduleRow'>[]>('/stats/strength-of-schedule', { params: year ? { year } : {} }).then(r => r.data),
+  managerPlacements: (yearStart?: number, yearEnd?: number) => api.get<Schema<'ManagerPlacementRow'>[]>('/stats/manager-placements', { params: { ...(yearStart ? { year_start: yearStart } : {}), ...(yearEnd ? { year_end: yearEnd } : {}) } }).then(r => r.data),
+  insightRankings: (insightKey: string) => api.get<Schema<'InsightRankings'>>(`/stats/insight-rankings/${insightKey}`).then(r => r.data),
 }
 
 export const draftApi = {

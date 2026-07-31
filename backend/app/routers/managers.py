@@ -5,6 +5,10 @@ from app.models.team import Team
 from app.models.season import Season
 from app.schemas.manager import ManagerOut, ManagerStats, ManagerProfile, ManagerSeasonRow, ManagerStreak
 from app.services import stats_engine
+from app.services.stats.placements import (
+    compute_manager_profile_summary,
+    normalized_finish_percentile,
+)
 from app import crud
 
 router = APIRouter(prefix="/managers", tags=["managers"])
@@ -44,6 +48,11 @@ def get_manager(manager_id: int, db: Session = Depends(get_db)):
             made_playoffs=t.made_playoffs,
             is_champion=t.is_champion,
             playoff_finish=t.playoff_finish,
+            num_teams=t.season.num_teams,
+            finish_percentile=normalized_finish_percentile(
+                t.final_rank,
+                t.season.num_teams,
+            ),
         )
         for t in teams
     ]
@@ -53,6 +62,7 @@ def get_manager(manager_id: int, db: Session = Depends(get_db)):
 
     return ManagerProfile(
         manager=ManagerOut(id=mgr.id, yahoo_guid=mgr.yahoo_guid, display_name=mgr.display_name, nickname=mgr.nickname),
+        summary=compute_manager_profile_summary(db, manager_id),
         season_history=history,
     )
 

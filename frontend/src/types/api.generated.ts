@@ -260,6 +260,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stats/insight-rankings/{insight_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Insight Rankings */
+        get: operations["insight_rankings_api_stats_insight_rankings__insight_key__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stats/league-parity": {
         parameters: {
             query?: never;
@@ -286,6 +303,23 @@ export interface paths {
         };
         /** Luck Index */
         get: operations["luck_index_api_stats_luck_index_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stats/manager-placements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Manager Placements */
+        get: operations["manager_placements_api_stats_manager_placements_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -815,6 +849,39 @@ export interface components {
             /** Year */
             year: number;
         };
+        /** InsightRankingEntry */
+        InsightRankingEntry: {
+            /** Display Value */
+            display_value: string;
+            /** Manager Id */
+            manager_id: number;
+            /** Manager Name */
+            manager_name: string;
+            /** Rank */
+            rank: number;
+            /** Value */
+            value: number;
+        };
+        /** InsightRankingGroup */
+        InsightRankingGroup: {
+            /** Description */
+            description: string;
+            /** Entries */
+            entries: components["schemas"]["InsightRankingEntry"][];
+            /** Higher Is Better */
+            higher_is_better: boolean;
+            /** Metric Key */
+            metric_key: string;
+            /** Title */
+            title: string;
+        };
+        /** InsightRankings */
+        InsightRankings: {
+            /** Groups */
+            groups: components["schemas"]["InsightRankingGroup"][];
+            /** Insight Key */
+            insight_key: string;
+        };
         /** LeagueParityRow */
         LeagueParityRow: {
             /** Avg Points Per Game */
@@ -849,6 +916,40 @@ export interface components {
             /** Year */
             year: number | null;
         };
+        /** ManagerBadge */
+        ManagerBadge: {
+            /** Description */
+            description: string;
+            /** Icon */
+            icon: string;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** ManagerOpponentIdentity */
+        ManagerOpponentIdentity: {
+            /** Games */
+            games: number;
+            /** Losses */
+            losses: number;
+            /** Manager Id */
+            manager_id: number;
+            /** Manager Name */
+            manager_name: string;
+            /** Point Diff */
+            point_diff: number;
+            /** Points Against */
+            points_against: number;
+            /** Points For */
+            points_for: number;
+            /** Ties */
+            ties: number;
+            /** Win Pct */
+            win_pct: number;
+            /** Wins */
+            wins: number;
+        };
         /** ManagerOut */
         ManagerOut: {
             /** Display Name */
@@ -860,22 +961,115 @@ export interface components {
             /** Yahoo Guid */
             yahoo_guid: string;
         };
+        /** ManagerPlacementRow */
+        ManagerPlacementRow: {
+            /** Average Finish */
+            average_finish: number;
+            /** Best Finish */
+            best_finish: number;
+            /** Championships */
+            championships: number;
+            /** Finish Percentile */
+            finish_percentile: number | null;
+            /** Last Place Finishes */
+            last_place_finishes: number;
+            /** Last Place Rate */
+            last_place_rate: number;
+            /** Manager Id */
+            manager_id: number;
+            /** Manager Name */
+            manager_name: string;
+            /** Median Finish */
+            median_finish: number;
+            /** Placement Rank */
+            placement_rank: number;
+            /** Playoff Appearances */
+            playoff_appearances: number;
+            /** Playoff Rate */
+            playoff_rate: number;
+            /** Ranked Seasons */
+            ranked_seasons: number;
+            /** Runner Ups */
+            runner_ups: number;
+            /** Seasons Played */
+            seasons_played: number;
+            /** Top Three Finishes */
+            top_three_finishes: number;
+            /** Top Three Rate */
+            top_three_rate: number;
+            /** Worst Finish */
+            worst_finish: number;
+        };
+        /** ManagerPlacementSummary */
+        ManagerPlacementSummary: {
+            /** Average Finish */
+            average_finish: number;
+            /** Best Finish */
+            best_finish: number;
+            /** Championships */
+            championships: number;
+            /** Finish Percentile */
+            finish_percentile: number | null;
+            /** Last Place Finishes */
+            last_place_finishes: number;
+            /** Last Place Rate */
+            last_place_rate: number;
+            /** Manager Id */
+            manager_id: number;
+            /** Manager Name */
+            manager_name: string;
+            /** Median Finish */
+            median_finish: number;
+            /** Placement Rank */
+            placement_rank: number;
+            /** Playoff Appearances */
+            playoff_appearances: number;
+            /** Playoff Rate */
+            playoff_rate: number;
+            /** Ranked Seasons */
+            ranked_seasons: number;
+            /** Runner Ups */
+            runner_ups: number;
+            /** Seasons Played */
+            seasons_played: number;
+            /** Top Three Finishes */
+            top_three_finishes: number;
+            /** Top Three Rate */
+            top_three_rate: number;
+            /** Worst Finish */
+            worst_finish: number;
+        };
         /** ManagerProfile */
         ManagerProfile: {
             manager: components["schemas"]["ManagerOut"];
             /** Season History */
             season_history: components["schemas"]["ManagerSeasonRow"][];
+            summary: components["schemas"]["ManagerProfileSummary"] | null;
+        };
+        /** ManagerProfileSummary */
+        ManagerProfileSummary: {
+            /** Badges */
+            badges: components["schemas"]["ManagerBadge"][];
+            closest_rivalry: components["schemas"]["ManagerOpponentIdentity"] | null;
+            favorite_opponent: components["schemas"]["ManagerOpponentIdentity"] | null;
+            nemesis: components["schemas"]["ManagerOpponentIdentity"] | null;
+            placement: components["schemas"]["ManagerPlacementSummary"];
+            signature_season: components["schemas"]["ManagerSignatureSeason"] | null;
         };
         /** ManagerSeasonRow */
         ManagerSeasonRow: {
             /** Final Rank */
             final_rank: number | null;
+            /** Finish Percentile */
+            finish_percentile: number | null;
             /** Is Champion */
             is_champion: boolean;
             /** Losses */
             losses: number;
             /** Made Playoffs */
             made_playoffs: boolean;
+            /** Num Teams */
+            num_teams: number | null;
             /** Playoff Finish */
             playoff_finish: number | null;
             /** Points Against */
@@ -891,8 +1085,31 @@ export interface components {
             /** Year */
             year: number;
         };
+        /** ManagerSignatureSeason */
+        ManagerSignatureSeason: {
+            /** Final Finish */
+            final_finish: number;
+            /** Finish Percentile */
+            finish_percentile: number | null;
+            /** Is Champion */
+            is_champion: boolean;
+            /** Losses */
+            losses: number;
+            /** Points For */
+            points_for: number;
+            /** Team Name */
+            team_name: string | null;
+            /** Ties */
+            ties: number;
+            /** Wins */
+            wins: number;
+            /** Year */
+            year: number;
+        };
         /** ManagerStats */
         ManagerStats: {
+            /** Average Finish */
+            average_finish: number | null;
             /** Best Finish */
             best_finish: number | null;
             /** Championships */
@@ -901,18 +1118,28 @@ export interface components {
             current_drought: number;
             /** Display Name */
             display_name: string;
+            /** Finish Percentile */
+            finish_percentile: number | null;
             /** Id */
             id: number;
+            /** Last Place Finishes */
+            last_place_finishes: number;
+            /** Median Finish */
+            median_finish: number | null;
             /** Nickname */
             nickname: string | null;
             /** Pf Pa Ratio */
             pf_pa_ratio: number;
             /** Playoff Appearances */
             playoff_appearances: number;
+            /** Playoff Rate */
+            playoff_rate: number;
             /** Runner Ups */
             runner_ups: number;
             /** Seasons Played */
             seasons_played: number;
+            /** Top Three Finishes */
+            top_three_finishes: number;
             /** Total Losses */
             total_losses: number;
             /** Total Points Against */
@@ -925,6 +1152,8 @@ export interface components {
             total_wins: number;
             /** Win Pct */
             win_pct: number;
+            /** Worst Finish */
+            worst_finish: number | null;
         };
         /** ManagerStreak */
         ManagerStreak: {
@@ -1966,6 +2195,37 @@ export interface operations {
             };
         };
     };
+    insight_rankings_api_stats_insight_rankings__insight_key__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                insight_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightRankings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     league_parity_api_stats_league_parity_get: {
         parameters: {
             query?: never;
@@ -2004,6 +2264,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LuckIndexRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    manager_placements_api_stats_manager_placements_get: {
+        parameters: {
+            query?: {
+                year_start?: number | null;
+                year_end?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagerPlacementRow"][];
                 };
             };
             /** @description Validation Error */

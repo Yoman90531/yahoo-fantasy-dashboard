@@ -19,7 +19,9 @@ from app.routers.managers import get_manager
 from app.routers.seasons import get_season_matchups
 from app.schemas.stats import (
     H2HMatrix,
+    InsightRankings,
     LeagueParityRow,
+    ManagerPlacementRow,
     ScoreDistributionRow,
     SeasonAwards,
     StreakRow,
@@ -35,6 +37,12 @@ from app.services.stats.distributions import (
 )
 from app.services.stats.draft import compute_draft_analysis
 from app.services.stats.margins import compute_win_margins
+from app.services.stats.insights import compute_insight_rankings
+from app.services.stats.placements import (
+    compute_manager_placements,
+    compute_manager_profile_summary,
+    normalized_finish_percentile,
+)
 from app.services.stats_engine import (
     _get_active_managers,
     _tie_aware_percentiles,
@@ -220,6 +228,54 @@ class ManagerResolutionTest(unittest.TestCase):
             self.assertEqual(active_by_guid[guid], expected_name)
             profile = get_manager(manager_ids[guid], db=self.db)
             self.assertEqual(profile.manager.display_name, expected_name)
+
+    def test_final_placement_metrics_include_postseason_results(self) -> None:
+        placements = compute_manager_placements(self.db)
+        by_manager = {row["manager_id"]: row for row in placements}
+
+        champion = by_manager[22]
+        runner_up = by_manager[23]
+        self.assertEqual(champion["placement_rank"], 1)
+        self.assertEqual(champion["average_finish"], 1.0)
+        self.assertEqual(champion["finish_percentile"], 100.0)
+        self.assertEqual(champion["championships"], 1)
+        self.assertEqual(runner_up["average_finish"], 2.0)
+        self.assertEqual(runner_up["runner_ups"], 1)
+        self.assertEqual(runner_up["last_place_finishes"], 1)
+        self.assertEqual(runner_up["finish_percentile"], 0.0)
+        self.assertEqual(compute_trophy_case(self.db, 23)["runner_ups"], [2017])
+        self.assertEqual(normalized_finish_percentile(3, 12), 81.8)
+
+        for row in placements:
+            ManagerPlacementRow.model_validate(row)
+
+    def test_manager_profile_summary_reuses_placement_and_rivalry_data(self) -> None:
+        summary = compute_manager_profile_summary(self.db, 22)
+        profile = get_manager(22, db=self.db)
+
+        self.assertIsNotNone(summary)
+        self.assertEqual(summary["placement"]["average_finish"], 1.0)
+        self.assertEqual(summary["signature_season"]["year"], 2017)
+        self.assertTrue(summary["signature_season"]["is_champion"])
+        self.assertEqual(summary["favorite_opponent"]["manager_name"], "David")
+        self.assertEqual(summary["nemesis"]["manager_name"], "David")
+        self.assertEqual(profile.summary.placement.average_finish, 1.0)
+        self.assertEqual(profile.season_history[0].num_teams, 2)
+        self.assertEqual(profile.season_history[0].finish_percentile, 100.0)
+
+    def test_ranked_insights_expose_complete_manager_order(self) -> None:
+        rankings = compute_insight_rankings(self.db, "allTimeStandings")
+        validated = InsightRankings.model_validate(rankings)
+
+        average_finish = next(
+            group
+            for group in validated.groups
+            if group.metric_key == "average_finish"
+        )
+        self.assertEqual(
+            [entry.manager_name for entry in average_finish.entries],
+            ["JK", "David"],
+        )
 
     def test_representative_analytics_match_declared_api_contracts(self) -> None:
         H2HMatrix.model_validate(compute_head_to_head(self.db))

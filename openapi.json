@@ -602,6 +602,96 @@
         "title": "InflationPoint",
         "type": "object"
       },
+      "InsightRankingEntry": {
+        "properties": {
+          "display_value": {
+            "title": "Display Value",
+            "type": "string"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "rank",
+          "manager_id",
+          "manager_name",
+          "value",
+          "display_value"
+        ],
+        "title": "InsightRankingEntry",
+        "type": "object"
+      },
+      "InsightRankingGroup": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/InsightRankingEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "higher_is_better": {
+            "title": "Higher Is Better",
+            "type": "boolean"
+          },
+          "metric_key": {
+            "title": "Metric Key",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric_key",
+          "title",
+          "description",
+          "higher_is_better",
+          "entries"
+        ],
+        "title": "InsightRankingGroup",
+        "type": "object"
+      },
+      "InsightRankings": {
+        "properties": {
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/InsightRankingGroup"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "insight_key": {
+            "title": "Insight Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "insight_key",
+          "groups"
+        ],
+        "title": "InsightRankings",
+        "type": "object"
+      },
       "LeagueParityRow": {
         "properties": {
           "avg_points_per_game": {
@@ -695,6 +785,92 @@
         "title": "LuckIndexRow",
         "type": "object"
       },
+      "ManagerBadge": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "icon",
+          "description"
+        ],
+        "title": "ManagerBadge",
+        "type": "object"
+      },
+      "ManagerOpponentIdentity": {
+        "properties": {
+          "games": {
+            "title": "Games",
+            "type": "integer"
+          },
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "point_diff": {
+            "title": "Point Diff",
+            "type": "number"
+          },
+          "points_against": {
+            "title": "Points Against",
+            "type": "number"
+          },
+          "points_for": {
+            "title": "Points For",
+            "type": "number"
+          },
+          "ties": {
+            "title": "Ties",
+            "type": "integer"
+          },
+          "win_pct": {
+            "title": "Win Pct",
+            "type": "number"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "manager_id",
+          "manager_name",
+          "games",
+          "wins",
+          "losses",
+          "ties",
+          "win_pct",
+          "points_for",
+          "points_against",
+          "point_diff"
+        ],
+        "title": "ManagerOpponentIdentity",
+        "type": "object"
+      },
       "ManagerOut": {
         "properties": {
           "display_name": {
@@ -730,6 +906,216 @@
         "title": "ManagerOut",
         "type": "object"
       },
+      "ManagerPlacementRow": {
+        "properties": {
+          "average_finish": {
+            "title": "Average Finish",
+            "type": "number"
+          },
+          "best_finish": {
+            "title": "Best Finish",
+            "type": "integer"
+          },
+          "championships": {
+            "title": "Championships",
+            "type": "integer"
+          },
+          "finish_percentile": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Percentile"
+          },
+          "last_place_finishes": {
+            "title": "Last Place Finishes",
+            "type": "integer"
+          },
+          "last_place_rate": {
+            "title": "Last Place Rate",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "median_finish": {
+            "title": "Median Finish",
+            "type": "number"
+          },
+          "placement_rank": {
+            "title": "Placement Rank",
+            "type": "integer"
+          },
+          "playoff_appearances": {
+            "title": "Playoff Appearances",
+            "type": "integer"
+          },
+          "playoff_rate": {
+            "title": "Playoff Rate",
+            "type": "number"
+          },
+          "ranked_seasons": {
+            "title": "Ranked Seasons",
+            "type": "integer"
+          },
+          "runner_ups": {
+            "title": "Runner Ups",
+            "type": "integer"
+          },
+          "seasons_played": {
+            "title": "Seasons Played",
+            "type": "integer"
+          },
+          "top_three_finishes": {
+            "title": "Top Three Finishes",
+            "type": "integer"
+          },
+          "top_three_rate": {
+            "title": "Top Three Rate",
+            "type": "number"
+          },
+          "worst_finish": {
+            "title": "Worst Finish",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "placement_rank",
+          "manager_id",
+          "manager_name",
+          "seasons_played",
+          "ranked_seasons",
+          "average_finish",
+          "median_finish",
+          "finish_percentile",
+          "best_finish",
+          "worst_finish",
+          "championships",
+          "runner_ups",
+          "top_three_finishes",
+          "top_three_rate",
+          "last_place_finishes",
+          "last_place_rate",
+          "playoff_appearances",
+          "playoff_rate"
+        ],
+        "title": "ManagerPlacementRow",
+        "type": "object"
+      },
+      "ManagerPlacementSummary": {
+        "properties": {
+          "average_finish": {
+            "title": "Average Finish",
+            "type": "number"
+          },
+          "best_finish": {
+            "title": "Best Finish",
+            "type": "integer"
+          },
+          "championships": {
+            "title": "Championships",
+            "type": "integer"
+          },
+          "finish_percentile": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Percentile"
+          },
+          "last_place_finishes": {
+            "title": "Last Place Finishes",
+            "type": "integer"
+          },
+          "last_place_rate": {
+            "title": "Last Place Rate",
+            "type": "number"
+          },
+          "manager_id": {
+            "title": "Manager Id",
+            "type": "integer"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "median_finish": {
+            "title": "Median Finish",
+            "type": "number"
+          },
+          "placement_rank": {
+            "title": "Placement Rank",
+            "type": "integer"
+          },
+          "playoff_appearances": {
+            "title": "Playoff Appearances",
+            "type": "integer"
+          },
+          "playoff_rate": {
+            "title": "Playoff Rate",
+            "type": "number"
+          },
+          "ranked_seasons": {
+            "title": "Ranked Seasons",
+            "type": "integer"
+          },
+          "runner_ups": {
+            "title": "Runner Ups",
+            "type": "integer"
+          },
+          "seasons_played": {
+            "title": "Seasons Played",
+            "type": "integer"
+          },
+          "top_three_finishes": {
+            "title": "Top Three Finishes",
+            "type": "integer"
+          },
+          "top_three_rate": {
+            "title": "Top Three Rate",
+            "type": "number"
+          },
+          "worst_finish": {
+            "title": "Worst Finish",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "placement_rank",
+          "manager_id",
+          "manager_name",
+          "seasons_played",
+          "ranked_seasons",
+          "average_finish",
+          "median_finish",
+          "finish_percentile",
+          "best_finish",
+          "worst_finish",
+          "championships",
+          "runner_ups",
+          "top_three_finishes",
+          "top_three_rate",
+          "last_place_finishes",
+          "last_place_rate",
+          "playoff_appearances",
+          "playoff_rate"
+        ],
+        "title": "ManagerPlacementSummary",
+        "type": "object"
+      },
       "ManagerProfile": {
         "properties": {
           "manager": {
@@ -741,13 +1127,88 @@
             },
             "title": "Season History",
             "type": "array"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ManagerProfileSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
           "manager",
+          "summary",
           "season_history"
         ],
         "title": "ManagerProfile",
+        "type": "object"
+      },
+      "ManagerProfileSummary": {
+        "properties": {
+          "badges": {
+            "items": {
+              "$ref": "#/components/schemas/ManagerBadge"
+            },
+            "title": "Badges",
+            "type": "array"
+          },
+          "closest_rivalry": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ManagerOpponentIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "favorite_opponent": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ManagerOpponentIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nemesis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ManagerOpponentIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "placement": {
+            "$ref": "#/components/schemas/ManagerPlacementSummary"
+          },
+          "signature_season": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ManagerSignatureSeason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "placement",
+          "favorite_opponent",
+          "nemesis",
+          "closest_rivalry",
+          "signature_season",
+          "badges"
+        ],
+        "title": "ManagerProfileSummary",
         "type": "object"
       },
       "ManagerSeasonRow": {
@@ -763,6 +1224,17 @@
             ],
             "title": "Final Rank"
           },
+          "finish_percentile": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Percentile"
+          },
           "is_champion": {
             "title": "Is Champion",
             "type": "boolean"
@@ -774,6 +1246,17 @@
           "made_playoffs": {
             "title": "Made Playoffs",
             "type": "boolean"
+          },
+          "num_teams": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Num Teams"
           },
           "playoff_finish": {
             "anyOf": [
@@ -829,13 +1312,93 @@
           "final_rank",
           "made_playoffs",
           "is_champion",
-          "playoff_finish"
+          "playoff_finish",
+          "num_teams",
+          "finish_percentile"
         ],
         "title": "ManagerSeasonRow",
         "type": "object"
       },
+      "ManagerSignatureSeason": {
+        "properties": {
+          "final_finish": {
+            "title": "Final Finish",
+            "type": "integer"
+          },
+          "finish_percentile": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Percentile"
+          },
+          "is_champion": {
+            "title": "Is Champion",
+            "type": "boolean"
+          },
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "points_for": {
+            "title": "Points For",
+            "type": "number"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name"
+          },
+          "ties": {
+            "title": "Ties",
+            "type": "integer"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "year",
+          "team_name",
+          "final_finish",
+          "finish_percentile",
+          "wins",
+          "losses",
+          "ties",
+          "points_for",
+          "is_champion"
+        ],
+        "title": "ManagerSignatureSeason",
+        "type": "object"
+      },
       "ManagerStats": {
         "properties": {
+          "average_finish": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Finish"
+          },
           "best_finish": {
             "anyOf": [
               {
@@ -859,9 +1422,35 @@
             "title": "Display Name",
             "type": "string"
           },
+          "finish_percentile": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Percentile"
+          },
           "id": {
             "title": "Id",
             "type": "integer"
+          },
+          "last_place_finishes": {
+            "title": "Last Place Finishes",
+            "type": "integer"
+          },
+          "median_finish": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Finish"
           },
           "nickname": {
             "anyOf": [
@@ -882,12 +1471,20 @@
             "title": "Playoff Appearances",
             "type": "integer"
           },
+          "playoff_rate": {
+            "title": "Playoff Rate",
+            "type": "number"
+          },
           "runner_ups": {
             "title": "Runner Ups",
             "type": "integer"
           },
           "seasons_played": {
             "title": "Seasons Played",
+            "type": "integer"
+          },
+          "top_three_finishes": {
+            "title": "Top Three Finishes",
             "type": "integer"
           },
           "total_losses": {
@@ -913,6 +1510,17 @@
           "win_pct": {
             "title": "Win Pct",
             "type": "number"
+          },
+          "worst_finish": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Worst Finish"
           }
         },
         "required": [
@@ -931,6 +1539,13 @@
           "runner_ups",
           "playoff_appearances",
           "best_finish",
+          "worst_finish",
+          "average_finish",
+          "median_finish",
+          "finish_percentile",
+          "top_three_finishes",
+          "last_place_finishes",
+          "playoff_rate",
           "current_drought"
         ],
         "title": "ManagerStats",
@@ -3502,6 +4117,48 @@
         ]
       }
     },
+    "/api/stats/insight-rankings/{insight_key}": {
+      "get": {
+        "operationId": "insight_rankings_api_stats_insight_rankings__insight_key__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "insight_key",
+            "required": true,
+            "schema": {
+              "title": "Insight Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightRankings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Insight Rankings",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
     "/api/stats/league-parity": {
       "get": {
         "operationId": "league_parity_api_stats_league_parity_get",
@@ -3575,6 +4232,75 @@
           }
         },
         "summary": "Luck Index",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/stats/manager-placements": {
+      "get": {
+        "operationId": "manager_placements_api_stats_manager_placements_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year_start",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year Start"
+            }
+          },
+          {
+            "in": "query",
+            "name": "year_end",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Year End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ManagerPlacementRow"
+                  },
+                  "title": "Response Manager Placements Api Stats Manager Placements Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Manager Placements",
         "tags": [
           "stats"
         ]

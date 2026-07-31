@@ -9,6 +9,8 @@ from app.services.stats.distributions import (
     compute_weekly_finish_distribution,
 )
 from app.services.stats.margins import compute_win_margins
+from app.services.stats.insights import compute_insight_rankings
+from app.services.stats.placements import compute_manager_placements
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
@@ -142,3 +144,21 @@ def manager_tiers(
 @router.get("/strength-of-schedule", response_model=list[schemas.StrengthOfScheduleRow])
 def strength_of_schedule(year: int | None = Query(None), db: Session = Depends(get_db)):
     return stats_engine.compute_strength_of_schedule(db, year=year)
+
+
+@router.get("/manager-placements", response_model=list[schemas.ManagerPlacementRow])
+def manager_placements(
+    year_start: int | None = Query(None),
+    year_end: int | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    return compute_manager_placements(
+        db,
+        year_start=year_start,
+        year_end=year_end,
+    )
+
+
+@router.get("/insight-rankings/{insight_key}", response_model=schemas.InsightRankings)
+def insight_rankings(insight_key: str, db: Session = Depends(get_db)):
+    return compute_insight_rankings(db, insight_key)

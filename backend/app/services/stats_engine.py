@@ -27,6 +27,7 @@ from app.services.stats.distributions import (
 )
 from app.services.stats.draft import compute_draft_analysis
 from app.services.stats.margins import compute_win_margins
+from app.services.stats.placements import compute_manager_placements
 from app.services.stats.rules import (
     MatchupScope,
     apply_matchup_scope,
@@ -81,6 +82,10 @@ def compute_all_time_records(db: Session) -> list[dict]:
     all_seasons = db.query(Season).order_by(Season.year.desc()).all()
     most_recent_year = all_seasons[0].year if all_seasons else None
     all_teams = _all_teams(db)
+    placements_by_manager = {
+        row["manager_id"]: row
+        for row in compute_manager_placements(db)
+    }
     teams_by_mgr: dict[int, list] = defaultdict(list)
     for t in all_teams:
         teams_by_mgr[t.manager_id].append(t)
@@ -97,9 +102,10 @@ def compute_all_time_records(db: Session) -> list[dict]:
         total_pf = round(sum(t.points_for for t in teams), 2)
         total_pa = round(sum(t.points_against for t in teams), 2)
         championships = sum(1 for t in teams if t.is_champion)
-        runner_ups = sum(1 for t in teams if t.playoff_finish == 2)
+        runner_ups = sum(1 for t in teams if t.final_rank == 2)
         playoff_apps = sum(1 for t in teams if t.made_playoffs)
-        best_finish = min((t.final_rank for t in teams if t.final_rank), default=None)
+        placement = placements_by_manager.get(mgr.id)
+        best_finish = placement["best_finish"] if placement else None
         total_games = total_wins + total_losses + total_ties
         win_pct = round(total_wins / total_games, 4) if total_games else 0.0
 
@@ -128,6 +134,13 @@ def compute_all_time_records(db: Session) -> list[dict]:
             "runner_ups": runner_ups,
             "playoff_appearances": playoff_apps,
             "best_finish": best_finish,
+            "worst_finish": placement["worst_finish"] if placement else None,
+            "average_finish": placement["average_finish"] if placement else None,
+            "median_finish": placement["median_finish"] if placement else None,
+            "finish_percentile": placement["finish_percentile"] if placement else None,
+            "top_three_finishes": placement["top_three_finishes"] if placement else 0,
+            "last_place_finishes": placement["last_place_finishes"] if placement else 0,
+            "playoff_rate": placement["playoff_rate"] if placement else 0.0,
             "current_drought": drought,
         })
 
@@ -530,7 +543,7 @@ def compute_trophy_case(db: Session, manager_id: int) -> dict | None:
     )
 
     championships = [t.season.year for t in teams if t.is_champion]
-    runner_ups = [t.season.year for t in teams if t.playoff_finish == 2]
+    runner_ups = [t.season.year for t in teams if t.final_rank == 2]
     playoff_appearances = [t.season.year for t in teams if t.made_playoffs]
 
     # Best regular season: best win% among non-champion seasons (or all)

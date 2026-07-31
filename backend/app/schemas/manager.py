@@ -29,6 +29,13 @@ class ManagerStats(BaseModel):
     runner_ups: int
     playoff_appearances: int
     best_finish: int | None
+    worst_finish: int | None
+    average_finish: float | None
+    median_finish: float | None
+    finish_percentile: float | None
+    top_three_finishes: int
+    last_place_finishes: int
+    playoff_rate: float
     current_drought: int  # seasons since last championship
 
     model_config = {"from_attributes": True}
@@ -46,12 +53,77 @@ class ManagerSeasonRow(BaseModel):
     made_playoffs: bool
     is_champion: bool
     playoff_finish: int | None
+    num_teams: int | None
+    finish_percentile: float | None
 
     model_config = {"from_attributes": True}
 
 
+class ManagerPlacementSummary(BaseModel):
+    placement_rank: int
+    manager_id: int
+    manager_name: str
+    seasons_played: int
+    ranked_seasons: int
+    average_finish: float
+    median_finish: float
+    finish_percentile: float | None
+    best_finish: int
+    worst_finish: int
+    championships: int
+    runner_ups: int
+    top_three_finishes: int
+    top_three_rate: float
+    last_place_finishes: int
+    last_place_rate: float
+    playoff_appearances: int
+    playoff_rate: float
+
+
+class ManagerOpponentIdentity(BaseModel):
+    manager_id: int
+    manager_name: str
+    games: int
+    wins: int
+    losses: int
+    ties: int
+    win_pct: float
+    points_for: float
+    points_against: float
+    point_diff: float
+
+
+class ManagerSignatureSeason(BaseModel):
+    year: int
+    team_name: str | None
+    final_finish: int
+    finish_percentile: float | None
+    wins: int
+    losses: int
+    ties: int
+    points_for: float
+    is_champion: bool
+
+
+class ManagerBadge(BaseModel):
+    key: str
+    label: str
+    icon: str
+    description: str
+
+
+class ManagerProfileSummary(BaseModel):
+    placement: ManagerPlacementSummary
+    favorite_opponent: ManagerOpponentIdentity | None
+    nemesis: ManagerOpponentIdentity | None
+    closest_rivalry: ManagerOpponentIdentity | None
+    signature_season: ManagerSignatureSeason | None
+    badges: list[ManagerBadge]
+
+
 class ManagerProfile(BaseModel):
     manager: ManagerOut
+    summary: ManagerProfileSummary | None
     season_history: list[ManagerSeasonRow]
 
     model_config = {"from_attributes": True}

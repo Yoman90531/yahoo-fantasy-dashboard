@@ -393,3 +393,53 @@ class StrengthOfScheduleRow(BaseModel):
     sos_rank: int
     adjusted_win_pct: float
     wins_above_expected: float
+
+
+# ---------------------------------------------------------------------------
+# Final placements
+# ---------------------------------------------------------------------------
+
+class ManagerPlacementRow(BaseModel):
+    placement_rank: int
+    manager_id: int
+    manager_name: str
+    seasons_played: int
+    ranked_seasons: int
+    average_finish: float
+    median_finish: float
+    finish_percentile: float | None
+    best_finish: int
+    worst_finish: int
+    championships: int
+    runner_ups: int
+    top_three_finishes: int
+    top_three_rate: float
+    last_place_finishes: int
+    last_place_rate: float
+    playoff_appearances: int
+    playoff_rate: float
+
+
+# ---------------------------------------------------------------------------
+# Insight rankings
+# ---------------------------------------------------------------------------
+
+class InsightRankingEntry(BaseModel):
+    rank: int
+    manager_id: int
+    manager_name: str
+    value: float
+    display_value: str
+
+
+class InsightRankingGroup(BaseModel):
+    metric_key: str
+    title: str
+    description: str
+    higher_is_better: bool
+    entries: list[InsightRankingEntry]
+
+
+class InsightRankings(BaseModel):
+    insight_key: str
+    groups: list[InsightRankingGroup]

@@ -21,6 +21,7 @@ import {
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const SeasonView = lazy(() => import('./pages/SeasonView'))
 const AllTimeStats = lazy(() => import('./pages/AllTimeStats'))
+const ManagerPlacements = lazy(() => import('./pages/ManagerPlacements'))
 const ManagerProfile = lazy(() => import('./pages/ManagerProfile'))
 const HeadToHead = lazy(() => import('./pages/HeadToHead'))
 const WeeklyRecords = lazy(() => import('./pages/WeeklyRecords'))
@@ -71,6 +72,7 @@ function AppRoutes() {
           >
             <Route index element={<Navigate to="all-time" replace />} />
             <Route path="all-time" element={<AllTimeStats />} />
+            <Route path="finishes" element={<ManagerPlacements />} />
             <Route path="power" element={<LegacyRedirect to="/managers/tiers" />} />
             <Route path="tiers" element={<CareerTiers />} />
           </Route>
