@@ -58,7 +58,7 @@ jobs:
           username: root
           key: ${{ secrets.DROPLET_SSH_KEY }}
           password: ${{ secrets.DROPLET_PASSWORD }}
-          command_timeout: 15m
+          command_timeout: 30m
           script: |
             set -eu
             cd /opt/yahoo-fantasy-dashboard
