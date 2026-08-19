@@ -8,8 +8,10 @@ def upsert_player_season(
     season_id: int,
     team_id: int,
     player_key: str,
+    player_id: str | None,
     player_name: str,
     position: str,
+    nfl_team: str | None,
     fantasy_points: float,
 ) -> None:
     stmt = (
@@ -18,16 +20,20 @@ def upsert_player_season(
             season_id=season_id,
             team_id=team_id,
             player_key=player_key,
+            player_id=player_id,
             player_name=player_name,
             position=position,
+            nfl_team=nfl_team,
             fantasy_points=fantasy_points,
         )
         .on_conflict_do_update(
             index_elements=["season_id", "player_key"],
             set_={
                 "team_id": team_id,
+                "player_id": player_id,
                 "player_name": player_name,
                 "position": position,
+                "nfl_team": nfl_team,
                 "fantasy_points": fantasy_points,
             },
         )

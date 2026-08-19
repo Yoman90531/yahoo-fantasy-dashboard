@@ -22,14 +22,23 @@ export default function Sidebar() {
         to={item.to}
         onClick={() => setOpen(false)}
         aria-current={active ? 'page' : undefined}
-        className={`flex h-10 items-center gap-3 px-3 text-sm transition-colors ${
+        className={`flex h-10 items-center gap-3 rounded-lg border px-3 text-sm transition-colors ${
           active
-            ? 'bg-brand-700 text-white font-medium'
-            : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
+            ? item.featured
+              ? 'border-amber-400/70 bg-gradient-to-r from-amber-500/25 to-orange-500/10 font-semibold text-amber-100 shadow-sm shadow-amber-950/40'
+              : 'border-transparent bg-brand-700 text-white font-medium'
+            : item.featured
+              ? 'border-amber-500/35 bg-amber-950/30 font-medium text-amber-200 hover:border-amber-400/60 hover:bg-amber-950/50'
+              : 'border-transparent text-gray-400 hover:bg-gray-800 hover:text-gray-100'
         }`}
       >
         <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
         <span>{item.label}</span>
+        {item.badge && (
+          <span className="ml-auto rounded-full border border-amber-500/40 bg-amber-400/10 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-amber-300">
+            {item.badge}
+          </span>
+        )}
       </Link>
     )
   }

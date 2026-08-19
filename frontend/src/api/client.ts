@@ -51,6 +51,10 @@ export const draftApi = {
   analysis: (year?: number) => api.get<Schema<'DraftAnalysis'>>('/draft/analysis', { params: year ? { year } : {} }).then(r => r.data),
 }
 
+export const keeperApi = {
+  board: () => api.get<Schema<'KeeperBoard'>>('/keepers/board').then(r => r.data),
+}
+
 export const feedbackApi = {
   list: () => api.get<Schema<'FeedbackResponse'>[]>('/feedback').then(r => r.data),
   create: (payload: Schema<'FeedbackCreate'>) =>

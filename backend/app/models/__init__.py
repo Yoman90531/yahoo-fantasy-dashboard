@@ -6,6 +6,7 @@ from app.models.draft_pick import DraftPick
 from app.models.player_season import PlayerSeason
 from app.models.sync_log import SyncLog
 from app.models.feedback import Feedback
+from app.models.adp import AdpSnapshot, AdpEntry
 
 __all__ = [
     "Manager",
@@ -16,4 +17,6 @@ __all__ = [
     "PlayerSeason",
     "SyncLog",
     "Feedback",
+    "AdpSnapshot",
+    "AdpEntry",
 ]

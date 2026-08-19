@@ -28,3 +28,4 @@ exports. The frontend API boundary is generated from the checked-in OpenAPI
 contract to catch backend/frontend drift in CI.
 
 See [SETUP.md](SETUP.md) for local development and production instructions.
+See [KEEPER_LAB.md](KEEPER_LAB.md) for Keeper Lab data imports and league configuration.

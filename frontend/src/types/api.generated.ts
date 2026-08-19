@@ -56,6 +56,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/keepers/board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Keeper Board */
+        get: operations["keeper_board_api_keepers_board_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/managers": {
         parameters: {
             query?: never;
@@ -881,6 +898,142 @@ export interface components {
             groups: components["schemas"]["InsightRankingGroup"][];
             /** Insight Key */
             insight_key: string;
+        };
+        /** KeeperAdpPlayer */
+        KeeperAdpPlayer: {
+            /** Adp Round */
+            adp_round: number;
+            /** Average Adp */
+            average_adp: number | null;
+            /** Nfl Team */
+            nfl_team: string | null;
+            /** Player Name */
+            player_name: string;
+            /** Position */
+            position: string | null;
+            /** Rank */
+            rank: number;
+        };
+        /** KeeperAdpSnapshot */
+        KeeperAdpSnapshot: {
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /** Id */
+            id: number;
+            /** Is Locked */
+            is_locked: boolean;
+            /** Player Count */
+            player_count: number;
+            /** Source */
+            source: string;
+            /** Source Url */
+            source_url: string | null;
+        };
+        /** KeeperBoard */
+        KeeperBoard: {
+            /** Adp Players */
+            adp_players: components["schemas"]["KeeperAdpPlayer"][];
+            adp_snapshot: components["schemas"]["KeeperAdpSnapshot"] | null;
+            /** Candidates */
+            candidates: components["schemas"]["KeeperCandidate"][];
+            /** Data Warnings */
+            data_warnings: string[];
+            rules: components["schemas"]["KeeperRules"];
+            /** Teams */
+            teams: components["schemas"]["KeeperTeam"][];
+        };
+        /** KeeperCandidate */
+        KeeperCandidate: {
+            /** Acquisition Label */
+            acquisition_label: string;
+            /** Adp Rank */
+            adp_rank: number | null;
+            /** Adp Round */
+            adp_round: number | null;
+            /** Average Adp */
+            average_adp: number | null;
+            /** Base Keeper Round */
+            base_keeper_round: number | null;
+            /** Candidate Id */
+            candidate_id: string;
+            /** Consecutive Keeper Years */
+            consecutive_keeper_years: number | null;
+            /** Draft Pick */
+            draft_pick: number | null;
+            /** Draft Round */
+            draft_round: number | null;
+            /** Dynasty Locked Round */
+            dynasty_locked_round: number | null;
+            /** Dynasty Year */
+            dynasty_year: number | null;
+            /** Eligibility Reason */
+            eligibility_reason: string;
+            /**
+             * Eligibility Status
+             * @enum {string}
+             */
+            eligibility_status: "eligible" | "ineligible" | "review";
+            /** History Known */
+            history_known: boolean;
+            /** Is Dynasty */
+            is_dynasty: boolean | null;
+            /** Kept Previous Year */
+            kept_previous_year: boolean | null;
+            /** Manager Name */
+            manager_name: string;
+            /** Nfl Team */
+            nfl_team: string | null;
+            /** Player Name */
+            player_name: string;
+            /** Position */
+            position: string;
+            /** Roster Team Key */
+            roster_team_key: string;
+            /** Roster Team Name */
+            roster_team_name: string | null;
+            /** Value Rating */
+            value_rating: string;
+            /** Value Rounds */
+            value_rounds: number | null;
+            /** Yahoo Player Id */
+            yahoo_player_id: string | null;
+        };
+        /** KeeperRules */
+        KeeperRules: {
+            /** Adp Source */
+            adp_source: string;
+            /** Adp Url */
+            adp_url: string;
+            /** Draft Rounds */
+            draft_rounds: number;
+            /** League Size */
+            league_size: number;
+            /** Recap */
+            recap: string[];
+            /** Scoring Format */
+            scoring_format: string;
+            /** Season */
+            season: number;
+            /** Source Season */
+            source_season: number;
+        };
+        /** KeeperTeam */
+        KeeperTeam: {
+            /** Is Expansion */
+            is_expansion: boolean;
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Round Capacities */
+            round_capacities: {
+                [key: string]: number;
+            };
+            /** Team Name */
+            team_name: string | null;
         };
         /** LeagueParityRow */
         LeagueParityRow: {
@@ -1872,6 +2025,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    keeper_board_api_keepers_board_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeeperBoard"];
                 };
             };
         };

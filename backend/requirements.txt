@@ -6,3 +6,5 @@ pydantic-settings==2.14.2
 python-dotenv==1.1.1
 yfpy==17.0.0
 boto3==1.43.60
+openpyxl==3.1.5
+xlrd==2.0.2

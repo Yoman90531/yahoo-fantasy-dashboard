@@ -1,15 +1,15 @@
 import { BellRing, CalendarDays, Clock3 } from 'lucide-react'
 
 const KEY_DATES = [
-  { date: 'Aug 17', event: 'Trade deadline', owner: 'Everyone' },
-  { date: 'Aug 17', event: 'Lock ADP and send keeper costs', owner: 'Dan' },
-  { date: 'Aug 24', event: 'Declare keepers', owner: 'Dan' },
-  { date: 'Aug 24-27', event: 'Pick draft order', owner: 'Dan' },
-  { date: 'By Aug 26', event: 'Submit rule proposals', owner: 'Jeremy' },
-  { date: 'Aug 27', event: 'Set up draft on Yahoo', owner: 'Dan' },
-  { date: 'By Aug 28', event: 'Vote on rules and ratify constitution', owner: 'Jeremy' },
-  { date: 'Aug 28', event: 'Send dues', owner: 'Kang' },
-  { date: 'Aug 28, 6:00 PM ET', event: 'Draft', owner: 'Dan', featured: true },
+  { date: 'TBD', event: 'Trade deadline', owner: 'Everyone' },
+  { date: 'TBD', event: 'Lock ADP and send keeper costs', owner: 'Dan' },
+  { date: 'TBD', event: 'Declare keepers', owner: 'Dan' },
+  { date: 'TBD', event: 'Pick draft order', owner: 'Dan' },
+  { date: 'TBD', event: 'Submit rule proposals', owner: 'Jeremy' },
+  { date: 'TBD', event: 'Set up draft on Yahoo', owner: 'Dan' },
+  { date: 'TBD', event: 'Vote on rules and ratify constitution', owner: 'Jeremy' },
+  { date: 'TBD', event: 'Send dues', owner: 'Kang' },
+  { date: 'TBD', event: 'Draft', owner: 'Dan', featured: true },
 ]
 
 export default function KeyDatesSection() {

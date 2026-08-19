@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.routers import seasons, managers, stats, sync, draft, feedback
+from app.routers import seasons, managers, stats, sync, draft, feedback, keepers
 from app.schemas.health import HealthResponse
 
 
@@ -82,6 +82,7 @@ app.include_router(stats.router, prefix="/api")
 app.include_router(sync.router, prefix="/api")
 app.include_router(draft.router, prefix="/api")
 app.include_router(feedback.router, prefix="/api")
+app.include_router(keepers.router, prefix="/api")
 
 
 @app.get("/api/health", response_model=HealthResponse)

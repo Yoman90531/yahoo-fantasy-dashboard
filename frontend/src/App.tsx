@@ -41,6 +41,7 @@ const ConsolationBracket = lazy(() => import('./pages/ConsolationBracket'))
 const StrengthOfSchedule = lazy(() => import('./pages/StrengthOfSchedule'))
 const DraftAnalysis = lazy(() => import('./pages/DraftAnalysis'))
 const FeedbackWall = lazy(() => import('./pages/FeedbackWall'))
+const KeeperLab = lazy(() => import('./pages/KeeperLab'))
 
 function LegacyRedirect({ to }: { to: string }) {
   const { search } = useLocation()
@@ -54,6 +55,7 @@ function AppRoutes() {
       <main className="flex-1 overflow-auto pt-12 md:pt-0">
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
+          <Route path="/keepers" element={<KeeperLab />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/karna" element={<Dashboard insightKey="karnaPrank" />} />
 

@@ -10,8 +10,10 @@ class PlayerSeason(Base):
     season_id: Mapped[int] = mapped_column(Integer, ForeignKey("seasons.id"), nullable=False)
     team_id: Mapped[int] = mapped_column(Integer, ForeignKey("teams.id"), nullable=False)
     player_key: Mapped[str] = mapped_column(String, nullable=False)
+    player_id: Mapped[str | None] = mapped_column(String, nullable=True)
     player_name: Mapped[str] = mapped_column(String, nullable=False)
     position: Mapped[str] = mapped_column(String, nullable=False)
+    nfl_team: Mapped[str | None] = mapped_column(String, nullable=True)
     fantasy_points: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
     season: Mapped["Season"] = relationship("Season", back_populates="player_seasons")

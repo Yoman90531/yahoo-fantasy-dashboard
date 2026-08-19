@@ -8,6 +8,7 @@ import {
   House,
   Medal,
   MessageSquare,
+  ShieldCheck,
   Swords,
   type LucideIcon,
 } from 'lucide-react'
@@ -17,6 +18,8 @@ export interface NavigationItem {
   label: string
   activePrefix: string
   icon: LucideIcon
+  featured?: boolean
+  badge?: string
 }
 
 export interface HubTabConfig {
@@ -25,6 +28,7 @@ export interface HubTabConfig {
 }
 
 export const primaryNavigation: NavigationItem[] = [
+  { to: '/keepers', label: 'Keeper Lab', activePrefix: '/keepers', icon: ShieldCheck, featured: true, badge: 'NEW' },
   { to: '/', label: 'League HQ', activePrefix: '/', icon: House },
   { to: '/seasons/archive', label: 'Season Vault', activePrefix: '/seasons', icon: Archive },
   { to: '/managers/all-time', label: 'Manager Rankings', activePrefix: '/managers', icon: Crown },

@@ -47,7 +47,7 @@ class DatabaseInfrastructureTest(unittest.TestCase):
                 version = connection.exec_driver_sql(
                     "SELECT version_num FROM alembic_version"
                 ).scalar_one()
-            self.assertEqual(version, "0001_initial")
+            self.assertEqual(version, "0002_keeper_lab")
         finally:
             engine.dispose()
 

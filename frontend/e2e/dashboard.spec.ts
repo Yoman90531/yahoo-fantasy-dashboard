@@ -58,12 +58,86 @@ const managerStats = {
   current_drought: 0,
 }
 
+const keeperTeams = [
+  ...Array.from({ length: 12 }, (_, index) => ({
+    key: `team:${index + 1}`,
+    name: index === 0 ? 'Dan' : index === 1 ? 'Karna' : `Owner ${index + 1}`,
+    team_name: `Team ${index + 1}`,
+    is_expansion: false,
+    round_capacities: {},
+  })),
+  { key: 'expansion:nabi', name: 'Nabi', team_name: 'Expansion team', is_expansion: true, round_capacities: {} },
+  { key: 'expansion:squilly', name: 'Squilly', team_name: 'Expansion team', is_expansion: true, round_capacities: {} },
+]
+
+const keeperBoard = {
+  rules: {
+    season: 2026,
+    source_season: 2025,
+    league_size: 14,
+    draft_rounds: 16,
+    scoring_format: 'half_ppr',
+    adp_source: 'FantasyPros Half-PPR Consensus ADP',
+    adp_url: 'https://www.fantasypros.com/nfl/adp/half-point-ppr-overall.php',
+    recap: [
+      'Owners may select up to three keepers.',
+      'A player may be kept for at most three consecutive seasons.',
+    ],
+  },
+  teams: keeperTeams,
+  candidates: [
+    {
+      candidate_id: 'yahoo:1',
+      yahoo_player_id: '1',
+      player_name: 'Jahmyr Gibbs',
+      position: 'RB',
+      nfl_team: 'DET',
+      roster_team_key: 'team:1',
+      roster_team_name: 'Team 1',
+      manager_name: 'Dan',
+      draft_round: 3,
+      draft_pick: 29,
+      acquisition_label: 'Round 3',
+      kept_previous_year: false,
+      consecutive_keeper_years: 0,
+      is_dynasty: false,
+      dynasty_year: null,
+      dynasty_locked_round: null,
+      history_known: true,
+      eligibility_status: 'eligible',
+      eligibility_reason: 'Eligible under the configured keeper rules.',
+      adp_rank: 1,
+      adp_round: 1,
+      average_adp: 1.5,
+      base_keeper_round: 3,
+      value_rounds: 2,
+      value_rating: 'Good',
+    },
+  ],
+  adp_snapshot: {
+    id: 1,
+    source: 'FantasyPros Half-PPR Consensus ADP',
+    source_url: 'https://www.fantasypros.com/nfl/adp/half-point-ppr-overall.php',
+    captured_at: '2026-08-17T19:00:00',
+    player_count: 3,
+    is_locked: true,
+  },
+  adp_players: [
+    { rank: 1, player_name: 'Jahmyr Gibbs', position: 'RB', nfl_team: 'DET', average_adp: 1.5, adp_round: 1 },
+    { rank: 2, player_name: 'Bijan Robinson', position: 'RB', nfl_team: 'ATL', average_adp: 1.5, adp_round: 1 },
+    { rank: 3, player_name: "Ja'Marr Chase", position: 'WR', nfl_team: 'CIN', average_adp: 3, adp_round: 1 },
+  ],
+  data_warnings: [],
+}
+
 async function mockApi(page: Page) {
   await page.route('**/fantasy/api/**', async route => {
     const url = new URL(route.request().url())
     let body: unknown = {}
 
-    if (url.pathname.endsWith('/seasons')) {
+    if (url.pathname.endsWith('/keepers/board')) {
+      body = keeperBoard
+    } else if (url.pathname.endsWith('/seasons')) {
       body = [seasonSummary]
     } else if (url.pathname.endsWith('/managers/1/streak')) {
       body = {
@@ -319,6 +393,23 @@ test('mobile navigation reaches rivalries', async ({ page }) => {
   await expect(page).toHaveURL(/\/fantasy\/rivalries$/)
   await expect(page.getByRole('heading', { name: 'Rivalries' })).toBeVisible()
   await expect(page.getByText('No matchup data yet')).toBeVisible()
+})
+
+test('keeper lab is highlighted first and supports a private league scenario', async ({ page }) => {
+  await page.goto('/fantasy/keepers')
+
+  const primaryNav = page.getByRole('navigation', { name: 'Primary' })
+  await expect(primaryNav.getByRole('link').first()).toContainText('Keeper Lab')
+  await expect(primaryNav.getByRole('link').first()).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByRole('heading', { name: 'Keeper Lab' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Keeper rules at a glance' })).toBeVisible()
+  await expect(page.getByRole('cell', { name: 'Jahmyr Gibbs' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Draft Simulator' }).click()
+  await expect(page.getByText('League assumptions')).toBeVisible()
+  await page.getByLabel('Active team').selectOption('expansion:nabi')
+  await expect(page.getByText(/Expansion choices come from unkept players/)).toBeVisible()
+  await expect(page.getByLabel('Nabi keeper 1')).toContainText('Jahmyr Gibbs')
 })
 
 test('finish leaderboard ranks final placements and opens a manager resume', async ({ page }) => {

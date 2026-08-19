@@ -21,7 +21,9 @@ class ApiContractTest(unittest.TestCase):
     def test_openapi_schema_can_be_generated(self) -> None:
         schema = app.openapi()
         self.assertIn("/api/stats/weekly-records", schema["paths"])
+        self.assertIn("/api/keepers/board", schema["paths"])
         self.assertIn("WeeklyRecords", schema["components"]["schemas"])
+        self.assertIn("KeeperBoard", schema["components"]["schemas"])
         self.assertNotIn("/api/sync/run", schema["paths"])
 
 

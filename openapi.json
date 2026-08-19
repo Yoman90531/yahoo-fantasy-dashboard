@@ -692,6 +692,503 @@
         "title": "InsightRankings",
         "type": "object"
       },
+      "KeeperAdpPlayer": {
+        "properties": {
+          "adp_round": {
+            "title": "Adp Round",
+            "type": "integer"
+          },
+          "average_adp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Adp"
+          },
+          "nfl_team": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nfl Team"
+          },
+          "player_name": {
+            "title": "Player Name",
+            "type": "string"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rank",
+          "player_name",
+          "position",
+          "nfl_team",
+          "average_adp",
+          "adp_round"
+        ],
+        "title": "KeeperAdpPlayer",
+        "type": "object"
+      },
+      "KeeperAdpSnapshot": {
+        "properties": {
+          "captured_at": {
+            "format": "date-time",
+            "title": "Captured At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_locked": {
+            "title": "Is Locked",
+            "type": "boolean"
+          },
+          "player_count": {
+            "title": "Player Count",
+            "type": "integer"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "source_url",
+          "captured_at",
+          "player_count",
+          "is_locked"
+        ],
+        "title": "KeeperAdpSnapshot",
+        "type": "object"
+      },
+      "KeeperBoard": {
+        "properties": {
+          "adp_players": {
+            "items": {
+              "$ref": "#/components/schemas/KeeperAdpPlayer"
+            },
+            "title": "Adp Players",
+            "type": "array"
+          },
+          "adp_snapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KeeperAdpSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/KeeperCandidate"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "data_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Data Warnings",
+            "type": "array"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/KeeperRules"
+          },
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/KeeperTeam"
+            },
+            "title": "Teams",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rules",
+          "teams",
+          "candidates",
+          "adp_snapshot",
+          "adp_players",
+          "data_warnings"
+        ],
+        "title": "KeeperBoard",
+        "type": "object"
+      },
+      "KeeperCandidate": {
+        "properties": {
+          "acquisition_label": {
+            "title": "Acquisition Label",
+            "type": "string"
+          },
+          "adp_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adp Rank"
+          },
+          "adp_round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adp Round"
+          },
+          "average_adp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Adp"
+          },
+          "base_keeper_round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Keeper Round"
+          },
+          "candidate_id": {
+            "title": "Candidate Id",
+            "type": "string"
+          },
+          "consecutive_keeper_years": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consecutive Keeper Years"
+          },
+          "draft_pick": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Pick"
+          },
+          "draft_round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Round"
+          },
+          "dynasty_locked_round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dynasty Locked Round"
+          },
+          "dynasty_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dynasty Year"
+          },
+          "eligibility_reason": {
+            "title": "Eligibility Reason",
+            "type": "string"
+          },
+          "eligibility_status": {
+            "enum": [
+              "eligible",
+              "ineligible",
+              "review"
+            ],
+            "title": "Eligibility Status",
+            "type": "string"
+          },
+          "history_known": {
+            "title": "History Known",
+            "type": "boolean"
+          },
+          "is_dynasty": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Dynasty"
+          },
+          "kept_previous_year": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kept Previous Year"
+          },
+          "manager_name": {
+            "title": "Manager Name",
+            "type": "string"
+          },
+          "nfl_team": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nfl Team"
+          },
+          "player_name": {
+            "title": "Player Name",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "string"
+          },
+          "roster_team_key": {
+            "title": "Roster Team Key",
+            "type": "string"
+          },
+          "roster_team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roster Team Name"
+          },
+          "value_rating": {
+            "title": "Value Rating",
+            "type": "string"
+          },
+          "value_rounds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Rounds"
+          },
+          "yahoo_player_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Yahoo Player Id"
+          }
+        },
+        "required": [
+          "candidate_id",
+          "yahoo_player_id",
+          "player_name",
+          "position",
+          "nfl_team",
+          "roster_team_key",
+          "roster_team_name",
+          "manager_name",
+          "draft_round",
+          "draft_pick",
+          "acquisition_label",
+          "kept_previous_year",
+          "consecutive_keeper_years",
+          "is_dynasty",
+          "dynasty_year",
+          "dynasty_locked_round",
+          "history_known",
+          "eligibility_status",
+          "eligibility_reason",
+          "adp_rank",
+          "adp_round",
+          "average_adp",
+          "base_keeper_round",
+          "value_rounds",
+          "value_rating"
+        ],
+        "title": "KeeperCandidate",
+        "type": "object"
+      },
+      "KeeperRules": {
+        "properties": {
+          "adp_source": {
+            "title": "Adp Source",
+            "type": "string"
+          },
+          "adp_url": {
+            "title": "Adp Url",
+            "type": "string"
+          },
+          "draft_rounds": {
+            "title": "Draft Rounds",
+            "type": "integer"
+          },
+          "league_size": {
+            "title": "League Size",
+            "type": "integer"
+          },
+          "recap": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Recap",
+            "type": "array"
+          },
+          "scoring_format": {
+            "title": "Scoring Format",
+            "type": "string"
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          },
+          "source_season": {
+            "title": "Source Season",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "season",
+          "source_season",
+          "league_size",
+          "draft_rounds",
+          "scoring_format",
+          "adp_source",
+          "adp_url",
+          "recap"
+        ],
+        "title": "KeeperRules",
+        "type": "object"
+      },
+      "KeeperTeam": {
+        "properties": {
+          "is_expansion": {
+            "title": "Is Expansion",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "round_capacities": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Round Capacities",
+            "type": "object"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Name"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "team_name",
+          "is_expansion",
+          "round_capacities"
+        ],
+        "title": "KeeperTeam",
+        "type": "object"
+      },
       "LeagueParityRow": {
         "properties": {
           "avg_points_per_game": {
@@ -3651,6 +4148,27 @@
           }
         },
         "summary": "Health"
+      }
+    },
+    "/api/keepers/board": {
+      "get": {
+        "operationId": "keeper_board_api_keepers_board_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeeperBoard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Keeper Board",
+        "tags": [
+          "keepers"
+        ]
       }
     },
     "/api/managers": {

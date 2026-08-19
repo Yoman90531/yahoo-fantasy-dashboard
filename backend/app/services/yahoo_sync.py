@@ -413,6 +413,10 @@ def _sync_player_stats(db: Session, query, season, db_team_map: dict[int, int]) 
                     player_name = str(getattr(player, "full_name", "Unknown"))
 
                 position = str(getattr(player, "display_position", ""))
+                raw_player_id = getattr(player, "player_id", None)
+                player_id = str(raw_player_id) if raw_player_id is not None else None
+                raw_nfl_team = getattr(player, "editorial_team_abbr", None)
+                nfl_team = str(raw_nfl_team) if raw_nfl_team else None
 
                 # Get fantasy points
                 pts_obj = getattr(player, "player_points", None)
@@ -426,8 +430,10 @@ def _sync_player_stats(db: Session, query, season, db_team_map: dict[int, int]) 
                     season_id=season.id,
                     team_id=db_team_id,
                     player_key=player_key,
+                    player_id=player_id,
                     player_name=player_name,
                     position=position,
+                    nfl_team=nfl_team,
                     fantasy_points=fantasy_points,
                 )
                 total_players += 1

@@ -20,6 +20,16 @@ from app import models  # noqa: F401
 
 logger = logging.getLogger(__name__)
 INITIAL_REVISION = "0001_initial"
+INITIAL_TABLES = {
+    "managers",
+    "seasons",
+    "sync_log",
+    "feedback",
+    "teams",
+    "matchups",
+    "draft_picks",
+    "player_seasons",
+}
 
 
 def migrate_database() -> None:
@@ -38,15 +48,25 @@ def migrate_database() -> None:
     application_tables = set(Base.metadata.tables)
 
     if application_tables.intersection(existing_tables) and "alembic_version" not in existing_tables:
-        missing_tables = sorted(application_tables - existing_tables)
-        if missing_tables:
-            missing = ", ".join(missing_tables)
+        if application_tables.issubset(existing_tables):
+            logger.info("Baselining current create-all schema at Alembic head.")
+            command.stamp(alembic_config, "head")
+        elif INITIAL_TABLES.issubset(existing_tables):
+            unexpected_tables = existing_tables - INITIAL_TABLES
+            if unexpected_tables:
+                unexpected = ", ".join(sorted(unexpected_tables))
+                raise RuntimeError(
+                    "Refusing to baseline an ambiguous legacy schema. "
+                    f"Unexpected tables: {unexpected}"
+                )
+            logger.info("Baselining legacy database at %s.", INITIAL_REVISION)
+            command.stamp(alembic_config, INITIAL_REVISION)
+        else:
+            missing = ", ".join(sorted(INITIAL_TABLES - existing_tables))
             raise RuntimeError(
                 "Refusing to baseline a partial legacy schema. "
-                f"Missing application tables: {missing}"
+                f"Missing initial tables: {missing}"
             )
-        logger.info("Baselining legacy database at %s.", INITIAL_REVISION)
-        command.stamp(alembic_config, INITIAL_REVISION)
 
     command.upgrade(alembic_config, "head")
     logger.info("Database schema is current.")
