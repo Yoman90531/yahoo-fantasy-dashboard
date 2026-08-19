@@ -13,7 +13,8 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY backend/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade setuptools wheel \
+    && pip install --no-cache-dir --no-build-isolation -r requirements.txt
 
 # Copy backend code
 COPY backend/ ./
