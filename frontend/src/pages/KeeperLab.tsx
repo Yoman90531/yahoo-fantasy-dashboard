@@ -59,7 +59,6 @@ type KeeperSortKey =
   | 'adp_rank'
   | 'adp_round'
   | 'base_keeper_round'
-  | 'final_cost'
   | 'value_rounds'
 
 type KeeperSortValue = string | number | boolean | null
@@ -73,7 +72,6 @@ const TEXT_SORT_KEYS = new Set<KeeperSortKey>([
 ])
 
 function keeperSortValue(candidate: KeeperCandidate, key: KeeperSortKey): KeeperSortValue {
-  if (key === 'final_cost') return candidate.base_keeper_round
   if (key === 'eligibility_status') {
     return { eligible: 1, review: 2, ineligible: 3 }[candidate.eligibility_status]
   }
@@ -295,7 +293,7 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
 
       <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
         <div className="overflow-x-auto">
-          <table className="min-w-[1540px] w-full text-sm">
+          <table className="min-w-[1450px] w-full text-sm">
             <thead className="bg-gray-950 text-xs uppercase tracking-wider text-gray-500">
               <tr>
                 {sortableHeader('Player', 'player_name', 'left', true)}
@@ -309,8 +307,7 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
                 {sortableHeader('Eligibility', 'eligibility_status')}
                 {sortableHeader('Consensus rank', 'adp_rank', 'right')}
                 {sortableHeader('ADP round', 'adp_round', 'right')}
-                {sortableHeader('Base cost', 'base_keeper_round', 'right')}
-                {sortableHeader('Final cost', 'final_cost', 'right')}
+                {sortableHeader('Starting keeper cost', 'base_keeper_round', 'right')}
                 {sortableHeader('Value', 'value_rounds', 'right')}
               </tr>
             </thead>
@@ -342,7 +339,6 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
                   <td className="px-3 py-3 text-right text-gray-300">{candidate.adp_rank ? `#${candidate.adp_rank}` : '—'}</td>
                   <td className="px-3 py-3 text-right text-gray-300">{candidate.adp_round ? `R${candidate.adp_round}` : '—'}</td>
                   <td className="px-3 py-3 text-right font-medium text-white">{candidate.base_keeper_round ? `R${candidate.base_keeper_round}` : '—'}</td>
-                  <td className="px-3 py-3 text-right text-gray-500">Scenario</td>
                   <td className={`px-3 py-3 text-right font-semibold ${VALUE_STYLES[candidate.value_rating]}`}>
                     {candidate.value_rounds === null
                       ? 'Unrated'
@@ -590,7 +586,7 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
                         onChange={event => updateSelection(slot, {
                           manualRound: event.target.value ? Number(event.target.value) : undefined,
                         })}
-                        placeholder={selection?.baseRound ? `Base R${selection.baseRound}` : 'Round'}
+                        placeholder={selection?.baseRound ? `Starting R${selection.baseRound}` : 'Round'}
                         className="h-10 w-full rounded-lg border border-gray-700 bg-gray-900 px-3 text-sm text-white disabled:opacity-40"
                       />
                     </label>
@@ -608,7 +604,7 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
                   {selection && (
                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                       <span>{selection.position}{selection.nflTeam ? ` · ${selection.nflTeam}` : ''}</span>
-                      <span>Base: {selection.baseRound ? `Round ${selection.baseRound}` : 'review'}</span>
+                      <span>Starting: {selection.baseRound ? `Round ${selection.baseRound}` : 'review'}</span>
                       <span className={resolved?.finalRound ? 'font-medium text-white' : 'text-red-300'}>
                         Final: {resolved?.finalRound ? `Round ${resolved.finalRound}` : 'unresolved'}
                       </span>

@@ -434,8 +434,12 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await expect(page.getByRole('cell', { name: 'Lowell', exact: true })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Jamarcus Susseles', exact: true })).toHaveCount(0)
 
+  const boardTable = page.getByRole('table')
+  await expect(boardTable.getByRole('columnheader', { name: /Starting keeper cost/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /Final cost/ })).toHaveCount(0)
+
   const playerHeader = page.getByRole('columnheader', { name: /Player/ })
-  const boardRows = page.getByRole('table').locator('tbody tr')
+  const boardRows = boardTable.locator('tbody tr')
   await playerHeader.getByRole('button').click()
   await expect(playerHeader).toHaveAttribute('aria-sort', 'ascending')
   await expect(boardRows.first().getByRole('cell').first()).toHaveText('Amon-Ra St. Brown')
@@ -448,6 +452,9 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await page.getByLabel('Active team').selectOption('expansion:nabi')
   await expect(page.getByText(/Expansion choices come from unkept players/)).toBeVisible()
   await expect(page.getByLabel('Nabi keeper 1')).toContainText('Jahmyr Gibbs')
+  await page.getByLabel('Nabi keeper 1').selectOption('yahoo:1')
+  await expect(page.getByText('Starting: Round 3')).toBeVisible()
+  await expect(page.getByText('Final: Round 3')).toBeVisible()
 })
 
 test('finish leaderboard ranks final placements and opens a manager resume', async ({ page }) => {
