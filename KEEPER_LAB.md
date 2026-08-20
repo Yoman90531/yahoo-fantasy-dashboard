@@ -19,7 +19,9 @@ python sync_runner.py --years 2025
 ## Import FantasyPros Half-PPR consensus ADP
 
 Keeper Lab stores dated ADP snapshots and uses the latest locked 2026 Half-PPR
-snapshot. The importer accepts FantasyPros CSV, XLS, and XLSX exports:
+snapshot. The supplied 351-player FantasyPros export is bundled at
+`backend/app/resources/fantasypros_2026_half_ppr_adp.csv` and is seeded
+idempotently during deployment. To import a newer export manually:
 
 ```powershell
 cd backend
@@ -33,9 +35,10 @@ cannot replace the locked snapshot.
 
 ## Load keeper history
 
-Edit `backend/app/resources/keeper_history.json`. Once the supplied history is
-complete through 2025, set `complete_through` to `2025`. Until then the UI shows
-"History review" rather than guessing eligibility.
+`backend/app/resources/keeper_history.json` contains the 30 confirmed keepers
+from the `2025 Keepers` tab of the league tracker, plus the 2024 and 2023 links
+needed to calculate consecutive-year eligibility. The file records its source
+URL and is marked complete through 2025.
 
 ```json
 {

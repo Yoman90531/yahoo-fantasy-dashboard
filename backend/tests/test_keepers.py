@@ -26,6 +26,20 @@ from app.services.keepers import (
 
 
 class KeeperRulesTest(unittest.TestCase):
+    def test_bundled_keeper_history_is_complete_through_2025(self) -> None:
+        path = Path(__file__).resolve().parents[1] / "app" / "resources" / "keeper_history.json"
+        history = json.loads(path.read_text(encoding="utf-8"))
+        keepers_2025 = [entry for entry in history["entries"] if entry["season"] == 2025]
+        dynasty_players = {
+            entry["player_name"]: entry["dynasty_year"]
+            for entry in keepers_2025
+            if entry["keeper_type"] == "dynasty"
+        }
+
+        self.assertEqual(history["complete_through"], 2025)
+        self.assertEqual(len(keepers_2025), 30)
+        self.assertEqual(dynasty_players, {"Garrett Wilson": 3, "Sam LaPorta": 2})
+
     def test_fourteen_team_adp_round_boundaries(self) -> None:
         self.assertEqual(adp_round(1, 14), 1)
         self.assertEqual(adp_round(14, 14), 1)
@@ -101,6 +115,15 @@ class KeeperRulesTest(unittest.TestCase):
 
 
 class AdpImportTest(unittest.TestCase):
+    def test_bundled_fantasypros_snapshot_is_complete(self) -> None:
+        path = Path(__file__).resolve().parents[1] / "app" / "resources" / "fantasypros_2026_half_ppr_adp.csv"
+        records = read_csv_records(path)
+
+        self.assertEqual(len(records), 351)
+        self.assertEqual((records[0].rank, records[-1].rank), (1, 351))
+        self.assertEqual(records[16].player_name, "Kenneth Walker III")
+        self.assertEqual(records[16].nfl_team, "KC")
+
     def test_fantasypros_csv_shape_is_parsed(self) -> None:
         csv_text = (
             "Rank,Player Team (Bye),POS,Yahoo,RTSports,Sleeper,AVG\n"
@@ -262,6 +285,103 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
             self.assertEqual(board.candidates[0].adp_round, 1)
             self.assertEqual(board.candidates[0].value_rounds, 2)
             self.assertEqual(board.candidates[0].eligibility_status, "eligible")
+
+        engine.dispose()
+
+    def test_board_prefers_adp_nfl_team_and_canonical_manager_name(self) -> None:
+        engine = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(engine)
+        Session = sessionmaker(bind=engine)
+
+        with Session() as db:
+            manager = Manager(yahoo_guid="VWOUQLXG6CXYN3ZLF7D2DOVRK4", display_name="Andrew")
+            season = Season(year=2025, game_id=449, league_id="1", num_teams=12)
+            db.add_all([manager, season])
+            db.flush()
+            team = Team(
+                season_id=season.id,
+                manager_id=manager.id,
+                yahoo_team_key="449.l.1.t.1",
+                yahoo_team_id=1,
+                team_name="Jamarcus Susseles",
+            )
+            db.add(team)
+            db.flush()
+            db.add(
+                PlayerSeason(
+                    season_id=season.id,
+                    team_id=team.id,
+                    player_key="449.p.123",
+                    player_id="123",
+                    player_name="Kenneth Walker III",
+                    position="RB",
+                    nfl_team="SEA",
+                    fantasy_points=250,
+                )
+            )
+            snapshot = AdpSnapshot(
+                season=2026,
+                source="FantasyPros",
+                source_url="https://example.test/adp",
+                scoring_format="half_ppr",
+                league_size=14,
+                is_locked=True,
+            )
+            db.add(snapshot)
+            db.flush()
+            db.add(
+                AdpEntry(
+                    snapshot_id=snapshot.id,
+                    rank=17,
+                    player_name="Kenneth Walker III",
+                    normalized_name="kenneth walker",
+                    position="RB",
+                    nfl_team="KC",
+                    average_adp=17.0,
+                )
+            )
+            db.commit()
+
+            with tempfile.TemporaryDirectory() as temporary_directory:
+                root = Path(temporary_directory)
+                config_path = root / "config.json"
+                history_path = root / "history.json"
+                aliases_path = root / "aliases.json"
+                draft_picks_path = root / "draft-picks.json"
+                config_path.write_text(
+                    json.dumps(
+                        {
+                            "season": 2026,
+                            "source_season": 2025,
+                            "league_size": 14,
+                            "draft_rounds": 16,
+                            "scoring_format": "half_ppr",
+                            "adp_source": "FantasyPros",
+                            "adp_url": "https://example.test/adp",
+                            "expansion_teams": [],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                history_path.write_text(
+                    json.dumps({"complete_through": 2025, "entries": []}), encoding="utf-8"
+                )
+                aliases_path.write_text(json.dumps({"aliases": {}}), encoding="utf-8")
+                draft_picks_path.write_text(
+                    json.dumps({"season": 2026, "round_capacities": {}}), encoding="utf-8"
+                )
+
+                with (
+                    mock.patch("app.services.keepers.CONFIG_PATH", config_path),
+                    mock.patch("app.services.keepers.HISTORY_PATH", history_path),
+                    mock.patch("app.services.keepers.ALIASES_PATH", aliases_path),
+                    mock.patch("app.services.keepers.DRAFT_PICKS_PATH", draft_picks_path),
+                ):
+                    board = KeeperBoard.model_validate(build_keeper_board(db))
+
+            self.assertEqual(board.teams[0].name, "Lowell")
+            self.assertEqual(board.candidates[0].manager_name, "Lowell")
+            self.assertEqual(board.candidates[0].nfl_team, "KC")
 
         engine.dispose()
 

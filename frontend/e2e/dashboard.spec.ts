@@ -113,6 +113,33 @@ const keeperBoard = {
       value_rounds: 2,
       value_rating: 'Good',
     },
+    {
+      candidate_id: 'yahoo:2',
+      yahoo_player_id: '2',
+      player_name: 'Amon-Ra St. Brown',
+      position: 'WR',
+      nfl_team: 'DET',
+      roster_team_key: 'team:2',
+      roster_team_name: 'Jamarcus Susseles',
+      manager_name: 'Lowell',
+      draft_round: 2,
+      draft_pick: 18,
+      acquisition_label: 'Round 2',
+      kept_previous_year: true,
+      consecutive_keeper_years: 1,
+      is_dynasty: false,
+      dynasty_year: null,
+      dynasty_locked_round: null,
+      history_known: true,
+      eligibility_status: 'eligible',
+      eligibility_reason: 'Eligible under the configured keeper rules.',
+      adp_rank: 8,
+      adp_round: 1,
+      average_adp: 8,
+      base_keeper_round: 1,
+      value_rounds: 0,
+      value_rating: 'Fair',
+    },
   ],
   adp_snapshot: {
     id: 1,
@@ -404,6 +431,17 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await expect(page.getByRole('heading', { name: 'Keeper Lab' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Keeper rules at a glance' })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Jahmyr Gibbs' })).toBeVisible()
+  await expect(page.getByRole('cell', { name: 'Lowell', exact: true })).toBeVisible()
+  await expect(page.getByRole('cell', { name: 'Jamarcus Susseles', exact: true })).toHaveCount(0)
+
+  const playerHeader = page.getByRole('columnheader', { name: /Player/ })
+  const boardRows = page.getByRole('table').locator('tbody tr')
+  await playerHeader.getByRole('button').click()
+  await expect(playerHeader).toHaveAttribute('aria-sort', 'ascending')
+  await expect(boardRows.first().getByRole('cell').first()).toHaveText('Amon-Ra St. Brown')
+  await playerHeader.getByRole('button').click()
+  await expect(playerHeader).toHaveAttribute('aria-sort', 'descending')
+  await expect(boardRows.first().getByRole('cell').first()).toHaveText('Jahmyr Gibbs')
 
   await page.getByRole('button', { name: 'Draft Simulator' }).click()
   await expect(page.getByText('League assumptions')).toBeVisible()

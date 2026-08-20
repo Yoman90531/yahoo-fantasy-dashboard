@@ -67,6 +67,7 @@ jobs:
             docker compose build app
             docker compose run --rm --no-deps app python scripts/backup_database.py
             docker compose run --rm --no-deps app python scripts/migrate_database.py
+            docker compose run --rm --no-deps app python scripts/seed_keeper_data.py
             docker compose pull caddy
             if ! docker compose up -d --remove-orphans; then
               docker compose logs --tail=200 app caddy

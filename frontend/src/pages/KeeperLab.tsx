@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   BookOpenCheck,
   Dices,
   ExternalLink,
@@ -43,10 +46,48 @@ const VALUE_STYLES: Record<string, string> = {
   Unrated: 'text-gray-500',
 }
 
-function displayTeam(candidate: KeeperCandidate) {
-  return candidate.roster_team_name
-    ? `${candidate.manager_name} — ${candidate.roster_team_name}`
-    : candidate.manager_name
+type KeeperSortKey =
+  | 'player_name'
+  | 'position'
+  | 'nfl_team'
+  | 'manager_name'
+  | 'draft_round'
+  | 'kept_previous_year'
+  | 'is_dynasty'
+  | 'consecutive_keeper_years'
+  | 'eligibility_status'
+  | 'adp_rank'
+  | 'adp_round'
+  | 'base_keeper_round'
+  | 'final_cost'
+  | 'value_rounds'
+
+type KeeperSortValue = string | number | boolean | null
+
+const TEXT_SORT_KEYS = new Set<KeeperSortKey>([
+  'player_name',
+  'position',
+  'nfl_team',
+  'manager_name',
+  'eligibility_status',
+])
+
+function keeperSortValue(candidate: KeeperCandidate, key: KeeperSortKey): KeeperSortValue {
+  if (key === 'final_cost') return candidate.base_keeper_round
+  if (key === 'eligibility_status') {
+    return { eligible: 1, review: 2, ineligible: 3 }[candidate.eligibility_status]
+  }
+  return candidate[key]
+}
+
+function compareKeeperValues(a: KeeperSortValue, b: KeeperSortValue, direction: 1 | -1) {
+  if (a === null && b === null) return 0
+  if (a === null) return 1
+  if (b === null) return -1
+  if (typeof a === 'string' && typeof b === 'string') {
+    return a.localeCompare(b, undefined, { numeric: true }) * direction
+  }
+  return (Number(a) - Number(b)) * direction
 }
 
 function toSelection(candidate: KeeperCandidate): SimulatorKeeper {
@@ -128,6 +169,10 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
   const [teamFilter, setTeamFilter] = useState('all')
   const [positionFilter, setPositionFilter] = useState('all')
   const [eligibilityFilter, setEligibilityFilter] = useState('all')
+  const [sort, setSort] = useState<{ key: KeeperSortKey; direction: 1 | -1 }>({
+    key: 'value_rounds',
+    direction: -1,
+  })
 
   const positions = useMemo(
     () => Array.from(new Set(data.candidates.map(candidate => candidate.position))).sort(),
@@ -147,11 +192,54 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
           .some(value => value!.toLowerCase().includes(query))
       })
       .sort((a, b) => {
-        const aValue = a.value_rounds ?? -999
-        const bValue = b.value_rounds ?? -999
-        return bValue - aValue || a.player_name.localeCompare(b.player_name)
+        const comparison = compareKeeperValues(
+          keeperSortValue(a, sort.key),
+          keeperSortValue(b, sort.key),
+          sort.direction,
+        )
+        return comparison || a.player_name.localeCompare(b.player_name)
       })
-  }, [data.candidates, eligibilityFilter, positionFilter, search, teamFilter])
+  }, [data.candidates, eligibilityFilter, positionFilter, search, sort, teamFilter])
+
+  function toggleSort(key: KeeperSortKey) {
+    setSort(current =>
+      current.key === key
+        ? { key, direction: (current.direction * -1) as 1 | -1 }
+        : { key, direction: TEXT_SORT_KEYS.has(key) ? 1 : -1 },
+    )
+  }
+
+  function sortableHeader(
+    label: string,
+    key: KeeperSortKey,
+    align: 'left' | 'center' | 'right' = 'left',
+    sticky = false,
+  ) {
+    const active = sort.key === key
+    const Icon = active ? (sort.direction === 1 ? ArrowUp : ArrowDown) : ArrowUpDown
+    const alignmentClass = {
+      left: 'text-left',
+      center: 'text-center',
+      right: 'text-right',
+    }[align]
+    return (
+      <th
+        aria-sort={active ? (sort.direction === 1 ? 'ascending' : 'descending') : 'none'}
+        className={`${sticky ? 'sticky left-0 z-10 bg-gray-950' : ''} px-3 py-3 ${alignmentClass}`}
+      >
+        <button
+          type="button"
+          onClick={() => toggleSort(key)}
+          className={`inline-flex w-full items-center gap-1.5 hover:text-white ${
+            align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : 'justify-start'
+          }`}
+        >
+          <span>{label}</span>
+          <Icon size={13} className={active ? 'text-amber-400' : 'text-gray-700'} aria-hidden="true" />
+        </button>
+      </th>
+    )
+  }
 
   return (
     <section aria-labelledby="keeper-board-heading">
@@ -210,20 +298,20 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
           <table className="min-w-[1540px] w-full text-sm">
             <thead className="bg-gray-950 text-xs uppercase tracking-wider text-gray-500">
               <tr>
-                <th className="sticky left-0 z-10 bg-gray-950 px-4 py-3 text-left">Player</th>
-                <th className="px-3 py-3 text-left">Position</th>
-                <th className="px-3 py-3 text-left">NFL team</th>
-                <th className="px-3 py-3 text-left">2025 fantasy team</th>
-                <th className="px-3 py-3 text-left">2025 origin</th>
-                <th className="px-3 py-3 text-center">Kept in 2025</th>
-                <th className="px-3 py-3 text-center">Dynasty</th>
-                <th className="px-3 py-3 text-center">Years kept</th>
-                <th className="px-3 py-3 text-left">Eligibility</th>
-                <th className="px-3 py-3 text-right">Consensus rank</th>
-                <th className="px-3 py-3 text-right">ADP round</th>
-                <th className="px-3 py-3 text-right">Base cost</th>
-                <th className="px-3 py-3 text-right">Final cost</th>
-                <th className="px-3 py-3 text-right">Value</th>
+                {sortableHeader('Player', 'player_name', 'left', true)}
+                {sortableHeader('Position', 'position')}
+                {sortableHeader('NFL team', 'nfl_team')}
+                {sortableHeader('2025 fantasy team', 'manager_name')}
+                {sortableHeader('2025 origin', 'draft_round')}
+                {sortableHeader('Kept in 2025', 'kept_previous_year', 'center')}
+                {sortableHeader('Dynasty', 'is_dynasty', 'center')}
+                {sortableHeader('Years kept', 'consecutive_keeper_years', 'center')}
+                {sortableHeader('Eligibility', 'eligibility_status')}
+                {sortableHeader('Consensus rank', 'adp_rank', 'right')}
+                {sortableHeader('ADP round', 'adp_round', 'right')}
+                {sortableHeader('Base cost', 'base_keeper_round', 'right')}
+                {sortableHeader('Final cost', 'final_cost', 'right')}
+                {sortableHeader('Value', 'value_rounds', 'right')}
               </tr>
             </thead>
             <tbody>
@@ -232,7 +320,7 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
                   <td className="sticky left-0 bg-gray-900 px-4 py-3 font-medium text-white">{candidate.player_name}</td>
                   <td className="px-3 py-3 text-gray-300">{candidate.position}</td>
                   <td className="px-3 py-3 text-gray-300">{candidate.nfl_team ?? '—'}</td>
-                  <td className="px-3 py-3 text-gray-300">{displayTeam(candidate)}</td>
+                  <td className="px-3 py-3 text-gray-300">{candidate.manager_name}</td>
                   <td className="px-3 py-3 text-gray-300">{candidate.acquisition_label}</td>
                   <td className="px-3 py-3 text-center text-gray-300">
                     {!candidate.history_known ? 'Unknown' : candidate.kept_previous_year ? 'Yes' : 'No'}

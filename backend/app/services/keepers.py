@@ -15,6 +15,7 @@ from app.models.manager import Manager
 from app.models.player_season import PlayerSeason
 from app.models.season import Season
 from app.models.team import Team
+from app.services.manager_names import resolve_manager_name
 
 
 RESOURCE_DIR = Path(__file__).resolve().parents[1] / "resources"
@@ -212,18 +213,24 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
             .order_by(Manager.display_name)
             .all()
         )
+        canonical_roster_teams = sorted(
+            roster_teams,
+            key=lambda row: resolve_manager_name(row[1].yahoo_guid, row[1].display_name),
+        )
         teams.extend(
             {
                 "key": f"team:{team.id}",
-                "name": manager.display_name,
+                "name": resolve_manager_name(manager.yahoo_guid, manager.display_name),
                 "team_name": team.team_name,
                 "is_expansion": False,
                 "round_capacities": {
                     int(round_number): int(capacity)
-                    for round_number, capacity in draft_pick_config.get(manager.display_name, {}).items()
+                    for round_number, capacity in draft_pick_config.get(
+                        resolve_manager_name(manager.yahoo_guid, manager.display_name), {}
+                    ).items()
                 },
             }
-            for team, manager in roster_teams
+            for team, manager in canonical_roster_teams
         )
 
         draft_picks = db.query(DraftPick).filter(DraftPick.season_id == season.id).all()
@@ -277,10 +284,12 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
                     "yahoo_player_id": player_id,
                     "player_name": player.player_name,
                     "position": player.position,
-                    "nfl_team": player.nfl_team,
+                    "nfl_team": (adp.nfl_team or player.nfl_team) if adp else player.nfl_team,
                     "roster_team_key": f"team:{team.id}",
                     "roster_team_name": team.team_name,
-                    "manager_name": manager.display_name,
+                    "manager_name": resolve_manager_name(
+                        manager.yahoo_guid, manager.display_name
+                    ),
                     "draft_round": draft.round if draft else None,
                     "draft_pick": draft.pick if draft else None,
                     "acquisition_label": f"Round {draft.round}" if draft else "FA/Waiver",
