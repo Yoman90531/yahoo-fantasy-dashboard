@@ -990,6 +990,8 @@ export interface components {
             player_name: string;
             /** Position */
             position: string;
+            /** Previous Keeper Cost Round */
+            previous_keeper_cost_round: number | null;
             /** Roster Team Key */
             roster_team_key: string;
             /** Roster Team Name */

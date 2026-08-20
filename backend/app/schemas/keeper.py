@@ -58,6 +58,7 @@ class KeeperCandidate(BaseModel):
     is_dynasty: bool | None
     dynasty_year: int | None
     dynasty_locked_round: int | None
+    previous_keeper_cost_round: int | None
     history_known: bool
     eligibility_status: Literal["eligible", "ineligible", "review"]
     eligibility_reason: str

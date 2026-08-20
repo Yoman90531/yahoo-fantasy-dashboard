@@ -103,6 +103,7 @@ const keeperBoard = {
       is_dynasty: false,
       dynasty_year: null,
       dynasty_locked_round: null,
+      previous_keeper_cost_round: null,
       history_known: true,
       eligibility_status: 'eligible',
       eligibility_reason: 'Eligible under the configured keeper rules.',
@@ -130,6 +131,7 @@ const keeperBoard = {
       is_dynasty: false,
       dynasty_year: null,
       dynasty_locked_round: null,
+      previous_keeper_cost_round: 2,
       history_known: true,
       eligibility_status: 'eligible',
       eligibility_reason: 'Eligible under the configured keeper rules.',
@@ -435,11 +437,25 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await expect(page.getByRole('cell', { name: 'Jamarcus Susseles', exact: true })).toHaveCount(0)
 
   const boardTable = page.getByRole('table')
-  await expect(boardTable.getByRole('columnheader', { name: /Starting keeper cost/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /2025 owner/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /2025 keeper history/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /2026 market value/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /2026 keeper cost/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /Cost determined by/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /Value vs. market/ })).toBeVisible()
   await expect(boardTable.getByRole('columnheader', { name: /Final cost/ })).toHaveCount(0)
 
   const playerHeader = page.getByRole('columnheader', { name: /Player/ })
   const boardRows = boardTable.locator('tbody tr')
+  const gibbsRow = boardRows.filter({ hasText: 'Jahmyr Gibbs' })
+  await expect(gibbsRow).toContainText('Not kept')
+  await expect(gibbsRow).toContainText('#1')
+  await expect(gibbsRow).toContainText('Round 3')
+  await expect(gibbsRow).toContainText('2025 draft round')
+  const stBrownRow = boardRows.filter({ hasText: 'Amon-Ra St. Brown' })
+  await expect(stBrownRow).toContainText('Standard')
+  await expect(stBrownRow).toContainText('2025 cost: Round 2')
+  await expect(stBrownRow).toContainText('Current ADP')
   await playerHeader.getByRole('button').click()
   await expect(playerHeader).toHaveAttribute('aria-sort', 'ascending')
   await expect(boardRows.first().getByRole('cell').first()).toHaveText('Amon-Ra St. Brown')

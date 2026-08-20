@@ -1023,6 +1023,17 @@
             "title": "Position",
             "type": "string"
           },
+          "previous_keeper_cost_round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Keeper Cost Round"
+          },
           "roster_team_key": {
             "title": "Roster Team Key",
             "type": "string"
@@ -1082,6 +1093,7 @@
           "is_dynasty",
           "dynasty_year",
           "dynasty_locked_round",
+          "previous_keeper_cost_round",
           "history_known",
           "eligibility_status",
           "eligibility_reason",

@@ -114,6 +114,11 @@ def _candidate_rule_state(
     keeper_type = str(previous.get("keeper_type", "standard")).lower() if previous else ""
     is_dynasty = keeper_type == "dynasty" if history_known else None
     dynasty_year = int(previous.get("dynasty_year")) if previous and previous.get("dynasty_year") else None
+    previous_keeper_cost_round = (
+        int(previous["cost_round"])
+        if previous and previous.get("cost_round") is not None
+        else None
+    )
     dynasty_locked_round = None
     if previous and is_dynasty:
         locked = previous.get("locked_round", previous.get("cost_round"))
@@ -163,6 +168,7 @@ def _candidate_rule_state(
         "is_dynasty": is_dynasty,
         "dynasty_year": dynasty_year,
         "dynasty_locked_round": dynasty_locked_round,
+        "previous_keeper_cost_round": previous_keeper_cost_round,
         "eligibility_status": status,
         "eligibility_reason": reason,
         "base_keeper_round": base_round,

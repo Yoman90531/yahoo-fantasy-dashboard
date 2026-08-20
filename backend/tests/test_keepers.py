@@ -57,6 +57,7 @@ class KeeperRulesTest(unittest.TestCase):
         )
         self.assertEqual(state["eligibility_status"], "eligible")
         self.assertEqual(state["base_keeper_round"], 7)
+        self.assertIsNone(state["previous_keeper_cost_round"])
 
     def test_third_consecutive_standard_keeper_is_ineligible(self) -> None:
         state = _candidate_rule_state(
@@ -73,6 +74,7 @@ class KeeperRulesTest(unittest.TestCase):
         )
         self.assertEqual(state["eligibility_status"], "ineligible")
         self.assertEqual(state["consecutive_keeper_years"], 3)
+        self.assertEqual(state["previous_keeper_cost_round"], 4)
 
     def test_active_dynasty_keeps_locked_round_despite_first_round_adp(self) -> None:
         state = _candidate_rule_state(
@@ -83,6 +85,7 @@ class KeeperRulesTest(unittest.TestCase):
                     "keeper_type": "dynasty",
                     "dynasty_year": 2,
                     "locked_round": 6,
+                    "cost_round": 6,
                 }
             ],
             source_year=2025,
@@ -92,6 +95,7 @@ class KeeperRulesTest(unittest.TestCase):
         )
         self.assertEqual(state["eligibility_status"], "eligible")
         self.assertEqual(state["base_keeper_round"], 6)
+        self.assertEqual(state["previous_keeper_cost_round"], 6)
 
     def test_unknown_history_is_reviewable_with_provisional_cost(self) -> None:
         state = _candidate_rule_state(

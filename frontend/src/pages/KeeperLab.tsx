@@ -52,13 +52,11 @@ type KeeperSortKey =
   | 'nfl_team'
   | 'manager_name'
   | 'draft_round'
-  | 'kept_previous_year'
-  | 'is_dynasty'
-  | 'consecutive_keeper_years'
+  | 'keeper_history'
+  | 'market_value'
   | 'eligibility_status'
-  | 'adp_rank'
-  | 'adp_round'
   | 'base_keeper_round'
+  | 'cost_basis'
   | 'value_rounds'
 
 type KeeperSortValue = string | number | boolean | null
@@ -68,14 +66,45 @@ const TEXT_SORT_KEYS = new Set<KeeperSortKey>([
   'position',
   'nfl_team',
   'manager_name',
+  'cost_basis',
   'eligibility_status',
 ])
+
+function keeperCostBasis(candidate: KeeperCandidate) {
+  if (!candidate.history_known) return 'History review'
+  if (candidate.is_dynasty) return 'Dynasty value locked'
+  if (candidate.kept_previous_year) return 'Current ADP'
+  if (candidate.draft_round !== null) return '2025 draft round'
+  return 'FA/waiver rule'
+}
 
 function keeperSortValue(candidate: KeeperCandidate, key: KeeperSortKey): KeeperSortValue {
   if (key === 'eligibility_status') {
     return { eligible: 1, review: 2, ineligible: 3 }[candidate.eligibility_status]
   }
+  if (key === 'keeper_history') {
+    return candidate.kept_previous_year ? candidate.consecutive_keeper_years : -1
+  }
+  if (key === 'market_value') return candidate.adp_rank
+  if (key === 'cost_basis') return keeperCostBasis(candidate)
   return candidate[key]
+}
+
+function keeperHistory(candidate: KeeperCandidate) {
+  if (!candidate.history_known) return { label: 'Unknown', detail: 'History not loaded' }
+  if (!candidate.kept_previous_year) return { label: 'Not kept', detail: 'First-time option' }
+
+  const cost = candidate.previous_keeper_cost_round
+    ? `2025 cost: Round ${candidate.previous_keeper_cost_round}`
+    : '2025 cost unavailable'
+  const year = candidate.is_dynasty
+    ? candidate.dynasty_year
+    : candidate.consecutive_keeper_years
+
+  return {
+    label: candidate.is_dynasty ? 'Dynasty' : 'Standard',
+    detail: `${cost}${year ? ` · Year ${year}` : ''}`,
+  }
 }
 
 function compareKeeperValues(a: KeeperSortValue, b: KeeperSortValue, direction: 1 | -1) {
@@ -291,61 +320,80 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
         </div>
       </div>
 
+      <div className="mb-3 rounded-lg border border-amber-800/50 bg-amber-950/25 px-4 py-3 text-sm text-amber-100/80">
+        <span className="font-semibold text-amber-200">2026 keeper cost</span> is the player&apos;s rule-based cost.
+        If selected keepers share a round, the Draft Simulator calculates the final conflict-adjusted cost.
+      </div>
+
       <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
         <div className="overflow-x-auto">
-          <table className="min-w-[1450px] w-full text-sm">
+          <table className="min-w-[1500px] w-full text-sm">
             <thead className="bg-gray-950 text-xs uppercase tracking-wider text-gray-500">
               <tr>
                 {sortableHeader('Player', 'player_name', 'left', true)}
                 {sortableHeader('Position', 'position')}
                 {sortableHeader('NFL team', 'nfl_team')}
-                {sortableHeader('2025 fantasy team', 'manager_name')}
-                {sortableHeader('2025 origin', 'draft_round')}
-                {sortableHeader('Kept in 2025', 'kept_previous_year', 'center')}
-                {sortableHeader('Dynasty', 'is_dynasty', 'center')}
-                {sortableHeader('Years kept', 'consecutive_keeper_years', 'center')}
+                {sortableHeader('2025 owner', 'manager_name')}
+                {sortableHeader('2025 acquisition', 'draft_round')}
+                {sortableHeader('2025 keeper history', 'keeper_history')}
+                {sortableHeader('2026 market value', 'market_value')}
+                {sortableHeader('2026 keeper cost', 'base_keeper_round')}
+                {sortableHeader('Cost determined by', 'cost_basis')}
+                {sortableHeader('Value vs. market', 'value_rounds')}
                 {sortableHeader('Eligibility', 'eligibility_status')}
-                {sortableHeader('Consensus rank', 'adp_rank', 'right')}
-                {sortableHeader('ADP round', 'adp_round', 'right')}
-                {sortableHeader('Starting keeper cost', 'base_keeper_round', 'right')}
-                {sortableHeader('Value', 'value_rounds', 'right')}
               </tr>
             </thead>
             <tbody>
-              {candidates.map(candidate => (
-                <tr key={candidate.candidate_id} className="border-t border-gray-800/90 hover:bg-gray-800/60">
-                  <td className="sticky left-0 bg-gray-900 px-4 py-3 font-medium text-white">{candidate.player_name}</td>
-                  <td className="px-3 py-3 text-gray-300">{candidate.position}</td>
-                  <td className="px-3 py-3 text-gray-300">{candidate.nfl_team ?? '—'}</td>
-                  <td className="px-3 py-3 text-gray-300">{candidate.manager_name}</td>
-                  <td className="px-3 py-3 text-gray-300">{candidate.acquisition_label}</td>
-                  <td className="px-3 py-3 text-center text-gray-300">
-                    {!candidate.history_known ? 'Unknown' : candidate.kept_previous_year ? 'Yes' : 'No'}
-                  </td>
-                  <td className="px-3 py-3 text-center text-gray-300">
-                    {!candidate.history_known
-                      ? 'Unknown'
-                      : candidate.is_dynasty
-                        ? `Year ${candidate.dynasty_year ?? '?'}`
-                        : 'No'}
-                  </td>
-                  <td className="px-3 py-3 text-center text-gray-300">{candidate.consecutive_keeper_years ?? '—'}</td>
-                  <td className="max-w-64 px-3 py-3">
-                    <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[candidate.eligibility_status]}`}>
-                      {candidate.eligibility_status === 'review' ? 'Review' : candidate.eligibility_status === 'eligible' ? 'Eligible' : 'Ineligible'}
-                    </span>
-                    <div className="mt-1 text-xs text-gray-500">{candidate.eligibility_reason}</div>
-                  </td>
-                  <td className="px-3 py-3 text-right text-gray-300">{candidate.adp_rank ? `#${candidate.adp_rank}` : '—'}</td>
-                  <td className="px-3 py-3 text-right text-gray-300">{candidate.adp_round ? `R${candidate.adp_round}` : '—'}</td>
-                  <td className="px-3 py-3 text-right font-medium text-white">{candidate.base_keeper_round ? `R${candidate.base_keeper_round}` : '—'}</td>
-                  <td className={`px-3 py-3 text-right font-semibold ${VALUE_STYLES[candidate.value_rating]}`}>
-                    {candidate.value_rounds === null
-                      ? 'Unrated'
-                      : `${candidate.value_rounds > 0 ? '+' : ''}${candidate.value_rounds} · ${candidate.value_rating}`}
-                  </td>
-                </tr>
-              ))}
+              {candidates.map(candidate => {
+                const history = keeperHistory(candidate)
+                const marketRound = candidate.adp_round && candidate.adp_round <= data.rules.draft_rounds
+                  ? `Round ${candidate.adp_round}`
+                  : candidate.adp_round
+                    ? 'Outside draft'
+                    : 'No ADP match'
+                return (
+                  <tr key={candidate.candidate_id} className="border-t border-gray-800/90 hover:bg-gray-800/60">
+                    <td className="sticky left-0 bg-gray-900 px-4 py-3 font-medium text-white">{candidate.player_name}</td>
+                    <td className="px-3 py-3 text-gray-300">{candidate.position}</td>
+                    <td className="px-3 py-3 text-gray-300">{candidate.nfl_team ?? '—'}</td>
+                    <td className="px-3 py-3 text-gray-300">{candidate.manager_name}</td>
+                    <td className="px-3 py-3 text-gray-300">
+                      {candidate.draft_round ? `Drafted R${candidate.draft_round}` : 'FA/Waiver'}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="font-medium text-gray-200">{history.label}</div>
+                      <div className="mt-0.5 text-xs text-gray-500">{history.detail}</div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="font-medium text-gray-200">{candidate.adp_rank ? `#${candidate.adp_rank}` : 'Unranked'}</div>
+                      <div className="mt-0.5 text-xs text-gray-500">{marketRound}</div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className={`text-base font-bold ${candidate.eligibility_status === 'ineligible' ? 'text-red-300' : 'text-amber-200'}`}>
+                        {candidate.eligibility_status === 'ineligible'
+                          ? 'Ineligible'
+                          : candidate.base_keeper_round
+                            ? `Round ${candidate.base_keeper_round}`
+                            : 'Review'}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-gray-300">{keeperCostBasis(candidate)}</td>
+                    <td className={`px-3 py-3 font-semibold ${VALUE_STYLES[candidate.value_rating]}`}>
+                      {candidate.eligibility_status === 'ineligible'
+                        ? 'N/A · Ineligible'
+                        : candidate.value_rounds === null
+                          ? 'Unrated'
+                          : `${candidate.value_rounds > 0 ? '+' : ''}${candidate.value_rounds} ${Math.abs(candidate.value_rounds) === 1 ? 'round' : 'rounds'} · ${candidate.value_rating}`}
+                    </td>
+                    <td className="max-w-64 px-3 py-3">
+                      <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[candidate.eligibility_status]}`}>
+                        {candidate.eligibility_status === 'review' ? 'Review' : candidate.eligibility_status === 'eligible' ? 'Eligible' : 'Ineligible'}
+                      </span>
+                      <div className="mt-1 text-xs text-gray-500">{candidate.eligibility_reason}</div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
