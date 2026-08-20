@@ -138,7 +138,7 @@ def _candidate_rule_state(
         reason = "Keeper history has not been loaded; cost is provisional."
     elif current_adp_round is None:
         status = "review"
-        reason = "No FantasyPros ADP match; first-round eligibility needs review."
+        reason = "The FantasyPros ADP snapshot is unavailable; keeper cost needs review."
     elif consecutive_years >= 3:
         status = "ineligible"
         reason = "Already kept for three consecutive seasons."
@@ -270,7 +270,12 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
             draft = draft_by_id.get(player_id) if player_id else None
             if draft is None:
                 draft = draft_by_name.get(normalized_name)
-            current_adp_round = adp_round(adp.rank, league_size) if adp else None
+            if adp:
+                current_adp_round = adp_round(adp.rank, league_size)
+            elif snapshot:
+                current_adp_round = draft_rounds
+            else:
+                current_adp_round = None
             matched_history = [
                 row for row in history_rows if _history_matches(row, player_id, normalized_name)
             ]

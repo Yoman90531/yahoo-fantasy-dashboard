@@ -150,7 +150,9 @@ function RulesRecap({ data }: { data: KeeperBoardData }) {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Keeper rules at a glance</h2>
-              <p className="text-xs text-amber-100/60">2026 dates will be added after the calendar is revised.</p>
+              <p className="text-xs text-amber-100/60">
+                Existing keepers due Aug 31 · Expansion keepers due Sep 1 · Draft Sep 8 at 8:30 PM ET.
+              </p>
             </div>
           </div>
           <ul className="grid gap-2 text-sm text-gray-300 md:grid-cols-2">

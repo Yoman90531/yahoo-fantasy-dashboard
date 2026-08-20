@@ -1,15 +1,20 @@
 import { BellRing, CalendarDays, Clock3 } from 'lucide-react'
 
 const KEY_DATES = [
-  { date: 'TBD', event: 'Trade deadline', owner: 'Everyone' },
-  { date: 'TBD', event: 'Lock ADP and send keeper costs', owner: 'Dan' },
-  { date: 'TBD', event: 'Declare keepers', owner: 'Dan' },
-  { date: 'TBD', event: 'Pick draft order', owner: 'Dan' },
-  { date: 'TBD', event: 'Submit rule proposals', owner: 'Jeremy' },
-  { date: 'TBD', event: 'Set up draft on Yahoo', owner: 'Dan' },
-  { date: 'TBD', event: 'Vote on rules and ratify constitution', owner: 'Jeremy' },
-  { date: 'TBD', event: 'Send dues', owner: 'Kang' },
-  { date: 'TBD', event: 'Draft', owner: 'Dan', featured: true },
+  { date: 'Aug 24, 7:00 PM ET', event: 'Submit rule proposals', owner: 'Jeremy' },
+  { date: 'Aug 27, 7:00 PM ET', event: 'Vote on rules and ratify constitution', owner: 'Jeremy' },
+  { date: 'Aug 28, 7:00 PM ET', event: 'Trade deadline', owner: 'Everyone' },
+  { date: 'Aug 30, 7:00 PM ET', event: 'Lock ADP and send keeper costs', owner: 'Dan' },
+  { date: 'Aug 31, 7:00 PM ET', event: 'Existing teams declare keepers', owner: 'Existing teams' },
+  { date: 'Sep 1, 9:00 AM ET', event: 'Review existing keepers and publish expansion pool', owner: 'Dan' },
+  { date: 'Sep 1, 7:00 PM ET', event: 'Expansion teams declare keepers', owner: 'Nabi & Squilly' },
+  { date: 'Sep 2, 7:00 PM ET', event: 'Commissioner review complete', owner: 'Dan' },
+  { date: 'Sep 3, 7:00 PM ET', event: 'Keeper corrections finalized', owner: 'Dan / affected teams' },
+  { date: 'Sep 4, 10:00 AM ET', event: 'Draft-position selection begins', owner: 'Everyone' },
+  { date: 'Sep 4, 7:00 PM ET', event: 'Send dues', owner: 'Kang' },
+  { date: 'Sep 6, 7:00 PM ET', event: 'Draft order finalized', owner: 'Everyone' },
+  { date: 'Sep 6, 9:00 PM ET', event: 'Set up finalized draft on Yahoo', owner: 'Dan' },
+  { date: 'Sep 8, 8:30 PM ET', event: 'Draft', owner: 'Everyone', featured: true },
 ]
 
 export default function KeyDatesSection() {
@@ -38,7 +43,7 @@ export default function KeyDatesSection() {
       </div>
 
       <div className="relative overflow-hidden rounded-xl border border-amber-900/60 bg-gray-950/70">
-        <div className="hidden md:grid grid-cols-[180px_minmax(0,1fr)_120px] border-b border-amber-900/50 bg-amber-950/40 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-200/60">
+        <div className="hidden md:grid grid-cols-[190px_minmax(0,1fr)_150px] border-b border-amber-900/50 bg-amber-950/40 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-amber-200/60">
           <div>Date</div>
           <div>Event</div>
           <div>Owner</div>
@@ -46,7 +51,7 @@ export default function KeyDatesSection() {
         {KEY_DATES.map(item => (
           <div
             key={`${item.date}-${item.event}`}
-            className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 border-t border-gray-800/80 px-4 py-3 first:border-t-0 md:grid-cols-[180px_minmax(0,1fr)_120px] ${
+            className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 border-t border-gray-800/80 px-4 py-3 first:border-t-0 md:grid-cols-[190px_minmax(0,1fr)_150px] ${
               item.featured ? 'bg-gradient-to-r from-amber-950/80 to-orange-950/50' : 'bg-gray-950/60'
             }`}
           >

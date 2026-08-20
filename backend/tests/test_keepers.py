@@ -59,6 +59,42 @@ class KeeperRulesTest(unittest.TestCase):
         self.assertEqual(state["base_keeper_round"], 7)
         self.assertIsNone(state["previous_keeper_cost_round"])
 
+    def test_unranked_first_time_drafted_player_retains_draft_round(self) -> None:
+        state = _candidate_rule_state(
+            history_known=True,
+            history_entries=[],
+            source_year=2025,
+            draft_round=7,
+            current_adp_round=16,
+            draft_rounds=16,
+        )
+        self.assertEqual(state["eligibility_status"], "eligible")
+        self.assertEqual(state["base_keeper_round"], 7)
+
+    def test_unranked_fa_player_costs_round_sixteen(self) -> None:
+        state = _candidate_rule_state(
+            history_known=True,
+            history_entries=[],
+            source_year=2025,
+            draft_round=None,
+            current_adp_round=16,
+            draft_rounds=16,
+        )
+        self.assertEqual(state["eligibility_status"], "eligible")
+        self.assertEqual(state["base_keeper_round"], 16)
+
+    def test_missing_adp_snapshot_requires_review(self) -> None:
+        state = _candidate_rule_state(
+            history_known=True,
+            history_entries=[],
+            source_year=2025,
+            draft_round=7,
+            current_adp_round=None,
+            draft_rounds=16,
+        )
+        self.assertEqual(state["eligibility_status"], "review")
+        self.assertEqual(state["base_keeper_round"], 7)
+
     def test_third_consecutive_standard_keeper_is_ineligible(self) -> None:
         state = _candidate_rule_state(
             history_known=True,
@@ -211,6 +247,18 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                 )
             )
             db.add(
+                PlayerSeason(
+                    season_id=season.id,
+                    team_id=team.id,
+                    player_key="449.p.999",
+                    player_id="999",
+                    player_name="Unranked Waiver Player",
+                    position="WR",
+                    nfl_team="FA",
+                    fantasy_points=10,
+                )
+            )
+            db.add(
                 DraftPick(
                     season_id=season.id,
                     team_id=team.id,
@@ -293,6 +341,15 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
             self.assertEqual(board.candidates[0].adp_round, 1)
             self.assertEqual(board.candidates[0].value_rounds, 2)
             self.assertEqual(board.candidates[0].eligibility_status, "eligible")
+            unranked = next(
+                candidate
+                for candidate in board.candidates
+                if candidate.player_name == "Unranked Waiver Player"
+            )
+            self.assertIsNone(unranked.adp_rank)
+            self.assertEqual(unranked.adp_round, 16)
+            self.assertEqual(unranked.base_keeper_round, 16)
+            self.assertEqual(unranked.eligibility_status, "eligible")
 
         engine.dispose()
 

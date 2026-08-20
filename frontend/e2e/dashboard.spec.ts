@@ -355,6 +355,14 @@ test('league headquarters renders its historical overview', async ({ page }) => 
 
   await expect(draftCalendar).toBeVisible()
   await expect(draftCalendar.getByText('Pre-draft action center')).toBeVisible()
+  await expect(draftCalendar.getByText('Aug 31, 7:00 PM ET')).toBeVisible()
+  await expect(draftCalendar.getByText('Existing teams declare keepers')).toBeVisible()
+  await expect(draftCalendar.getByText('Sep 1, 7:00 PM ET')).toBeVisible()
+  await expect(draftCalendar.getByText('Expansion teams declare keepers')).toBeVisible()
+  await expect(draftCalendar.getByText('Sep 4, 10:00 AM ET')).toBeVisible()
+  await expect(draftCalendar.getByText('Sep 6, 7:00 PM ET')).toBeVisible()
+  await expect(draftCalendar.getByText('Sep 8, 8:30 PM ET')).toBeVisible()
+  await expect(draftCalendar.getByText('TBD')).toHaveCount(0)
   await expect(keyInsights).toBeVisible()
 
   const [draftCalendarBox, keyInsightsBox] = await Promise.all([
@@ -432,6 +440,8 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await expect(primaryNav.getByRole('link').first()).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('heading', { name: 'Keeper Lab' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Keeper rules at a glance' })).toBeVisible()
+  await expect(page.getByText(/Existing keepers due Aug 31/)).toBeVisible()
+  await expect(page.getByText(/Draft Sep 8 at 8:30 PM ET/)).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Jahmyr Gibbs' })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Lowell', exact: true })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Jamarcus Susseles', exact: true })).toHaveCount(0)
