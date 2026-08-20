@@ -1,3 +1,20 @@
 {
-  "aliases": {}
+  "aliases": {
+    "49ers": "San Francisco 49ers DST",
+    "Broncos": "Denver Broncos DST",
+    "Chargers": "Los Angeles Chargers DST",
+    "Eagles": "Philadelphia Eagles DST",
+    "Falcons": "Atlanta Falcons DST",
+    "Lions": "Detroit Lions DST",
+    "Packers": "Green Bay Packers DST",
+    "Patriots": "New England Patriots DST",
+    "Rams": "Los Angeles Rams DST",
+    "Ravens": "Baltimore Ravens DST",
+    "Saints": "New Orleans Saints DST",
+    "Seahawks": "Seattle Seahawks DST",
+    "Steelers": "Pittsburgh Steelers DST",
+    "Texans": "Houston Texans DST",
+    "Titans": "Tennessee Titans DST",
+    "Kenneth Gainwell": "Kenny Gainwell"
+  }
 }

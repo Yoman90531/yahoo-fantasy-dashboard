@@ -129,17 +129,21 @@ class AdpImportTest(unittest.TestCase):
             "Rank,Player Team (Bye),POS,Yahoo,RTSports,Sleeper,AVG\n"
             '1,"Jahmyr Gibbs (DET)",RB1,2,1,2,1.7\n'
             '2,"Ja\'Marr Chase (CIN)",WR1,4,2,3,3.0\n'
+            '3,"Houston Texans DST   (8)",DST1,90,135,156,127.0\n'
         )
         with tempfile.TemporaryDirectory() as temporary_directory:
             path = Path(temporary_directory) / "adp.csv"
             path.write_text(csv_text, encoding="utf-8")
             records = read_csv_records(path)
 
-        self.assertEqual(len(records), 2)
+        self.assertEqual(len(records), 3)
         self.assertEqual(records[0].player_name, "Jahmyr Gibbs")
         self.assertEqual(records[0].nfl_team, "DET")
         self.assertEqual(records[0].position, "RB")
         self.assertEqual(records[0].average_adp, 1.7)
+        self.assertEqual(records[2].player_name, "Houston Texans DST")
+        self.assertEqual(records[2].nfl_team, "HOU")
+        self.assertEqual(records[2].position, "DST")
 
     def test_server_rendered_html_table_is_parsed(self) -> None:
         html = """

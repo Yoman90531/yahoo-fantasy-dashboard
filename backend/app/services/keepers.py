@@ -23,6 +23,7 @@ CONFIG_PATH = RESOURCE_DIR / "keeper_config.json"
 HISTORY_PATH = RESOURCE_DIR / "keeper_history.json"
 ALIASES_PATH = RESOURCE_DIR / "keeper_player_aliases.json"
 DRAFT_PICKS_PATH = RESOURCE_DIR / "keeper_draft_picks.json"
+NFL_TEAM_OVERRIDES_PATH = RESOURCE_DIR / "keeper_nfl_team_overrides.json"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -173,6 +174,10 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
     history = _read_json(HISTORY_PATH)
     aliases = _read_json(ALIASES_PATH).get("aliases", {})
     draft_pick_config = _read_json(DRAFT_PICKS_PATH).get("round_capacities", {})
+    nfl_team_overrides = {
+        normalize_player_name(player_name): str(team)
+        for player_name, team in _read_json(NFL_TEAM_OVERRIDES_PATH).get("teams", {}).items()
+    }
     source_year = int(config["source_season"])
     target_year = int(config["season"])
     league_size = int(config["league_size"])
@@ -284,7 +289,11 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
                     "yahoo_player_id": player_id,
                     "player_name": player.player_name,
                     "position": player.position,
-                    "nfl_team": (adp.nfl_team or player.nfl_team) if adp else player.nfl_team,
+                    "nfl_team": (
+                        (adp.nfl_team if adp else None)
+                        or nfl_team_overrides.get(normalized_name)
+                        or player.nfl_team
+                    ),
                     "roster_team_key": f"team:{team.id}",
                     "roster_team_name": team.team_name,
                     "manager_name": resolve_manager_name(
@@ -330,7 +339,7 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
     missing_nfl_teams = sum(1 for candidate in candidates if not candidate["nfl_team"])
     if missing_nfl_teams:
         warnings.append(
-            f"{missing_nfl_teams} roster players need a 2025 Yahoo refresh to populate their NFL team."
+            f"{missing_nfl_teams} roster players do not have a current NFL-team match."
         )
 
     recap = [

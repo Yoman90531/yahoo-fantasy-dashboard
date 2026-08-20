@@ -1,0 +1,16 @@
+{
+  "captured_on": "2026-08-19",
+  "source_url": "https://api.sleeper.app/v1/players/nfl",
+  "teams": {
+    "Audric Estime": "NO",
+    "Brandon McManus": "FA",
+    "Calvin Austin III": "NYG",
+    "Jayden Higgins": "HOU",
+    "Kareem Hunt": "FA",
+    "Michael Carter": "TEN",
+    "Marvin Mims Jr.": "DEN",
+    "Nick Chubb": "FA",
+    "Ricky Pearsall": "SF",
+    "Taysom Hill": "FA"
+  }
+}

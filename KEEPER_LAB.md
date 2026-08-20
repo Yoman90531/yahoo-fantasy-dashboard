@@ -100,3 +100,8 @@ If a Yahoo name does not match FantasyPros, add an alias to
 }
 ```
 
+Current-team gaps that are not present in the FantasyPros export are recorded
+in `backend/app/resources/keeper_nfl_team_overrides.json`. The file includes its
+capture date and the documented Sleeper player-feed URL used for the backfill;
+`FA` means the player has no current NFL club in that feed.
+

@@ -15,6 +15,42 @@ from app.models.adp import AdpEntry, AdpSnapshot
 from app.services.keepers import normalize_player_name
 
 
+DST_TEAM_ABBREVIATIONS = {
+    "Arizona Cardinals": "ARI",
+    "Atlanta Falcons": "ATL",
+    "Baltimore Ravens": "BAL",
+    "Buffalo Bills": "BUF",
+    "Carolina Panthers": "CAR",
+    "Chicago Bears": "CHI",
+    "Cincinnati Bengals": "CIN",
+    "Cleveland Browns": "CLE",
+    "Dallas Cowboys": "DAL",
+    "Denver Broncos": "DEN",
+    "Detroit Lions": "DET",
+    "Green Bay Packers": "GB",
+    "Houston Texans": "HOU",
+    "Indianapolis Colts": "IND",
+    "Jacksonville Jaguars": "JAC",
+    "Kansas City Chiefs": "KC",
+    "Las Vegas Raiders": "LV",
+    "Los Angeles Chargers": "LAC",
+    "Los Angeles Rams": "LAR",
+    "Miami Dolphins": "MIA",
+    "Minnesota Vikings": "MIN",
+    "New England Patriots": "NE",
+    "New Orleans Saints": "NO",
+    "New York Giants": "NYG",
+    "New York Jets": "NYJ",
+    "Philadelphia Eagles": "PHI",
+    "Pittsburgh Steelers": "PIT",
+    "San Francisco 49ers": "SF",
+    "Seattle Seahawks": "SEA",
+    "Tampa Bay Buccaneers": "TB",
+    "Tennessee Titans": "TEN",
+    "Washington Commanders": "WAS",
+}
+
+
 @dataclass(frozen=True)
 class AdpRecord:
     rank: int
@@ -45,6 +81,11 @@ def _clean_position(value: object) -> str | None:
 def _player_and_team(player_value: object, team_value: object = None) -> tuple[str, str | None]:
     raw = re.sub(r"\s+", " ", str(player_value or "")).strip()
     explicit_team = str(team_value or "").strip().upper() or None
+    defense = re.match(r"^(.*?)\s+DST\s+\(\d+\)$", raw)
+    if defense:
+        franchise = defense.group(1).strip()
+        return f"{franchise} DST", explicit_team or DST_TEAM_ABBREVIATIONS.get(franchise)
+
     parenthetical = re.match(r"^(.*?)\s+\(([A-Z]{2,3})\)(?:\s*\(\d+\))?$", raw)
     if parenthetical:
         return parenthetical.group(1).strip(), explicit_team or parenthetical.group(2)
