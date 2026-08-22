@@ -7,6 +7,7 @@ import {
   BookOpenCheck,
   Dices,
   ExternalLink,
+  ListOrdered,
   Search,
   ShieldCheck,
   Sparkles,
@@ -136,6 +137,48 @@ function shuffle<T>(values: T[]) {
     ;[result[index], result[target]] = [result[target], result[index]]
   }
   return result
+}
+
+function pickCapacity(team: KeeperTeam, round: number) {
+  return team.round_capacities[String(round)] ?? 1
+}
+
+function pickCountStyle(count: number) {
+  if (count === 0) return 'border-red-800/60 bg-red-950/40 text-red-300'
+  if (count > 1) return 'border-blue-700/60 bg-blue-950/40 text-blue-200'
+  return 'border-gray-800 bg-gray-950/60 text-gray-400'
+}
+
+function TeamPickStrip({ team, draftRounds }: { team: KeeperTeam; draftRounds: number }) {
+  const rounds = Array.from({ length: draftRounds }, (_, index) => index + 1)
+  const total = rounds.reduce((sum, round) => sum + pickCapacity(team, round), 0)
+
+  return (
+    <div className="mb-4 rounded-xl border border-gray-800 bg-gray-950/55 p-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">2026 draft-pick inventory</div>
+          <div className="mt-0.5 text-xs text-gray-600">Includes picks acquired or traded away last season.</div>
+        </div>
+        <span className="text-xs font-medium text-gray-500">{total} total picks</span>
+      </div>
+      <div className="grid grid-cols-8 gap-1 sm:grid-cols-16">
+        {rounds.map(round => {
+          const count = pickCapacity(team, round)
+          return (
+            <div
+              key={round}
+              aria-label={`Round ${round}: ${count} ${count === 1 ? 'pick' : 'picks'}`}
+              className={`rounded-md border px-1 py-1.5 text-center ${pickCountStyle(count)}`}
+            >
+              <div className="text-[9px] font-semibold uppercase text-gray-600">R{round}</div>
+              <div className="text-sm font-bold">{count}</div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 function RulesRecap({ data }: { data: KeeperBoardData }) {
@@ -407,6 +450,59 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
   )
 }
 
+function DraftPickBoard({ data }: { data: KeeperBoardData }) {
+  const rounds = Array.from({ length: data.rules.draft_rounds }, (_, index) => index + 1)
+
+  return (
+    <section aria-labelledby="draft-picks-heading">
+      <div className="mb-4">
+        <h2 id="draft-picks-heading" className="text-xl font-bold text-white">2026 Draft Picks</h2>
+        <p className="mt-1 text-sm text-gray-400">
+          Yahoo pick inventory after last season&apos;s trades. Red means no pick; blue means multiple picks. These counts power keeper-round availability; the grid does not identify the exact slot of each acquired pick.
+        </p>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
+        <div className="overflow-x-auto">
+          <table className="min-w-[1180px] w-full text-sm">
+            <thead className="bg-gray-950 text-xs uppercase tracking-wider text-gray-500">
+              <tr>
+                <th className="sticky left-0 z-10 bg-gray-950 px-4 py-3 text-left">2026 owner</th>
+                <th className="px-3 py-3 text-left">Yahoo team</th>
+                {rounds.map(round => <th key={round} className="px-2 py-3 text-center">R{round}</th>)}
+                <th className="px-3 py-3 text-center">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.teams.map(team => {
+                const capacities = rounds.map(round => pickCapacity(team, round))
+                const total = capacities.reduce((sum, count) => sum + count, 0)
+                return (
+                  <tr key={team.key} className="border-t border-gray-800/90 hover:bg-gray-800/60">
+                    <td className="sticky left-0 bg-gray-900 px-4 py-3 font-medium text-white">{team.name}</td>
+                    <td className="px-3 py-3 text-gray-400">{team.team_name ?? '—'}</td>
+                    {capacities.map((count, index) => (
+                      <td key={rounds[index]} className="px-1.5 py-2 text-center">
+                        <span
+                          aria-label={`${team.name}, round ${rounds[index]}: ${count} ${count === 1 ? 'pick' : 'picks'}`}
+                          className={`inline-flex h-7 min-w-7 items-center justify-center rounded-md border px-1.5 text-xs font-bold ${pickCountStyle(count)}`}
+                        >
+                          {count}
+                        </span>
+                      </td>
+                    ))}
+                    <td className="px-3 py-3 text-center font-semibold text-gray-200">{total}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function DraftSimulator({ data }: { data: KeeperBoardData }) {
   const [assignments, setAssignments] = useState<KeeperAssignments>({})
   const [activeTeamKey, setActiveTeamKey] = useState('')
@@ -568,6 +664,10 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
               <Dices size={16} aria-hidden="true" /> Randomize order
             </button>
           </div>
+
+          {activeTeam && (
+            <TeamPickStrip team={activeTeam} draftRounds={data.rules.draft_rounds} />
+          )}
 
           <div className="space-y-3">
             {[0, 1, 2].map(slot => {
@@ -740,7 +840,7 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
 }
 
 export default function KeeperLab() {
-  const [view, setView] = useState<'board' | 'simulator'>('board')
+  const [view, setView] = useState<'board' | 'picks' | 'simulator'>('board')
   const { data, loading, error } = useApi<KeeperBoardData>(['keeper-board'], () => keeperApi.board())
 
   return (
@@ -777,6 +877,13 @@ export default function KeeperLab() {
               </button>
               <button
                 type="button"
+                onClick={() => setView('picks')}
+                className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium ${view === 'picks' ? 'border-amber-400 text-white' : 'border-transparent text-gray-500 hover:text-gray-200'}`}
+              >
+                <ListOrdered size={15} aria-hidden="true" /> Draft Picks
+              </button>
+              <button
+                type="button"
                 onClick={() => setView('simulator')}
                 className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium ${view === 'simulator' ? 'border-amber-400 text-white' : 'border-transparent text-gray-500 hover:text-gray-200'}`}
               >
@@ -785,7 +892,9 @@ export default function KeeperLab() {
             </div>
           </div>
 
-          {view === 'board' ? <KeeperBoard data={data} /> : <DraftSimulator data={data} />}
+          {view === 'board' && <KeeperBoard data={data} />}
+          {view === 'picks' && <DraftPickBoard data={data} />}
+          {view === 'simulator' && <DraftSimulator data={data} />}
         </>
       )}
     </PageWrapper>

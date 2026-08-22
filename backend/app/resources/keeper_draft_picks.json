@@ -1,4 +1,18 @@
 {
   "season": 2026,
-  "round_capacities": {}
+  "source": "Yahoo current-season draft-pick grid supplied 2026-08-22; omitted rounds have one pick.",
+  "round_capacities": {
+    "Bennett": {},
+    "Dan": { "2": 0, "16": 2 },
+    "David": {},
+    "Gottlieb": { "1": 2, "2": 2, "3": 0, "16": 0 },
+    "Jeremy": { "8": 0, "16": 2 },
+    "Kang": { "1": 2, "3": 0 },
+    "Karna": { "1": 0, "3": 2 },
+    "Lowell": { "1": 0, "3": 2 },
+    "Max": {},
+    "Michael": {},
+    "Squilly": {},
+    "Tim": { "8": 2, "16": 0 }
+  }
 }

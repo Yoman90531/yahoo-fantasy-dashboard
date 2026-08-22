@@ -26,6 +26,25 @@ from app.services.keepers import (
 
 
 class KeeperRulesTest(unittest.TestCase):
+    def test_bundled_draft_pick_inventory_balances_traded_picks(self) -> None:
+        path = Path(__file__).resolve().parents[1] / "app" / "resources" / "keeper_draft_picks.json"
+        inventory = json.loads(path.read_text(encoding="utf-8"))["round_capacities"]
+
+        self.assertEqual(len(inventory), 12)
+        self.assertEqual(inventory["Dan"], {"2": 0, "16": 2})
+        self.assertEqual(inventory["Gottlieb"], {"1": 2, "2": 2, "3": 0, "16": 0})
+        self.assertEqual(inventory["Jeremy"], {"8": 0, "16": 2})
+        self.assertEqual(inventory["Kang"], {"1": 2, "3": 0})
+        self.assertEqual(inventory["Karna"], {"1": 0, "3": 2})
+        self.assertEqual(inventory["Lowell"], {"1": 0, "3": 2})
+        self.assertEqual(inventory["Squilly"], {})
+        self.assertEqual(inventory["Tim"], {"8": 2, "16": 0})
+        for round_number in range(1, 17):
+            self.assertEqual(
+                sum(team.get(str(round_number), 1) for team in inventory.values()),
+                12,
+            )
+
     def test_bundled_keeper_config_is_twelve_team_with_squilly_transfer(self) -> None:
         path = Path(__file__).resolve().parents[1] / "app" / "resources" / "keeper_config.json"
         config = json.loads(path.read_text(encoding="utf-8"))

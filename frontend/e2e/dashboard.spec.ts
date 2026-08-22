@@ -58,13 +58,28 @@ const managerStats = {
   current_drought: 0,
 }
 
+const keeperRoundCapacities: Record<number, Record<string, number>> = {
+  0: { 2: 0, 16: 2 },
+  1: { 1: 0, 3: 2 },
+  5: { 1: 2, 2: 2, 3: 0, 16: 0 },
+  6: { 8: 0, 16: 2 },
+  7: { 1: 2, 3: 0 },
+  8: { 1: 0, 3: 2 },
+  11: { 8: 2, 16: 0 },
+}
+
+const keeperOwnerNames = [
+  'Dan', 'Lowell', 'Squilly', 'Bennett', 'David', 'Gottlieb',
+  'Jeremy', 'Kang', 'Karna', 'Max', 'Michael', 'Tim',
+]
+
 const keeperTeams = [
   ...Array.from({ length: 12 }, (_, index) => ({
     key: `team:${index + 1}`,
-    name: index === 0 ? 'Dan' : index === 1 ? 'Lowell' : index === 2 ? 'Squilly' : `Owner ${index + 1}`,
+    name: keeperOwnerNames[index],
     team_name: `Team ${index + 1}`,
     is_expansion: false,
-    round_capacities: {},
+    round_capacities: keeperRoundCapacities[index] ?? {},
   })),
 ]
 
@@ -472,6 +487,14 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await expect(playerHeader).toHaveAttribute('aria-sort', 'descending')
   await expect(boardRows.first().getByRole('cell').first()).toHaveText('Jahmyr Gibbs')
 
+  await page.getByRole('button', { name: 'Draft Picks' }).click()
+  await expect(page.getByRole('heading', { name: '2026 Draft Picks' })).toBeVisible()
+  await expect(page.getByLabel('Dan, round 2: 0 picks')).toBeVisible()
+  await expect(page.getByLabel('Dan, round 16: 2 picks')).toBeVisible()
+  await expect(page.getByLabel('Lowell, round 1: 0 picks')).toBeVisible()
+  await expect(page.getByLabel('Lowell, round 3: 2 picks')).toBeVisible()
+  await expect(page.getByLabel('Squilly, round 1: 1 pick')).toBeVisible()
+
   await page.getByRole('button', { name: 'Draft Simulator' }).click()
   await expect(page.getByText('League assumptions')).toBeVisible()
   await expect(page.getByLabel('Active team').locator('option')).toHaveCount(12)
@@ -482,6 +505,9 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await page.getByLabel('Dan keeper 1').selectOption('yahoo:1')
   await expect(page.getByText('Starting: Round 3')).toBeVisible()
   await expect(page.getByText('Final: Round 3')).toBeVisible()
+  await page.getByLabel('Yahoo override').first().fill('2')
+  await expect(page.getByText('Final: Round 1')).toBeVisible()
+  await expect(page.getByText(/Adjusted from round 2 because the team has no pick in that round/)).toBeVisible()
 })
 
 test('finish leaderboard ranks final placements and opens a manager resume', async ({ page }) => {

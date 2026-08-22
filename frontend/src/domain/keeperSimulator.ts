@@ -74,7 +74,9 @@ export function resolveTeamKeepers(
       adjustmentReason:
         finalRound === requested
           ? null
-          : `Adjusted from round ${requested} because that round was already occupied.`,
+          : (roundCapacity[requested] ?? 1) === 0
+            ? `Adjusted from round ${requested} because the team has no pick in that round.`
+            : `Adjusted from round ${requested} because that round was already occupied.`,
     }
   })
 }
