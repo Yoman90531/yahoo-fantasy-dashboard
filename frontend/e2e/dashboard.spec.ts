@@ -61,20 +61,18 @@ const managerStats = {
 const keeperTeams = [
   ...Array.from({ length: 12 }, (_, index) => ({
     key: `team:${index + 1}`,
-    name: index === 0 ? 'Dan' : index === 1 ? 'Karna' : `Owner ${index + 1}`,
+    name: index === 0 ? 'Dan' : index === 1 ? 'Lowell' : index === 2 ? 'Squilly' : `Owner ${index + 1}`,
     team_name: `Team ${index + 1}`,
     is_expansion: false,
     round_capacities: {},
   })),
-  { key: 'expansion:nabi', name: 'Nabi', team_name: 'Expansion team', is_expansion: true, round_capacities: {} },
-  { key: 'expansion:squilly', name: 'Squilly', team_name: 'Expansion team', is_expansion: true, round_capacities: {} },
 ]
 
 const keeperBoard = {
   rules: {
     season: 2026,
     source_season: 2025,
-    league_size: 14,
+    league_size: 12,
     draft_rounds: 16,
     scoring_format: 'half_ppr',
     adp_source: 'FantasyPros Half-PPR Consensus ADP',
@@ -355,12 +353,13 @@ test('league headquarters renders its historical overview', async ({ page }) => 
 
   await expect(draftCalendar).toBeVisible()
   await expect(draftCalendar.getByText('Pre-draft action center')).toBeVisible()
-  await expect(draftCalendar.getByText('Aug 31, 7:00 PM ET')).toBeVisible()
-  await expect(draftCalendar.getByText('Existing teams declare keepers')).toBeVisible()
-  await expect(draftCalendar.getByText('Sep 1, 7:00 PM ET')).toBeVisible()
-  await expect(draftCalendar.getByText('Expansion teams declare keepers')).toBeVisible()
-  await expect(draftCalendar.getByText('Sep 4, 10:00 AM ET')).toBeVisible()
-  await expect(draftCalendar.getByText('Sep 6, 7:00 PM ET')).toBeVisible()
+  await expect(draftCalendar.getByText('Open through Sep 6')).toBeVisible()
+  await expect(draftCalendar.getByText(/Rules proposals and open voting/)).toBeVisible()
+  await expect(draftCalendar.getByText('Mon, Aug 31')).toBeVisible()
+  await expect(draftCalendar.getByText('Lock FantasyPros ADP')).toBeVisible()
+  await expect(draftCalendar.getByText('Fri, Sep 4')).toBeVisible()
+  await expect(draftCalendar.getByText('Declare keepers')).toBeVisible()
+  await expect(draftCalendar.getByText('Mon, Sep 7')).toBeVisible()
   await expect(draftCalendar.getByText('Sep 8, 8:30 PM ET')).toBeVisible()
   await expect(draftCalendar.getByText('TBD')).toHaveCount(0)
   await expect(keyInsights).toBeVisible()
@@ -440,14 +439,14 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await expect(primaryNav.getByRole('link').first()).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('heading', { name: 'Keeper Lab' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Keeper rules at a glance' })).toBeVisible()
-  await expect(page.getByText(/Existing keepers due Aug 31/)).toBeVisible()
+  await expect(page.getByText(/Keepers due Sep 4/)).toBeVisible()
   await expect(page.getByText(/Draft Sep 8 at 8:30 PM ET/)).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Jahmyr Gibbs' })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Lowell', exact: true })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Jamarcus Susseles', exact: true })).toHaveCount(0)
 
   const boardTable = page.getByRole('table')
-  await expect(boardTable.getByRole('columnheader', { name: /2025 owner/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /2026 owner/ })).toBeVisible()
   await expect(boardTable.getByRole('columnheader', { name: /2025 keeper history/ })).toBeVisible()
   await expect(boardTable.getByRole('columnheader', { name: /2026 market value/ })).toBeVisible()
   await expect(boardTable.getByRole('columnheader', { name: /2026 keeper cost/ })).toBeVisible()
@@ -475,10 +474,12 @@ test('keeper lab is highlighted first and supports a private league scenario', a
 
   await page.getByRole('button', { name: 'Draft Simulator' }).click()
   await expect(page.getByText('League assumptions')).toBeVisible()
-  await page.getByLabel('Active team').selectOption('expansion:nabi')
-  await expect(page.getByText(/Expansion choices come from unkept players/)).toBeVisible()
-  await expect(page.getByLabel('Nabi keeper 1')).toContainText('Jahmyr Gibbs')
-  await page.getByLabel('Nabi keeper 1').selectOption('yahoo:1')
+  await expect(page.getByLabel('Active team').locator('option')).toHaveCount(12)
+  await expect(page.getByLabel('Active team')).toContainText('Squilly')
+  await expect(page.getByLabel('Active team')).not.toContainText('Nabi')
+  await page.getByLabel('Active team').selectOption('team:1')
+  await expect(page.getByLabel('Dan keeper 1')).toContainText('Jahmyr Gibbs')
+  await page.getByLabel('Dan keeper 1').selectOption('yahoo:1')
   await expect(page.getByText('Starting: Round 3')).toBeVisible()
   await expect(page.getByText('Final: Round 3')).toBeVisible()
 })

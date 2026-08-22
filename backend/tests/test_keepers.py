@@ -26,6 +26,17 @@ from app.services.keepers import (
 
 
 class KeeperRulesTest(unittest.TestCase):
+    def test_bundled_keeper_config_is_twelve_team_with_squilly_transfer(self) -> None:
+        path = Path(__file__).resolve().parents[1] / "app" / "resources" / "keeper_config.json"
+        config = json.loads(path.read_text(encoding="utf-8"))
+
+        self.assertEqual(config["league_size"], 12)
+        self.assertEqual(config["expansion_teams"], [])
+        self.assertEqual(
+            config["team_owner_overrides"]["6YACMFT7CNJGCBKVZZMEYUMMGM"],
+            "Squilly",
+        )
+
     def test_bundled_keeper_history_is_complete_through_2025(self) -> None:
         path = Path(__file__).resolve().parents[1] / "app" / "resources" / "keeper_history.json"
         history = json.loads(path.read_text(encoding="utf-8"))
@@ -40,11 +51,11 @@ class KeeperRulesTest(unittest.TestCase):
         self.assertEqual(len(keepers_2025), 30)
         self.assertEqual(dynasty_players, {"Garrett Wilson": 3, "Sam LaPorta": 2})
 
-    def test_fourteen_team_adp_round_boundaries(self) -> None:
-        self.assertEqual(adp_round(1, 14), 1)
-        self.assertEqual(adp_round(14, 14), 1)
-        self.assertEqual(adp_round(15, 14), 2)
-        self.assertEqual(adp_round(224, 14), 16)
+    def test_twelve_team_adp_round_boundaries(self) -> None:
+        self.assertEqual(adp_round(1, 12), 1)
+        self.assertEqual(adp_round(12, 12), 1)
+        self.assertEqual(adp_round(13, 12), 2)
+        self.assertEqual(adp_round(192, 12), 16)
 
     def test_first_time_non_first_round_player_gets_first_round_adp_exception(self) -> None:
         state = _candidate_rule_state(
@@ -274,7 +285,7 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                 source="FantasyPros",
                 source_url="https://example.test/adp",
                 scoring_format="half_ppr",
-                league_size=14,
+                league_size=12,
                 is_locked=True,
             )
             db.add(snapshot)
@@ -303,15 +314,12 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                         {
                             "season": 2026,
                             "source_season": 2025,
-                            "league_size": 14,
+                            "league_size": 12,
                             "draft_rounds": 16,
                             "scoring_format": "half_ppr",
                             "adp_source": "FantasyPros",
                             "adp_url": "https://example.test/adp",
-                            "expansion_teams": [
-                                {"key": "expansion:nabi", "name": "Nabi"},
-                                {"key": "expansion:squilly", "name": "Squilly"},
-                            ],
+                            "expansion_teams": [],
                         }
                     ),
                     encoding="utf-8",
@@ -334,7 +342,7 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                 ):
                     board = KeeperBoard.model_validate(build_keeper_board(db))
 
-            self.assertEqual(len(board.teams), 3)
+            self.assertEqual(len(board.teams), 1)
             self.assertEqual(board.teams[0].round_capacities, {5: 2})
             self.assertEqual(board.candidates[0].nfl_team, "DET")
             self.assertEqual(board.candidates[0].base_keeper_round, 3)
@@ -353,7 +361,7 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
 
         engine.dispose()
 
-    def test_board_prefers_adp_nfl_team_and_canonical_manager_name(self) -> None:
+    def test_board_prefers_adp_nfl_team_and_keeper_owner_override(self) -> None:
         engine = create_engine("sqlite:///:memory:")
         Base.metadata.create_all(engine)
         Session = sessionmaker(bind=engine)
@@ -389,7 +397,7 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                 source="FantasyPros",
                 source_url="https://example.test/adp",
                 scoring_format="half_ppr",
-                league_size=14,
+                league_size=12,
                 is_locked=True,
             )
             db.add(snapshot)
@@ -418,11 +426,14 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                         {
                             "season": 2026,
                             "source_season": 2025,
-                            "league_size": 14,
+                            "league_size": 12,
                             "draft_rounds": 16,
                             "scoring_format": "half_ppr",
                             "adp_source": "FantasyPros",
                             "adp_url": "https://example.test/adp",
+                            "team_owner_overrides": {
+                                "VWOUQLXG6CXYN3ZLF7D2DOVRK4": "Squilly"
+                            },
                             "expansion_teams": [],
                         }
                     ),
@@ -444,8 +455,8 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                 ):
                     board = KeeperBoard.model_validate(build_keeper_board(db))
 
-            self.assertEqual(board.teams[0].name, "Lowell")
-            self.assertEqual(board.candidates[0].manager_name, "Lowell")
+            self.assertEqual(board.teams[0].name, "Squilly")
+            self.assertEqual(board.candidates[0].manager_name, "Squilly")
             self.assertEqual(board.candidates[0].nfl_team, "KC")
 
         engine.dispose()

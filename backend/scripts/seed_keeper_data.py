@@ -37,6 +37,7 @@ def main() -> None:
 
     season = int(config["season"])
     scoring_format = str(config["scoring_format"])
+    league_size = int(config["league_size"])
     source = "FantasyPros 2026 Half-PPR export"
     migrate_database()
 
@@ -58,8 +59,13 @@ def main() -> None:
                 .order_by(AdpEntry.rank)
                 .all()
             )
-            if len(entries) == len(records) and all(
-                _matches(entry, record) for entry, record in zip(entries, records, strict=True)
+            if (
+                current.league_size == league_size
+                and len(entries) == len(records)
+                and all(
+                    _matches(entry, record)
+                    for entry, record in zip(entries, records, strict=True)
+                )
             ):
                 print(f"Keeper ADP snapshot {current.id} already matches {len(records)} players.")
                 return
@@ -71,7 +77,7 @@ def main() -> None:
             source=source,
             source_url=str(config["adp_url"]),
             scoring_format=scoring_format,
-            league_size=int(config["league_size"]),
+            league_size=league_size,
             lock=True,
         )
         print(f"Seeded Keeper ADP snapshot {snapshot.id} with {len(records)} players.")

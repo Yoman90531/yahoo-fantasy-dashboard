@@ -1,19 +1,14 @@
 import { BellRing, CalendarDays, Clock3 } from 'lucide-react'
 
 const KEY_DATES = [
-  { date: 'Aug 24, 7:00 PM ET', event: 'Submit rule proposals', owner: 'Jeremy' },
-  { date: 'Aug 27, 7:00 PM ET', event: 'Vote on rules and ratify constitution', owner: 'Jeremy' },
-  { date: 'Aug 28, 7:00 PM ET', event: 'Trade deadline', owner: 'Everyone' },
-  { date: 'Aug 30, 7:00 PM ET', event: 'Lock ADP and send keeper costs', owner: 'Dan' },
-  { date: 'Aug 31, 7:00 PM ET', event: 'Existing teams declare keepers', owner: 'Existing teams' },
-  { date: 'Sep 1, 9:00 AM ET', event: 'Review existing keepers and publish expansion pool', owner: 'Dan' },
-  { date: 'Sep 1, 7:00 PM ET', event: 'Expansion teams declare keepers', owner: 'Nabi & Squilly' },
-  { date: 'Sep 2, 7:00 PM ET', event: 'Commissioner review complete', owner: 'Dan' },
-  { date: 'Sep 3, 7:00 PM ET', event: 'Keeper corrections finalized', owner: 'Dan / affected teams' },
-  { date: 'Sep 4, 10:00 AM ET', event: 'Draft-position selection begins', owner: 'Everyone' },
-  { date: 'Sep 4, 7:00 PM ET', event: 'Send dues', owner: 'Kang' },
-  { date: 'Sep 6, 7:00 PM ET', event: 'Draft order finalized', owner: 'Everyone' },
-  { date: 'Sep 6, 9:00 PM ET', event: 'Set up finalized draft on Yahoo', owner: 'Dan' },
+  { date: 'Open through Sep 6', event: 'Rules proposals and open voting — voting doc', owner: 'Everyone' },
+  { date: 'Mon, Aug 31', event: 'Lock FantasyPros ADP', owner: 'Dan' },
+  { date: 'Tue, Sep 1', event: 'Ratify constitution — 4/5 approval required (Art. 2)', owner: 'Everyone' },
+  { date: 'Fri, Sep 4', event: 'Declare keepers', owner: 'Everyone' },
+  { date: 'Sat, Sep 5', event: 'Set draft order after keepers lock', owner: 'Everyone' },
+  { date: 'Sun, Sep 6', event: 'Rules and amendment vote closes', owner: 'Everyone' },
+  { date: 'Sun, Sep 6', event: 'Trades cease', owner: 'Everyone' },
+  { date: 'Mon, Sep 7', event: 'Dues due', owner: 'Everyone' },
   { date: 'Sep 8, 8:30 PM ET', event: 'Draft', owner: 'Everyone', featured: true },
 ]
 

@@ -188,6 +188,10 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
     target_year = int(config["season"])
     league_size = int(config["league_size"])
     draft_rounds = int(config["draft_rounds"])
+    team_owner_overrides = {
+        str(guid): str(name)
+        for guid, name in config.get("team_owner_overrides", {}).items()
+    }
     complete_through = history.get("complete_through")
     history_known = complete_through is not None and int(complete_through) >= source_year
     history_rows = list(history.get("entries", []))
@@ -216,6 +220,12 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
     candidates: list[dict[str, Any]] = []
     warnings: list[str] = []
 
+    def keeper_owner_name(manager: Manager) -> str:
+        return team_owner_overrides.get(
+            manager.yahoo_guid,
+            resolve_manager_name(manager.yahoo_guid, manager.display_name),
+        )
+
     if season:
         roster_teams = (
             db.query(Team, Manager)
@@ -226,18 +236,18 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
         )
         canonical_roster_teams = sorted(
             roster_teams,
-            key=lambda row: resolve_manager_name(row[1].yahoo_guid, row[1].display_name),
+            key=lambda row: keeper_owner_name(row[1]),
         )
         teams.extend(
             {
                 "key": f"team:{team.id}",
-                "name": resolve_manager_name(manager.yahoo_guid, manager.display_name),
+                "name": keeper_owner_name(manager),
                 "team_name": team.team_name,
                 "is_expansion": False,
                 "round_capacities": {
                     int(round_number): int(capacity)
                     for round_number, capacity in draft_pick_config.get(
-                        resolve_manager_name(manager.yahoo_guid, manager.display_name), {}
+                        keeper_owner_name(manager), {}
                     ).items()
                 },
             }
@@ -307,9 +317,7 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
                     ),
                     "roster_team_key": f"team:{team.id}",
                     "roster_team_name": team.team_name,
-                    "manager_name": resolve_manager_name(
-                        manager.yahoo_guid, manager.display_name
-                    ),
+                    "manager_name": keeper_owner_name(manager),
                     "draft_round": draft.round if draft else None,
                     "draft_pick": draft.pick if draft else None,
                     "acquisition_label": f"Round {draft.round}" if draft else "FA/Waiver",

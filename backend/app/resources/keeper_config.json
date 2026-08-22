@@ -1,13 +1,13 @@
 {
   "season": 2026,
   "source_season": 2025,
-  "league_size": 14,
+  "league_size": 12,
   "draft_rounds": 16,
   "scoring_format": "half_ppr",
   "adp_source": "FantasyPros Half-PPR Consensus ADP",
   "adp_url": "https://www.fantasypros.com/nfl/adp/half-point-ppr-overall.php",
-  "expansion_teams": [
-    { "key": "expansion:nabi", "name": "Nabi" },
-    { "key": "expansion:squilly", "name": "Squilly" }
-  ]
+  "team_owner_overrides": {
+    "6YACMFT7CNJGCBKVZZMEYUMMGM": "Squilly"
+  },
+  "expansion_teams": []
 }

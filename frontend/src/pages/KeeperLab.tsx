@@ -151,7 +151,7 @@ function RulesRecap({ data }: { data: KeeperBoardData }) {
             <div>
               <h2 className="text-lg font-bold text-white">Keeper rules at a glance</h2>
               <p className="text-xs text-amber-100/60">
-                Existing keepers due Aug 31 · Expansion keepers due Sep 1 · Draft Sep 8 at 8:30 PM ET.
+                Keepers due Sep 4 · Draft order Sep 5 · Draft Sep 8 at 8:30 PM ET.
               </p>
             </div>
           </div>
@@ -275,7 +275,7 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h2 id="keeper-board-heading" className="text-xl font-bold text-white">Keeper Board</h2>
-          <p className="mt-1 text-sm text-gray-400">The 2025 final rosters, repriced for a fourteen-team 2026 league.</p>
+          <p className="mt-1 text-sm text-gray-400">The 2025 final rosters, reassigned to their 2026 owners and repriced for a {data.rules.league_size}-team league.</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <label className="relative">
@@ -335,7 +335,7 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
                 {sortableHeader('Player', 'player_name', 'left', true)}
                 {sortableHeader('Position', 'position')}
                 {sortableHeader('NFL team', 'nfl_team')}
-                {sortableHeader('2025 owner', 'manager_name')}
+                {sortableHeader('2026 owner', 'manager_name')}
                 {sortableHeader('2025 acquisition', 'draft_round')}
                 {sortableHeader('2025 keeper history', 'keeper_history')}
                 {sortableHeader('2026 market value', 'market_value')}
@@ -411,7 +411,6 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
   const [assignments, setAssignments] = useState<KeeperAssignments>({})
   const [activeTeamKey, setActiveTeamKey] = useState('')
   const [draftOrder, setDraftOrder] = useState<string[]>([])
-  const [expansionOrder, setExpansionOrder] = useState<string[]>([])
 
   const candidatesById = useMemo(
     () => new Map(data.candidates.map(candidate => [candidate.candidate_id, candidate])),
@@ -426,8 +425,6 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
     const keys = data.teams.map(team => team.key)
     setDraftOrder(current => current.length === keys.length ? current : keys)
     setActiveTeamKey(current => current && keys.includes(current) ? current : keys[0] ?? '')
-    const expansionKeys = data.teams.filter(team => team.is_expansion).map(team => team.key)
-    setExpansionOrder(current => current.length === expansionKeys.length ? current : expansionKeys)
   }, [data.teams])
 
   const activeTeam = teamsByKey.get(activeTeamKey) ?? null
@@ -446,7 +443,6 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
     return data.candidates
       .filter(candidate => {
         if (selectedByOtherTeams.has(candidate.candidate_id)) return false
-        if (activeTeam.is_expansion) return true
         return candidate.roster_team_key === activeTeam.key
       })
       .sort((a, b) => {
@@ -501,14 +497,6 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
       if (duplicateIndex >= 0) teamSelections.splice(duplicateIndex, 1)
       teamSelections[slot] = toSelection(candidate)
       next[activeTeamKey] = teamSelections.filter(Boolean).slice(0, 3)
-
-      if (!activeTeam?.is_expansion) {
-        for (const team of data.teams.filter(team => team.is_expansion)) {
-          next[team.key] = (next[team.key] ?? []).filter(
-            selection => selection.candidateId !== candidateId,
-          )
-        }
-      }
       return next
     })
   }
@@ -543,7 +531,7 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
       <div className="mb-5">
         <h2 id="draft-simulator-heading" className="text-xl font-bold text-white">Draft Simulator</h2>
         <p className="mt-1 text-sm text-gray-400">
-          Build a private fourteen-team keeper scenario, randomize the order, and run an ADP-chalk snake draft.
+          Build a private {data.rules.league_size}-team keeper scenario, adjust the order, and run an ADP-chalk snake draft.
         </p>
       </div>
 
@@ -558,7 +546,7 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
                 className="h-10 w-full rounded-lg border border-gray-700 bg-gray-950 px-3 text-sm text-white"
               >
                 {data.teams.map(team => (
-                  <option key={team.key} value={team.key}>{team.name}{team.is_expansion ? ' (Expansion)' : ''}</option>
+                  <option key={team.key} value={team.key}>{team.name}</option>
                 ))}
               </select>
             </label>
@@ -580,12 +568,6 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
               <Dices size={16} aria-hidden="true" /> Randomize order
             </button>
           </div>
-
-          {activeTeam?.is_expansion && (
-            <div className="mb-4 rounded-lg border border-cyan-800/60 bg-cyan-950/30 p-3 text-sm text-cyan-100/80">
-              Expansion choices come from unkept players on the twelve 2025 final rosters. Incumbent selections retain priority and automatically remove conflicting expansion choices.
-            </div>
-          )}
 
           <div className="space-y-3">
             {[0, 1, 2].map(slot => {
@@ -693,34 +675,12 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
                 >
                   <span className="w-5 text-center text-xs font-bold text-gray-600">{index + 1}</span>
                   <span className="min-w-0 flex-1 truncate">{team?.name ?? teamKey}</span>
-                  {team?.is_expansion && <span className="text-[9px] font-bold uppercase tracking-wider text-cyan-400">EXP</span>}
                   <span className="rounded-full bg-gray-800 px-2 py-0.5 text-xs text-gray-400">{count}/3</span>
                 </button>
               )
             })}
           </div>
 
-          {expansionOrder.length > 0 && (
-            <div className="mt-4 border-t border-gray-800 pt-4">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Expansion priority</span>
-                <button
-                  type="button"
-                  onClick={() => setExpansionOrder(current => shuffle(current))}
-                  className="text-xs font-medium text-cyan-300 hover:text-cyan-200"
-                >
-                  Randomize
-                </button>
-              </div>
-              <div className="flex gap-2">
-                {expansionOrder.map((key, index) => (
-                  <span key={key} className="rounded-lg border border-cyan-900/70 bg-cyan-950/30 px-2.5 py-1.5 text-xs text-cyan-200">
-                    {index + 1}. {teamsByKey.get(key)?.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </aside>
       </div>
 
