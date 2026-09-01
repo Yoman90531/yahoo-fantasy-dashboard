@@ -210,8 +210,12 @@ function RulesRecap({ data }: { data: KeeperBoardData }) {
 
         <div className="shrink-0 rounded-xl border border-gray-800 bg-gray-950/75 p-3 text-xs text-gray-400 lg:w-72">
           <div className="mb-1 font-semibold uppercase tracking-wider text-gray-500">ADP formula</div>
-          <div className="font-mono text-sm text-amber-200">ceil(consensus rank ÷ 14)</div>
-          <div className="mt-2">Ranks 1–14 are round 1, 15–28 are round 2, and so on.</div>
+          <div className="font-mono text-sm text-amber-200">
+            ceil(consensus rank ÷ {data.rules.league_size})
+          </div>
+          <div className="mt-2">
+            Ranks 1–{data.rules.league_size} are round 1, {data.rules.league_size + 1}–{data.rules.league_size * 2} are round 2, and so on.
+          </div>
           <div className="mt-3 border-t border-gray-800 pt-3">
             <div className="font-semibold text-gray-300">
               {data.adp_snapshot ? 'Locked ADP snapshot' : 'ADP snapshot needed'}

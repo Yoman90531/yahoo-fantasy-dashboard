@@ -456,6 +456,8 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await expect(page.getByRole('heading', { name: 'Keeper rules at a glance' })).toBeVisible()
   await expect(page.getByText(/Keepers due Sep 4/)).toBeVisible()
   await expect(page.getByText(/Draft Sep 8 at 8:30 PM ET/)).toBeVisible()
+  await expect(page.getByText('ceil(consensus rank ÷ 12)')).toBeVisible()
+  await expect(page.getByText('Ranks 1–12 are round 1, 13–24 are round 2, and so on.')).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Jahmyr Gibbs' })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Lowell', exact: true })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Jamarcus Susseles', exact: true })).toHaveCount(0)

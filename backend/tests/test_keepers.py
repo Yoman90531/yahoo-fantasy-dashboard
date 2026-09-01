@@ -189,10 +189,12 @@ class AdpImportTest(unittest.TestCase):
         path = Path(__file__).resolve().parents[1] / "app" / "resources" / "fantasypros_2026_half_ppr_adp.csv"
         records = read_csv_records(path)
 
-        self.assertEqual(len(records), 351)
-        self.assertEqual((records[0].rank, records[-1].rank), (1, 351))
-        self.assertEqual(records[16].player_name, "Kenneth Walker III")
-        self.assertEqual(records[16].nfl_team, "KC")
+        self.assertEqual(len(records), 365)
+        self.assertEqual((records[0].rank, records[-1].rank), (1, 365))
+        self.assertEqual(records[15].player_name, "Kenneth Walker III")
+        self.assertEqual(records[15].nfl_team, "KC")
+        self.assertEqual(records[-1].player_name, "Ben Skowronek")
+        self.assertEqual(records[-1].nfl_team, "PIT")
 
     def test_fantasypros_csv_shape_is_parsed(self) -> None:
         csv_text = (
