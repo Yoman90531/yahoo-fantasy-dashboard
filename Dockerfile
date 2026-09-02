@@ -13,7 +13,8 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY backend/requirements.txt ./
-RUN pip install --no-cache-dir setuptools==80.9.0 wheel==0.45.1 \
+# pip 25.3 removes the legacy setup.py wheel path that hangs on stringcase 1.2.0.
+RUN pip install --no-cache-dir pip==25.3 setuptools==80.9.0 wheel==0.45.1 \
     && pip install --no-cache-dir --no-build-isolation -r requirements.txt
 
 # Copy backend code
