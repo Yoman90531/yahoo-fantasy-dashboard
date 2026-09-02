@@ -64,6 +64,8 @@ jobs:
             cd /opt/yahoo-fantasy-dashboard
             git pull --ff-only origin main
 
+            # A canceled SSH action can leave its Docker build running on the host.
+            pkill -f '[d]ocker compose build app' || true
             docker compose build app
             docker compose run --rm --no-deps app python scripts/backup_database.py
             docker compose run --rm --no-deps app python scripts/migrate_database.py
