@@ -13,7 +13,7 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY backend/requirements.txt ./
-RUN pip install --no-cache-dir --upgrade setuptools wheel \
+RUN pip install --no-cache-dir setuptools==80.9.0 wheel==0.45.1 \
     && pip install --no-cache-dir --no-build-isolation -r requirements.txt
 
 # Copy backend code
