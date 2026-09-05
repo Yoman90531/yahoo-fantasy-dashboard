@@ -480,17 +480,48 @@ function DraftPickBoard({ data }: { data: KeeperBoardData }) {
   const rounds = Array.from({ length: data.rules.draft_rounds }, (_, index) => index + 1)
 
   return (
-    <section aria-labelledby="draft-picks-heading">
-      <div className="mb-4">
-        <h2 id="draft-picks-heading" className="text-xl font-bold text-white">2026 Draft Picks</h2>
-        <p className="mt-1 text-sm text-gray-400">
-          Yahoo pick inventory after last season&apos;s trades. Red means no pick; blue means multiple picks. These counts power keeper-round availability; the grid does not identify the exact slot of each acquired pick.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <section aria-labelledby="draft-order-heading">
+        <div className="mb-4">
+          <h2 id="draft-order-heading" className="text-xl font-bold text-white">2026 Draft Order</h2>
+          <p className="mt-1 text-sm text-gray-400">
+            Round 1 follows slots 1–12. Round 2 reverses to 12–1, with the order alternating every round.
+          </p>
+        </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
-        <div className="overflow-x-auto">
-          <table className="min-w-[1180px] w-full text-sm">
+        <div className="max-w-xl overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-950 text-xs uppercase tracking-wider text-gray-500">
+              <tr>
+                <th className="w-28 px-4 py-3 text-left">Order</th>
+                <th className="px-4 py-3 text-left">Owner</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.draft_order.map(entry => (
+                <tr key={entry.position} className="border-t border-gray-800/90">
+                  <td className="px-4 py-2.5 font-semibold text-white">{entry.position}</td>
+                  <td className={`px-4 py-2.5 ${entry.owner ? 'font-medium text-gray-200' : 'italic text-gray-500'}`}>
+                    {entry.owner ?? 'TBD'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="draft-picks-heading">
+        <div className="mb-4">
+          <h2 id="draft-picks-heading" className="text-xl font-bold text-white">2026 Draft Picks</h2>
+          <p className="mt-1 text-sm text-gray-400">
+            Yahoo pick inventory after last season&apos;s trades. Red means no pick; blue means multiple picks. These counts power keeper-round availability; the grid does not identify the exact slot of each acquired pick.
+          </p>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
+          <div className="overflow-x-auto">
+            <table className="min-w-[1180px] w-full text-sm">
             <thead className="bg-gray-950 text-xs uppercase tracking-wider text-gray-500">
               <tr>
                 <th className="sticky left-0 z-10 bg-gray-950 px-4 py-3 text-left">2026 owner</th>
@@ -522,10 +553,11 @@ function DraftPickBoard({ data }: { data: KeeperBoardData }) {
                 )
               })}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   )
 }
 
@@ -545,9 +577,17 @@ function DraftSimulator({ data }: { data: KeeperBoardData }) {
 
   useEffect(() => {
     const keys = data.teams.map(team => team.key)
-    setDraftOrder(current => current.length === keys.length ? current : keys)
+    const teamKeyByOwner = new Map(data.teams.map(team => [team.name.toLowerCase(), team.key]))
+    const configuredKeys = data.draft_order.flatMap(entry => {
+      if (!entry.owner) return []
+      const teamKey = teamKeyByOwner.get(entry.owner.toLowerCase())
+      return teamKey ? [teamKey] : []
+    })
+    const configuredKeySet = new Set(configuredKeys)
+    const initialOrder = [...configuredKeys, ...keys.filter(key => !configuredKeySet.has(key))]
+    setDraftOrder(current => current.length === keys.length ? current : initialOrder)
     setActiveTeamKey(current => current && keys.includes(current) ? current : keys[0] ?? '')
-  }, [data.teams])
+  }, [data.draft_order, data.teams])
 
   const activeTeam = teamsByKey.get(activeTeamKey) ?? null
   const activeSelections = assignments[activeTeamKey] ?? []

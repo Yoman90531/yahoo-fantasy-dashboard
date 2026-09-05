@@ -98,6 +98,10 @@ const keeperBoard = {
     ],
   },
   teams: keeperTeams,
+  draft_order: Array.from({ length: 12 }, (_, index) => ({
+    position: index + 1,
+    owner: null,
+  })),
   candidates: [
     {
       candidate_id: 'yahoo:1',
@@ -501,7 +505,21 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await expect(boardRows.first().getByRole('cell').first()).toHaveText('Jahmyr Gibbs')
 
   await page.getByRole('button', { name: 'Draft Picks' }).click()
+  const draftOrder = page.getByRole('region', { name: '2026 Draft Order' })
+  const draftPicks = page.getByRole('region', { name: '2026 Draft Picks' })
+  await expect(draftOrder).toBeVisible()
+  await expect(draftOrder.getByText('Round 1 follows slots 1–12. Round 2 reverses to 12–1, with the order alternating every round.')).toBeVisible()
+  await expect(draftOrder.getByRole('columnheader', { name: 'Order' })).toBeVisible()
+  await expect(draftOrder.getByRole('columnheader', { name: 'Owner' })).toBeVisible()
+  await expect(draftOrder.getByRole('cell', { name: 'TBD' })).toHaveCount(12)
   await expect(page.getByRole('heading', { name: '2026 Draft Picks' })).toBeVisible()
+  const [draftOrderBox, draftPicksBox] = await Promise.all([
+    draftOrder.boundingBox(),
+    draftPicks.boundingBox(),
+  ])
+  expect(draftOrderBox).not.toBeNull()
+  expect(draftPicksBox).not.toBeNull()
+  expect(draftOrderBox!.y).toBeLessThan(draftPicksBox!.y)
   await expect(page.getByLabel('Dan, round 2: 0 picks')).toBeVisible()
   await expect(page.getByLabel('Dan, round 16: 2 picks')).toBeVisible()
   await expect(page.getByLabel('Lowell, round 1: 0 picks')).toBeVisible()

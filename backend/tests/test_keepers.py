@@ -45,6 +45,15 @@ class KeeperRulesTest(unittest.TestCase):
                 12,
             )
 
+    def test_bundled_draft_order_has_twelve_open_slots(self) -> None:
+        path = Path(__file__).resolve().parents[1] / "app" / "resources" / "keeper_draft_order.json"
+        draft_order = json.loads(path.read_text(encoding="utf-8"))
+        entries = draft_order["entries"]
+
+        self.assertEqual(draft_order["season"], 2026)
+        self.assertEqual([entry["position"] for entry in entries], list(range(1, 13)))
+        self.assertTrue(all(entry["owner"] is None for entry in entries))
+
     def test_bundled_keeper_config_is_twelve_team_with_squilly_transfer(self) -> None:
         path = Path(__file__).resolve().parents[1] / "app" / "resources" / "keeper_config.json"
         config = json.loads(path.read_text(encoding="utf-8"))

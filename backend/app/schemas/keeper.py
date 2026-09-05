@@ -23,6 +23,11 @@ class KeeperTeam(BaseModel):
     round_capacities: dict[int, int]
 
 
+class KeeperDraftOrderEntry(BaseModel):
+    position: int
+    owner: str | None
+
+
 class KeeperAdpSnapshot(BaseModel):
     id: int
     source: str
@@ -75,6 +80,7 @@ class KeeperCandidate(BaseModel):
 class KeeperBoard(BaseModel):
     rules: KeeperRules
     teams: list[KeeperTeam]
+    draft_order: list[KeeperDraftOrderEntry]
     candidates: list[KeeperCandidate]
     adp_snapshot: KeeperAdpSnapshot | None
     adp_players: list[KeeperAdpPlayer]

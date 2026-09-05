@@ -941,6 +941,8 @@ export interface components {
             candidates: components["schemas"]["KeeperCandidate"][];
             /** Data Warnings */
             data_warnings: string[];
+            /** Draft Order */
+            draft_order: components["schemas"]["KeeperDraftOrderEntry"][];
             rules: components["schemas"]["KeeperRules"];
             /** Teams */
             teams: components["schemas"]["KeeperTeam"][];
@@ -1006,6 +1008,13 @@ export interface components {
             value_rounds: number | null;
             /** Yahoo Player Id */
             yahoo_player_id: string | null;
+        };
+        /** KeeperDraftOrderEntry */
+        KeeperDraftOrderEntry: {
+            /** Owner */
+            owner: string | null;
+            /** Position */
+            position: number;
         };
         /** KeeperRules */
         KeeperRules: {

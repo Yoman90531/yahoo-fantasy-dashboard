@@ -830,6 +830,13 @@
             "title": "Data Warnings",
             "type": "array"
           },
+          "draft_order": {
+            "items": {
+              "$ref": "#/components/schemas/KeeperDraftOrderEntry"
+            },
+            "title": "Draft Order",
+            "type": "array"
+          },
           "rules": {
             "$ref": "#/components/schemas/KeeperRules"
           },
@@ -844,6 +851,7 @@
         "required": [
           "rules",
           "teams",
+          "draft_order",
           "candidates",
           "adp_snapshot",
           "adp_players",
@@ -1115,6 +1123,31 @@
           "value_rating"
         ],
         "title": "KeeperCandidate",
+        "type": "object"
+      },
+      "KeeperDraftOrderEntry": {
+        "properties": {
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "position",
+          "owner"
+        ],
+        "title": "KeeperDraftOrderEntry",
         "type": "object"
       },
       "KeeperRules": {

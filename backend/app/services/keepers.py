@@ -23,6 +23,7 @@ CONFIG_PATH = RESOURCE_DIR / "keeper_config.json"
 HISTORY_PATH = RESOURCE_DIR / "keeper_history.json"
 ALIASES_PATH = RESOURCE_DIR / "keeper_player_aliases.json"
 DRAFT_PICKS_PATH = RESOURCE_DIR / "keeper_draft_picks.json"
+DRAFT_ORDER_PATH = RESOURCE_DIR / "keeper_draft_order.json"
 NFL_TEAM_OVERRIDES_PATH = RESOURCE_DIR / "keeper_nfl_team_overrides.json"
 SELECTIONS_PATH = RESOURCE_DIR / "keeper_selections.json"
 
@@ -181,6 +182,10 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
     history = _read_json(HISTORY_PATH)
     aliases = _read_json(ALIASES_PATH).get("aliases", {})
     draft_pick_config = _read_json(DRAFT_PICKS_PATH).get("round_capacities", {})
+    draft_order = sorted(
+        _read_json(DRAFT_ORDER_PATH).get("entries", []),
+        key=lambda entry: int(entry["position"]),
+    )
     nfl_team_overrides = {
         normalize_player_name(player_name): str(team)
         for player_name, team in _read_json(NFL_TEAM_OVERRIDES_PATH).get("teams", {}).items()
@@ -407,6 +412,7 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
             "recap": recap,
         },
         "teams": teams,
+        "draft_order": draft_order,
         "candidates": candidates,
         "adp_snapshot": (
             {
