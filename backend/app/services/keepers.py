@@ -24,6 +24,7 @@ HISTORY_PATH = RESOURCE_DIR / "keeper_history.json"
 ALIASES_PATH = RESOURCE_DIR / "keeper_player_aliases.json"
 DRAFT_PICKS_PATH = RESOURCE_DIR / "keeper_draft_picks.json"
 NFL_TEAM_OVERRIDES_PATH = RESOURCE_DIR / "keeper_nfl_team_overrides.json"
+SELECTIONS_PATH = RESOURCE_DIR / "keeper_selections.json"
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -215,10 +216,17 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
         normalize_player_name(source): normalize_player_name(target)
         for source, target in aliases.items()
     }
+    selections = _read_json(SELECTIONS_PATH)
+    selection_by_name: dict[str, dict[str, Any]] = {}
+    for selection in selections.get("entries", []):
+        normalized_selection = normalize_player_name(str(selection["player_name"]))
+        selection_name = normalized_aliases.get(normalized_selection, normalized_selection)
+        selection_by_name[selection_name] = selection
 
     teams: list[dict[str, Any]] = []
     candidates: list[dict[str, Any]] = []
     warnings: list[str] = []
+    matched_selection_names: set[str] = set()
 
     def keeper_owner_name(manager: Manager) -> str:
         return team_owner_overrides.get(
@@ -276,6 +284,12 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
             player_id = yahoo_player_id(player.player_key, player.player_id)
             normalized_name = normalize_player_name(player.player_name)
             lookup_name = normalized_aliases.get(normalized_name, normalized_name)
+            owner_name = keeper_owner_name(manager)
+            selection = selection_by_name.get(lookup_name)
+            if selection and str(selection.get("owner", "")).casefold() != owner_name.casefold():
+                selection = None
+            if selection:
+                matched_selection_names.add(lookup_name)
             adp = adp_by_name.get(lookup_name)
             draft = draft_by_id.get(player_id) if player_id else None
             if draft is None:
@@ -317,7 +331,11 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
                     ),
                     "roster_team_key": f"team:{team.id}",
                     "roster_team_name": team.team_name,
-                    "manager_name": keeper_owner_name(manager),
+                    "manager_name": owner_name,
+                    "selected_as_keeper": selection is not None,
+                    "designated_dynasty": bool(
+                        selection and str(selection.get("keeper_type", "standard")).lower() == "dynasty"
+                    ),
                     "draft_round": draft.round if draft else None,
                     "draft_pick": draft.pick if draft else None,
                     "acquisition_label": f"Round {draft.round}" if draft else "FA/Waiver",
@@ -329,6 +347,11 @@ def build_keeper_board(db: Session) -> dict[str, Any]:
                     "value_rating": value_rating(value_rounds),
                     **rule_state,
                 }
+            )
+        missing_selection_count = len(set(selection_by_name) - matched_selection_names)
+        if missing_selection_count:
+            warnings.append(
+                f"{missing_selection_count} declared keeper selections do not match the final roster data."
             )
     else:
         warnings.append(f"No Yahoo roster data is available for {source_year}.")

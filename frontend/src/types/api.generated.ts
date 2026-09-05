@@ -961,6 +961,8 @@ export interface components {
             candidate_id: string;
             /** Consecutive Keeper Years */
             consecutive_keeper_years: number | null;
+            /** Designated Dynasty */
+            designated_dynasty: boolean;
             /** Draft Pick */
             draft_pick: number | null;
             /** Draft Round */
@@ -996,6 +998,8 @@ export interface components {
             roster_team_key: string;
             /** Roster Team Name */
             roster_team_name: string | null;
+            /** Selected As Keeper */
+            selected_as_keeper: boolean;
             /** Value Rating */
             value_rating: string;
             /** Value Rounds */

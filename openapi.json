@@ -917,6 +917,10 @@
             ],
             "title": "Consecutive Keeper Years"
           },
+          "designated_dynasty": {
+            "title": "Designated Dynasty",
+            "type": "boolean"
+          },
           "draft_pick": {
             "anyOf": [
               {
@@ -1049,6 +1053,10 @@
             ],
             "title": "Roster Team Name"
           },
+          "selected_as_keeper": {
+            "title": "Selected As Keeper",
+            "type": "boolean"
+          },
           "value_rating": {
             "title": "Value Rating",
             "type": "string"
@@ -1085,6 +1093,8 @@
           "roster_team_key",
           "roster_team_name",
           "manager_name",
+          "selected_as_keeper",
+          "designated_dynasty",
           "draft_round",
           "draft_pick",
           "acquisition_label",

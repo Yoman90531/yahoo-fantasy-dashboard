@@ -1,0 +1,52 @@
+{
+  "season": 2026,
+  "source": "Yahoo Confirm Keeper Players export",
+  "captured_on": "2026-09-05",
+  "entries": [
+    { "player_name": "Romeo Doubs", "owner": "Dan", "keeper_type": "standard" },
+    { "player_name": "Jonathan Taylor", "owner": "Dan", "keeper_type": "dynasty" },
+    { "player_name": "Kyren Williams", "owner": "Dan", "keeper_type": "standard" },
+
+    { "player_name": "Tetairoa McMillan", "owner": "Lowell", "keeper_type": "standard" },
+    { "player_name": "Emeka Egbuka", "owner": "Lowell", "keeper_type": "standard" },
+    { "player_name": "Quinshon Judkins", "owner": "Lowell", "keeper_type": "standard" },
+
+    { "player_name": "Nico Collins", "owner": "Bennett", "keeper_type": "standard" },
+    { "player_name": "Harold Fannin Jr.", "owner": "Bennett", "keeper_type": "standard" },
+    { "player_name": "Rashee Rice", "owner": "Bennett", "keeper_type": "standard" },
+
+    { "player_name": "Matthew Stafford", "owner": "Gottlieb", "keeper_type": "standard" },
+    { "player_name": "Alec Pierce", "owner": "Gottlieb", "keeper_type": "standard" },
+    { "player_name": "Omarion Hampton", "owner": "Gottlieb", "keeper_type": "standard" },
+
+    { "player_name": "Drake Maye", "owner": "Tim", "keeper_type": "standard" },
+    { "player_name": "Chris Olave", "owner": "Tim", "keeper_type": "standard" },
+
+    { "player_name": "David Montgomery", "owner": "Max", "keeper_type": "standard" },
+    { "player_name": "Sam LaPorta", "owner": "Max", "keeper_type": "standard" },
+
+    { "player_name": "Quentin Johnston", "owner": "Michael", "keeper_type": "standard" },
+    { "player_name": "Jacory Croskey-Merritt", "owner": "Michael", "keeper_type": "standard" },
+    { "player_name": "Jalen Coker", "owner": "Michael", "keeper_type": "standard" },
+
+    { "player_name": "Breece Hall", "owner": "Kang", "keeper_type": "standard" },
+    { "player_name": "Kenny Gainwell", "owner": "Kang", "keeper_type": "standard" },
+    { "player_name": "Kyle Pitts Sr.", "owner": "Kang", "keeper_type": "standard" },
+
+    { "player_name": "A.J. Brown", "owner": "Jeremy", "keeper_type": "standard" },
+    { "player_name": "Christian Watson", "owner": "Jeremy", "keeper_type": "dynasty" },
+    { "player_name": "Javonte Williams", "owner": "Jeremy", "keeper_type": "standard" },
+
+    { "player_name": "Caleb Williams", "owner": "Karna", "keeper_type": "standard" },
+    { "player_name": "Colston Loveland", "owner": "Karna", "keeper_type": "standard" },
+    { "player_name": "Blake Corum", "owner": "Karna", "keeper_type": "standard" },
+
+    { "player_name": "De'Von Achane", "owner": "Squilly", "keeper_type": "standard" },
+    { "player_name": "Isaiah Likely", "owner": "Squilly", "keeper_type": "dynasty" },
+    { "player_name": "Cam Skattebo", "owner": "Squilly", "keeper_type": "standard" },
+
+    { "player_name": "D'Andre Swift", "owner": "David", "keeper_type": "standard" },
+    { "player_name": "Luther Burden III", "owner": "David", "keeper_type": "dynasty" },
+    { "player_name": "Bhayshul Tuten", "owner": "David", "keeper_type": "standard" }
+  ]
+}

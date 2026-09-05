@@ -52,6 +52,8 @@ type KeeperSortKey =
   | 'position'
   | 'nfl_team'
   | 'manager_name'
+  | 'selected_as_keeper'
+  | 'designated_dynasty'
   | 'draft_round'
   | 'keeper_history'
   | 'market_value'
@@ -246,9 +248,11 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
   const [positionFilter, setPositionFilter] = useState('all')
   const [eligibilityFilter, setEligibilityFilter] = useState('all')
   const [sort, setSort] = useState<{ key: KeeperSortKey; direction: 1 | -1 }>({
-    key: 'value_rounds',
+    key: 'selected_as_keeper',
     direction: -1,
   })
+  const selectedKeeperCount = data.candidates.filter(candidate => candidate.selected_as_keeper).length
+  const dynastyKeeperCount = data.candidates.filter(candidate => candidate.designated_dynasty).length
 
   const positions = useMemo(
     () => Array.from(new Set(data.candidates.map(candidate => candidate.position))).sort(),
@@ -323,6 +327,9 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
         <div>
           <h2 id="keeper-board-heading" className="text-xl font-bold text-white">Keeper Board</h2>
           <p className="mt-1 text-sm text-gray-400">The 2025 final rosters, reassigned to their 2026 owners and repriced for a {data.rules.league_size}-team league.</p>
+          <p className="mt-1 text-xs font-medium text-emerald-300">
+            {selectedKeeperCount} {selectedKeeperCount === 1 ? 'keeper' : 'keepers'} declared · {dynastyKeeperCount} dynasty {dynastyKeeperCount === 1 ? 'designation' : 'designations'}
+          </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <label className="relative">
@@ -376,13 +383,15 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
 
       <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
         <div className="overflow-x-auto">
-          <table className="min-w-[1500px] w-full text-sm">
+          <table className="min-w-[1750px] w-full text-sm">
             <thead className="bg-gray-950 text-xs uppercase tracking-wider text-gray-500">
               <tr>
                 {sortableHeader('Player', 'player_name', 'left', true)}
                 {sortableHeader('Position', 'position')}
                 {sortableHeader('NFL team', 'nfl_team')}
                 {sortableHeader('2026 owner', 'manager_name')}
+                {sortableHeader('Kept for 2026', 'selected_as_keeper')}
+                {sortableHeader('Dynasty for 2026', 'designated_dynasty')}
                 {sortableHeader('2025 acquisition', 'draft_round')}
                 {sortableHeader('2025 keeper history', 'keeper_history')}
                 {sortableHeader('2026 market value', 'market_value')}
@@ -401,11 +410,24 @@ function KeeperBoard({ data }: { data: KeeperBoardData }) {
                     ? 'Outside draft'
                     : 'No ADP match'
                 return (
-                  <tr key={candidate.candidate_id} className="border-t border-gray-800/90 hover:bg-gray-800/60">
+                  <tr
+                    key={candidate.candidate_id}
+                    className={`border-t border-gray-800/90 ${candidate.selected_as_keeper ? 'bg-emerald-950/15 hover:bg-emerald-950/30' : 'hover:bg-gray-800/60'}`}
+                  >
                     <td className="sticky left-0 bg-gray-900 px-4 py-3 font-medium text-white">{candidate.player_name}</td>
                     <td className="px-3 py-3 text-gray-300">{candidate.position}</td>
                     <td className="px-3 py-3 text-gray-300">{candidate.nfl_team ?? '—'}</td>
                     <td className="px-3 py-3 text-gray-300">{candidate.manager_name}</td>
+                    <td className="px-3 py-3">
+                      <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold ${candidate.selected_as_keeper ? 'border-emerald-700/60 bg-emerald-950/50 text-emerald-300' : 'border-gray-700 bg-gray-950/60 text-gray-500'}`}>
+                        {candidate.selected_as_keeper ? 'Kept' : 'Not kept'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold ${candidate.designated_dynasty ? 'border-amber-700/60 bg-amber-950/50 text-amber-200' : 'border-gray-700 bg-gray-950/60 text-gray-500'}`}>
+                        {candidate.designated_dynasty ? 'Dynasty' : 'No'}
+                      </span>
+                    </td>
                     <td className="px-3 py-3 text-gray-300">
                       {candidate.draft_round ? `Drafted R${candidate.draft_round}` : 'FA/Waiver'}
                     </td>

@@ -50,6 +50,8 @@ class KeeperCandidate(BaseModel):
     roster_team_key: str
     roster_team_name: str | None
     manager_name: str
+    selected_as_keeper: bool
+    designated_dynasty: bool
     draft_round: int | None
     draft_pick: int | None
     acquisition_label: str

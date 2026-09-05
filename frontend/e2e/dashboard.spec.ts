@@ -108,6 +108,8 @@ const keeperBoard = {
       roster_team_key: 'team:1',
       roster_team_name: 'Team 1',
       manager_name: 'Dan',
+      selected_as_keeper: true,
+      designated_dynasty: true,
       draft_round: 3,
       draft_pick: 29,
       acquisition_label: 'Round 3',
@@ -136,6 +138,8 @@ const keeperBoard = {
       roster_team_key: 'team:2',
       roster_team_name: 'Jamarcus Susseles',
       manager_name: 'Lowell',
+      selected_as_keeper: false,
+      designated_dynasty: false,
       draft_round: 2,
       draft_pick: 18,
       acquisition_label: 'Round 2',
@@ -461,9 +465,12 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   await expect(page.getByRole('cell', { name: 'Jahmyr Gibbs' })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Lowell', exact: true })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Jamarcus Susseles', exact: true })).toHaveCount(0)
+  await expect(page.getByText('1 keeper declared · 1 dynasty designation')).toBeVisible()
 
   const boardTable = page.getByRole('table')
   await expect(boardTable.getByRole('columnheader', { name: /2026 owner/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /Kept for 2026/ })).toBeVisible()
+  await expect(boardTable.getByRole('columnheader', { name: /Dynasty for 2026/ })).toBeVisible()
   await expect(boardTable.getByRole('columnheader', { name: /2025 keeper history/ })).toBeVisible()
   await expect(boardTable.getByRole('columnheader', { name: /2026 market value/ })).toBeVisible()
   await expect(boardTable.getByRole('columnheader', { name: /2026 keeper cost/ })).toBeVisible()
@@ -474,11 +481,15 @@ test('keeper lab is highlighted first and supports a private league scenario', a
   const playerHeader = page.getByRole('columnheader', { name: /Player/ })
   const boardRows = boardTable.locator('tbody tr')
   const gibbsRow = boardRows.filter({ hasText: 'Jahmyr Gibbs' })
+  await expect(gibbsRow.getByText('Kept', { exact: true })).toBeVisible()
+  await expect(gibbsRow.getByText('Dynasty', { exact: true })).toBeVisible()
   await expect(gibbsRow).toContainText('Not kept')
   await expect(gibbsRow).toContainText('#1')
   await expect(gibbsRow).toContainText('Round 3')
   await expect(gibbsRow).toContainText('2025 draft round')
   const stBrownRow = boardRows.filter({ hasText: 'Amon-Ra St. Brown' })
+  await expect(stBrownRow.getByText('Not kept', { exact: true })).toBeVisible()
+  await expect(stBrownRow.getByText('No', { exact: true })).toBeVisible()
   await expect(stBrownRow).toContainText('Standard')
   await expect(stBrownRow).toContainText('2025 cost: Round 2')
   await expect(stBrownRow).toContainText('Current ADP')

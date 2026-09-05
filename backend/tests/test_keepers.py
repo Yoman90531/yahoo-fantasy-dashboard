@@ -70,6 +70,49 @@ class KeeperRulesTest(unittest.TestCase):
         self.assertEqual(len(keepers_2025), 30)
         self.assertEqual(dynasty_players, {"Garrett Wilson": 3, "Sam LaPorta": 2})
 
+    def test_bundled_2026_keeper_selections_match_yahoo_confirmation(self) -> None:
+        path = Path(__file__).resolve().parents[1] / "app" / "resources" / "keeper_selections.json"
+        selections = json.loads(path.read_text(encoding="utf-8"))
+        entries = selections["entries"]
+        owner_counts: dict[str, int] = {}
+        for entry in entries:
+            owner = entry["owner"]
+            owner_counts[owner] = owner_counts.get(owner, 0) + 1
+
+        dynasty_players = {
+            entry["player_name"]
+            for entry in entries
+            if entry["keeper_type"] == "dynasty"
+        }
+
+        self.assertEqual(selections["season"], 2026)
+        self.assertEqual(len(entries), 34)
+        self.assertEqual(
+            len({normalize_player_name(entry["player_name"]) for entry in entries}),
+            len(entries),
+        )
+        self.assertEqual(
+            dynasty_players,
+            {"Jonathan Taylor", "Christian Watson", "Luther Burden III", "Isaiah Likely"},
+        )
+        self.assertEqual(
+            owner_counts,
+            {
+                "Bennett": 3,
+                "Dan": 3,
+                "David": 3,
+                "Gottlieb": 3,
+                "Jeremy": 3,
+                "Kang": 3,
+                "Karna": 3,
+                "Lowell": 3,
+                "Max": 2,
+                "Michael": 3,
+                "Squilly": 3,
+                "Tim": 2,
+            },
+        )
+
     def test_twelve_team_adp_round_boundaries(self) -> None:
         self.assertEqual(adp_round(1, 12), 1)
         self.assertEqual(adp_round(12, 12), 1)
@@ -330,6 +373,7 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                 history_path = root / "history.json"
                 aliases_path = root / "aliases.json"
                 draft_picks_path = root / "draft-picks.json"
+                selections_path = root / "selections.json"
                 config_path.write_text(
                     json.dumps(
                         {
@@ -354,12 +398,28 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                     json.dumps({"season": 2026, "round_capacities": {"Dan": {"5": 2}}}),
                     encoding="utf-8",
                 )
+                selections_path.write_text(
+                    json.dumps(
+                        {
+                            "season": 2026,
+                            "entries": [
+                                {
+                                    "player_name": "Jahmyr Gibbs",
+                                    "owner": "Dan",
+                                    "keeper_type": "dynasty",
+                                }
+                            ],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
 
                 with (
                     mock.patch("app.services.keepers.CONFIG_PATH", config_path),
                     mock.patch("app.services.keepers.HISTORY_PATH", history_path),
                     mock.patch("app.services.keepers.ALIASES_PATH", aliases_path),
                     mock.patch("app.services.keepers.DRAFT_PICKS_PATH", draft_picks_path),
+                    mock.patch("app.services.keepers.SELECTIONS_PATH", selections_path),
                 ):
                     board = KeeperBoard.model_validate(build_keeper_board(db))
 
@@ -370,6 +430,8 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
             self.assertEqual(board.candidates[0].adp_round, 1)
             self.assertEqual(board.candidates[0].value_rounds, 2)
             self.assertEqual(board.candidates[0].eligibility_status, "eligible")
+            self.assertTrue(board.candidates[0].selected_as_keeper)
+            self.assertTrue(board.candidates[0].designated_dynasty)
             unranked = next(
                 candidate
                 for candidate in board.candidates
@@ -379,6 +441,8 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
             self.assertEqual(unranked.adp_round, 16)
             self.assertEqual(unranked.base_keeper_round, 16)
             self.assertEqual(unranked.eligibility_status, "eligible")
+            self.assertFalse(unranked.selected_as_keeper)
+            self.assertFalse(unranked.designated_dynasty)
 
         engine.dispose()
 
@@ -442,6 +506,7 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                 history_path = root / "history.json"
                 aliases_path = root / "aliases.json"
                 draft_picks_path = root / "draft-picks.json"
+                selections_path = root / "selections.json"
                 config_path.write_text(
                     json.dumps(
                         {
@@ -467,12 +532,16 @@ class KeeperBoardIntegrationTest(unittest.TestCase):
                 draft_picks_path.write_text(
                     json.dumps({"season": 2026, "round_capacities": {}}), encoding="utf-8"
                 )
+                selections_path.write_text(
+                    json.dumps({"season": 2026, "entries": []}), encoding="utf-8"
+                )
 
                 with (
                     mock.patch("app.services.keepers.CONFIG_PATH", config_path),
                     mock.patch("app.services.keepers.HISTORY_PATH", history_path),
                     mock.patch("app.services.keepers.ALIASES_PATH", aliases_path),
                     mock.patch("app.services.keepers.DRAFT_PICKS_PATH", draft_picks_path),
+                    mock.patch("app.services.keepers.SELECTIONS_PATH", selections_path),
                 ):
                     board = KeeperBoard.model_validate(build_keeper_board(db))
 
